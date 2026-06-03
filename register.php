@@ -138,11 +138,87 @@
             width:100%;
         }
 
+        /* =========================================
+   BACK BUTTON
+========================================= */
+
+.back-home{
+
+    width:100%;
+
+    max-width:1200px;
+
+    margin:0 auto;
+
+    padding:25px 20px 0 20px;
+
+     margin-right:80px;
+
+    margin-bottom:30px;
+}
+
+.back-btn{
+
+    width:55px;
+
+    height:55px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:50%;
+
+    background:white;
+
+    color:#081f78;
+
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+
+    transition:0.3s;
+}
+
+.back-btn i{
+
+    font-size:28px;
+}
+
+.back-btn:hover{
+
+    background:
+    linear-gradient(
+    45deg,
+    #081f78,
+    #e83e8c
+    );
+
+    color:white;
+
+    transform:translateY(-2px);
+}
     </style>
 
 </head>
 
 <body>
+    <!-- BACK BUTTON -->
+
+<div class="back-home">
+
+    <a href="index.php"
+    class="back-btn waves-effect">
+
+        <i class="material-icons">
+
+            arrow_back
+
+        </i>
+
+    </a>
+
+</div>
 
     <section class="register-section">
 

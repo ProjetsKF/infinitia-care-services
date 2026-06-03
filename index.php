@@ -17,6 +17,7 @@ session_start();
     <!-- Materialize CSS -->
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
 
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -26,293 +27,6 @@ session_start();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 
-   <style>
-
-    *{
-        font-family:'Poppins', sans-serif;
-    }
-
-    :root{
-
-        /* Couleurs principales INFINITIA */
-
-        --primary-blue:#081f78;
-        --secondary-pink:#e83e8c;
-        --gold:#d89b2b;
-
-        --dark-blue:#05134d;
-        --light-bg:#f7f7f7;
-        --text-dark:#1b1b1b;
-        --text-light:#ffffff;
-
-    }
-
-    body{
-        background:var(--light-bg);
-        color:var(--text-dark);
-    }
-
-    /* NAVBAR */
-
-    nav{
-
-        background:
-        linear-gradient(
-        90deg,
-        var(--dark-blue),
-        var(--primary-blue)
-        );
-
-        box-shadow:0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    nav .brand-logo{
-
-        font-weight:700;
-        color:white;
-    }
-
-    nav ul li a{
-
-        color:white;
-        font-weight:500;
-        transition:0.3s;
-    }
-
-    nav ul li a:hover{
-
-        color:var(--secondary-pink);
-    }
-
-    /* HERO SECTION */
-
-    .hero{
-
-    position:relative;
-    height:100vh;
-
-    background:
-    linear-gradient(
-    rgba(5,19,77,0.75),
-    rgba(8,31,120,0.75)
-    ),
-
-    url('assets/images/hero1.jpg');
-
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-
-    display:flex;
-    align-items:center;
-}
-
-    .hero-content{
-
-        color:white;
-    }
-
-    .hero-title{
-
-        font-size:65px;
-        font-weight:700;
-        line-height:1.2;
-
-        color:white;
-    }
-
-    .hero-title span{
-
-        color:var(--secondary-pink);
-    }
-
-    .hero-subtitle{
-
-        font-size:20px;
-        margin-top:20px;
-
-        color:#f1f1f1;
-
-        max-width:700px;
-    }
-
-    .hero-buttons{
-
-        margin-top:35px;
-    }
-
-    /* BOUTONS */
-
-    .btn-large{
-
-        border-radius:12px;
-        margin-right:15px;
-
-        text-transform:none;
-        font-weight:600;
-
-        transition:0.3s;
-    }
-
-    .btn-primary{
-
-        background:
-        linear-gradient(
-        45deg,
-        var(--primary-blue),
-        var(--secondary-pink)
-        );
-    }
-
-    .btn-primary:hover{
-
-        background:
-        linear-gradient(
-        45deg,
-        var(--secondary-pink),
-        var(--primary-blue)
-        );
-
-        transform:translateY(-2px);
-    }
-
-    .btn-secondary{
-
-        background:white;
-        color:var(--primary-blue);
-    }
-
-    .btn-secondary:hover{
-
-        background:var(--gold);
-        color:white;
-    }
-
-    /* SERVICES */
-
-    .section-services{
-
-        padding:90px 0;
-    }
-
-    .section-title{
-
-        color:var(--primary-blue);
-        font-weight:700;
-    }
-
-    .section-subtitle{
-
-        color:#666;
-    }
-
-    /* SERVICE CARDS */
-
-    .service-card{
-
-        border-radius:20px;
-
-        transition:0.4s;
-
-        overflow:hidden;
-
-        background:white;
-    }
-
-    .service-card:hover{
-
-        transform:translateY(-8px);
-
-        box-shadow:0 10px 30px rgba(0,0,0,0.15);
-    }
-
-    .service-card .card-content{
-
-        padding:35px;
-    }
-
-    .service-card i{
-
-        margin-bottom:15px;
-    }
-
-    .service-card .card-title{
-
-        color:var(--primary-blue);
-
-        font-weight:700;
-    }
-
-    /* ICON COLORS */
-
-    .icon-blue{
-        color:var(--primary-blue);
-    }
-
-    .icon-pink{
-        color:var(--secondary-pink);
-    }
-
-    .icon-gold{
-        color:var(--gold);
-    }
-
-    /* FOOTER */
-
-    footer{
-
-        background:
-        linear-gradient(
-        90deg,
-        var(--dark-blue),
-        var(--primary-blue)
-        );
-
-        color:white;
-
-        padding:30px;
-
-        text-align:center;
-
-        font-size:15px;
-    }
-
-    /* RESPONSIVE */
-
-    @media(max-width:992px){
-
-        .hero-title{
-
-            font-size:45px;
-        }
-
-        .hero-subtitle{
-
-            font-size:18px;
-        }
-    }
-
-    @media(max-width:600px){
-
-        .hero{
-
-            text-align:center;
-            padding:20px;
-        }
-
-        .hero-title{
-
-            font-size:35px;
-        }
-
-        .btn-large{
-
-            width:100%;
-            margin-bottom:15px;
-        }
-    }
-
-</style>
 
 </head>
 
@@ -348,25 +62,35 @@ session_start();
 
                         <!-- CLIENT -->
 
-                        <a href="services.php"
-                        class="btn-large btn-primary waves-effect waves-light">
+                       <!-- OFFRES -->
 
-                            Trouver un service
+                            <a href="offers.php"
+                            class="btn-large btn-primary waves-effect waves-light">
 
-                            <i class="material-icons right">
-                                search
-                            </i>
+                                Voir les offres
 
-                        </a>
+                                <i class="material-icons right">
 
-                        <!-- CANDIDAT -->
+                                    work
 
-                        <a href="register.php?type=candidate"
-                        class="btn-large btn-secondary waves-effect">
+                                </i>
 
-                            Devenir intervenant
+                            </a>
 
-                        </a>
+                            <!-- DEMANDE SERVICE -->
+
+                            <a href="guest-request.php"
+                            class="btn-large btn-secondary waves-effect waves-light">
+
+                                Soumettre une demande
+
+                                <i class="material-icons right">
+
+                                    assignment
+
+                                </i>
+
+                            </a>
 
                     </div>
 

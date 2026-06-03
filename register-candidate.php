@@ -128,6 +128,85 @@ session_start();
             color:#666;
         }
 
+        .form-actions{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+    margin-top:35px;
+
+    flex-wrap:wrap;
+}
+
+.cancel-btn{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    min-width:170px;
+
+    height:58px;
+
+    padding:0 28px;
+
+    border-radius:14px;
+
+    background:white;
+
+    color:#081f78;
+
+    font-weight:600;
+
+    font-size:16px;
+
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+
+    transition:0.3s;
+}
+
+.cancel-btn:hover{
+
+    background:#f3f6ff;
+
+    transform:translateY(-2px);
+}
+
+.form-actions .btn-register{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+}
+
+@media(max-width:600px){
+
+    .form-actions{
+
+        flex-direction:column-reverse;
+    }
+
+    .cancel-btn,
+    .form-actions .btn-register{
+
+        width:100%;
+    }
+
+}
+
     </style>
 
 </head>
@@ -139,20 +218,7 @@ session_start();
         <div class="container">
 
             <!-- TITRE -->
-              <a href="register.php"
-    class="btn waves-effect waves-light white blue-text text-darken-4 z-depth-1"
-    style="
-    margin-bottom:25px;
-    border-radius:10px;
-    ">
-
-        <i class="material-icons left">
-            arrow_back
-        </i>
-
-        Retour
-
-    </a>
+            
 
 
             <div class="center">
@@ -465,6 +531,27 @@ session_start();
 
                                 <br>
 
+                               <!-- ACTIONS -->
+
+                            <div class="form-actions">
+
+                                <!-- CANCEL -->
+
+                                <a href="register.php"
+                                class="cancel-btn waves-effect">
+
+                                    <i class="material-icons left">
+
+                                        close
+
+                                    </i>
+
+                                    Annuler
+
+                                </a>
+
+                                <!-- SUBMIT -->
+
                                 <button
                                 type="submit"
                                 class="btn-large btn-register waves-effect waves-light">
@@ -478,6 +565,8 @@ session_start();
                                     </i>
 
                                 </button>
+
+                            </div>
 
                             </form>
 

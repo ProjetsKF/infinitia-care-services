@@ -1,21 +1,26 @@
 <?php
 
 $host = "localhost";
-$dbname = "infinitia_care_services";
-$username = "root";
+$database = "infinitia_care_services";
+$user = "root";
 $password = "";
 
-try {
+$conn = new mysqli(
+    $host,
+    $user,
+    $password,
+    $database
+);
 
-    $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname",
-        $username,
-        $password
+if($conn->connect_error){
+
+    die(
+        "Erreur connexion : " .
+        $conn->connect_error
     );
 
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-} catch(PDOException $e) {
-
-    die("Erreur : " . $e->getMessage());
 }
+
+$conn->set_charset("utf8");
+
+?>
