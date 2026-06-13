@@ -39,14 +39,12 @@
 
         .register-section{
 
-            min-height:100vh;
+    display:flex;
+    justify-content:center;
 
-            display:flex;
-            align-items:center;
-            justify-content:center;
-
-            padding:40px 0;
-        }
+    padding:0;
+    margin-top:-30px;
+}
 
         .main-title{
 
@@ -145,16 +143,11 @@
 .back-home{
 
     width:100%;
-
     max-width:1200px;
 
-    margin:0 auto;
+    margin:20px auto 10px auto;
 
-    padding:25px 20px 0 20px;
-
-     margin-right:80px;
-
-    margin-bottom:30px;
+    padding:0 20px;
 }
 
 .back-btn{

@@ -2,95 +2,108 @@
 
 <nav class="blue darken-4">
 
-    <div class="nav-wrapper container">
+    <div class="nav-wrapper"
+         style="
+         display:flex;
+         align-items:center;
+         justify-content:space-between;
+         padding:0 30px;">
 
         <!-- LOGO -->
 
-        <a href="index.php" class="brand-logo">
+        <a href="index.php"
+           class="brand-logo"
+           style="
+           position:relative;
+           left:auto;
+           transform:none;
+           margin-top:5px;">
 
             <img
             src="assets/images/brand1.PNG"
             alt="Infinitia Logo"
-            style="height:60px;margin-top:2px;vertical-align:middle;">
+            style="
+            height:50px;
+            width:auto;
+            display:block;">
 
         </a>
 
         <!-- MENU DESKTOP -->
 
-        <ul class="right hide-on-med-and-down">
+        <ul class="right hide-on-med-and-down"
+            style="
+            display:flex;
+            align-items:center;
+            gap:15px;
+            margin:0;">
 
-            <li><a href="index.php">Accueil</a></li>
+            <li>
+                <a href="index.php">Accueil</a>
+            </li>
 
-            <li><a href="services.php">Services</a></li>
+            <li>
+                <a href="services.php">Services</a>
+            </li>
 
-            <li><a href="about.php">À propos</a></li>
+            <li>
+                <a href="about.php">À propos</a>
+            </li>
 
-            <li><a href="contact.php">Contact</a></li>
+            <li>
+                <a href="contact.php">Contact</a>
+            </li>
 
             <li>
 
-    <a href="login.php"
-    class="btn blue lighten-1">
+                <a href="login.php"
+                   class="btn blue lighten-1"
+                   style="
+                   border-radius:40px;
+                   padding:0 25px;">
 
-        <i class="material-icons left">
+                    <i class="material-icons left">
+                        login
+                    </i>
 
-            login
+                    Connexion
 
-        </i>
+                </a>
 
-        Connexion
+            </li>
 
-    </a>
+            <li>
 
-</li>
+                <a href="register.php"
+                   class="btn pink accent-2"
+                   style="
+                   border-radius:40px;
+                   padding:0 25px;">
 
-<li>
+                    <i class="material-icons left">
+                        person_add
+                    </i>
 
-    <a href="register.php"
-    class="btn pink accent-2">
+                    S'inscrire
 
-        <i class="material-icons left">
+                </a>
 
-            person_add
-
-        </i>
-
-        S'inscrire
-
-    </a>
-
-</li>
+            </li>
 
         </ul>
 
-        <!-- BOUTON MOBILE -->
+        <!-- MENU MOBILE -->
 
         <a href="#"
-        data-target="mobile-menu"
-        class="sidenav-trigger right">
+           data-target="mobile-menu"
+           class="sidenav-trigger">
 
-            <i class="material-icons">menu</i>
+            <i class="material-icons">
+                menu
+            </i>
 
         </a>
 
     </div>
 
 </nav>
-
-<!-- MENU MOBILE -->
-
-<ul class="sidenav" id="mobile-menu">
-
-    <li><a href="#">Accueil</a></li>
-
-    <li><a href="#">Services</a></li>
-
-    <li><a href="#">À propos</a></li>
-
-    <li><a href="#">Contact</a></li>
-
-    <li><a href="login.php">Connexion</a></li>
-
-    <li><a href="register.php">S'inscrire</a></li>
-
-</ul>

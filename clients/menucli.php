@@ -151,8 +151,8 @@ $client = $resultUser->fetch_assoc();
 
         <!-- PAIEMENTS -->
 
-        <a href="paiement.php"
-        class="<?php echo ($current_page == 'paiement') ? 'active' : ''; ?>">
+        <a href="paiements.php"
+        class="<?php echo ($current_page == 'paiements') ? 'active' : ''; ?>">
 
             <i class="material-icons">
 
