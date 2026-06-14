@@ -298,17 +298,32 @@ $competences = mysqli_stmt_get_result($stmt);
 
                     </td>
 
-                    <td>
+                 <td>
 
-                        <a
-                        href="edit-skill.php?id=<?php echo $skill['id']; ?>"
-                        class="btn-small orange">
+                    <a
+                        href="#modalEditSkill"
+                        class="btn-small orange modal-trigger edit-skill-btn"
+                        data-id="<?php echo $skill['id']; ?>"
+                        data-level="<?php echo htmlspecialchars($skill['level']); ?>"
+                        data-years="<?php echo (int)$skill['years_experience']; ?>"
+                        data-description="<?php echo htmlspecialchars($skill['description']); ?>"
+                        title="Modifier">
 
-                            Modifier
+                        <i class="material-icons">edit</i>
 
-                        </a>
+                    </a>
 
-                    </td>
+                    <a
+                        href="delete-skill.php?id=<?php echo $skill['id']; ?>"
+                        class="btn-small red"
+                        title="Supprimer"
+                        onclick="return confirm('Voulez-vous vraiment supprimer cette compétence ?');">
+
+                        <i class="material-icons">delete</i>
+
+                    </a>
+
+                </td>
 
                 </tr>
 
@@ -331,74 +346,127 @@ $competences = mysqli_stmt_get_result($stmt);
     <div class="modal-content">
 
         <h4>
-
-            Ajouter une compétence
-
+            Ajouter des compétences
         </h4>
 
         <form
-        action="add-skill.php"
-        method="POST">
+            action="add-skill.php"
+            method="POST">
 
-            <div class="input-field">
+            <h6 style="margin-bottom:20px;">
+                Sélectionnez vos compétences
+            </h6>
 
-                <input
-                type="text"
-                name="skill_name"
-                id="skill_name"
-                maxlength="100"
-                required>
+            <div class="row">
 
-                <label for="skill_name">
+                <div class="col s12 m6">
 
-                    Nom de la compétence
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Entretien ménager" />
+                            <span>Entretien ménager</span>
+                        </label>
+                    </p>
 
-                </label>
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Cuisine" />
+                            <span>Cuisine</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Repassage" />
+                            <span>Repassage</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Lessive" />
+                            <span>Lessive</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Garde d'enfants" />
+                            <span>Garde d'enfants</span>
+                        </label>
+                    </p>
+
+                </div>
+
+                <div class="col s12 m6">
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Assistance aux personnes âgées" />
+                            <span>Assistance aux personnes âgées</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Nettoyage de bureaux" />
+                            <span>Nettoyage de bureaux</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Jardinage" />
+                            <span>Jardinage</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Chauffeur" />
+                            <span>Chauffeur</span>
+                        </label>
+                    </p>
+
+                    <p>
+                        <label>
+                            <input type="checkbox" name="skills[]" value="Sécurité domestique" />
+                            <span>Sécurité domestique</span>
+                        </label>
+                    </p>
+
+                </div>
 
             </div>
 
             <div class="input-field">
 
-                <select
-                name="level"
-                required>
+                <select name="level" required>
 
                     <option value="" disabled selected>
-
                         Choisir le niveau
-
                     </option>
 
                     <option value="Débutant">
-
                         Débutant
-
                     </option>
 
                     <option value="Intermédiaire">
-
                         Intermédiaire
-
                     </option>
 
                     <option value="Avancé">
-
                         Avancé
-
                     </option>
 
                     <option value="Expert">
-
                         Expert
-
                     </option>
 
                 </select>
 
                 <label>
-
                     Niveau de maîtrise
-
                 </label>
 
             </div>
@@ -406,16 +474,14 @@ $competences = mysqli_stmt_get_result($stmt);
             <div class="input-field">
 
                 <input
-                type="number"
-                name="years_experience"
-                min="0"
-                value="0"
-                required>
+                    type="number"
+                    name="years_experience"
+                    min="0"
+                    value="0"
+                    required>
 
                 <label class="active">
-
                     Années d'expérience
-
                 </label>
 
             </div>
@@ -423,14 +489,12 @@ $competences = mysqli_stmt_get_result($stmt);
             <div class="input-field">
 
                 <textarea
-                name="description"
-                id="description"
-                class="materialize-textarea"></textarea>
+                    name="description"
+                    id="description"
+                    class="materialize-textarea"></textarea>
 
                 <label for="description">
-
                     Description complémentaire
-
                 </label>
 
             </div>
@@ -438,13 +502,11 @@ $competences = mysqli_stmt_get_result($stmt);
             <div style="margin-top:25px;">
 
                 <button
-                type="submit"
-                class="btn-large teal">
+                    type="submit"
+                    class="btn-large teal">
 
                     <i class="material-icons left">
-
                         save
-
                     </i>
 
                     Enregistrer
@@ -459,6 +521,104 @@ $competences = mysqli_stmt_get_result($stmt);
 
 </div>
 
+
+<div id="modalEditSkill" class="modal">
+
+    <div class="modal-content">
+
+        <h4>
+            Modifier la compétence
+        </h4>
+
+        <form
+            action="update-skill.php"
+            method="POST">
+
+            <input
+                type="hidden"
+                name="skill_id"
+                id="edit_skill_id">
+
+            <div class="input-field">
+
+                <select
+                    name="level"
+                    id="edit_level"
+                    required>
+
+                    <option value="Débutant">
+                        Débutant
+                    </option>
+
+                    <option value="Intermédiaire">
+                        Intermédiaire
+                    </option>
+
+                    <option value="Avancé">
+                        Avancé
+                    </option>
+
+                    <option value="Expert">
+                        Expert
+                    </option>
+
+                </select>
+
+                <label>
+                    Niveau de maîtrise
+                </label>
+
+            </div>
+
+            <div class="input-field">
+
+                <input
+                    type="number"
+                    name="years_experience"
+                    id="edit_years_experience"
+                    min="0"
+                    required>
+
+                <label class="active">
+                    Années d'expérience
+                </label>
+
+            </div>
+
+            <div class="input-field">
+
+                <textarea
+                    name="description"
+                    id="edit_description"
+                    class="materialize-textarea"></textarea>
+
+                <label class="active">
+                    Description complémentaire
+                </label>
+
+            </div>
+
+            <div style="margin-top:25px;">
+
+                <button
+                    type="submit"
+                    class="btn-large orange">
+
+                    <i class="material-icons left">
+                        save
+                    </i>
+
+                    Mettre à jour
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
 <script>
@@ -474,6 +634,41 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('select');
 
     M.FormSelect.init(selects);
+
+});
+
+</script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    var elems = document.querySelectorAll('.edit-skill-btn');
+
+    for(var i = 0; i < elems.length; i++)
+    {
+        elems[i].addEventListener('click', function() {
+
+            document.getElementById('edit_skill_id').value =
+                this.getAttribute('data-id');
+
+            document.getElementById('edit_years_experience').value =
+                this.getAttribute('data-years');
+
+            document.getElementById('edit_description').value =
+                this.getAttribute('data-description');
+
+            document.getElementById('edit_level').value =
+                this.getAttribute('data-level');
+
+            M.FormSelect.init(
+                document.querySelectorAll('select')
+            );
+
+            M.updateTextFields();
+
+        });
+    }
 
 });
 

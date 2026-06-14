@@ -2547,3 +2547,17 @@ footer{
     border-radius:20px;
 
 }
+#videoModal {
+    width: 95% !important;
+    max-height: 85% !important;
+    height: 95% !important;
+    top: 2% !important;
+}
+
+#videoModal .modal-content {
+    padding: 15px;
+}
+
+#videoModal .modal-footer {
+    padding-right: 20px;
+}

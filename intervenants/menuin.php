@@ -192,7 +192,7 @@ if(!$userMenu){
 
         <!-- MISSIONS -->
 
-        <a href="missions.php"
+        <a href="mes-missions.php"
            class="<?= ($current_page == 'missions') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -200,19 +200,6 @@ if(!$userMenu){
             </i>
 
             Mes Missions
-
-        </a>
-
-        <!-- EVALUATIONS -->
-
-        <a href="evaluations.php"
-           class="<?= ($current_page == 'evaluations') ? 'active' : ''; ?>">
-
-            <i class="material-icons">
-                star
-            </i>
-
-            Mes Évaluations
 
         </a>
 
@@ -231,7 +218,7 @@ if(!$userMenu){
 
         <!-- PARAMETRES -->
 
-        <a href="parametres.php"
+        <a href="parametres-intervenant.php"
            class="<?= ($current_page == 'parametres') ? 'active' : ''; ?>">
 
             <i class="material-icons">

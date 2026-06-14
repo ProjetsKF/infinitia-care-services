@@ -112,22 +112,21 @@ $intervenant = $result->fetch_assoc();
 
         <div class="profile-photo">
 
-            <?php if(!empty($intervenant['profile_photo'])): ?>
+               <?php if(!empty($intervenant['profile_photo'])): ?>
 
-                <img
-                src="../<?php echo $intervenant['profile_photo']; ?>"
-                alt="Photo de profil">
+                    <img
+                    src="../<?php echo htmlspecialchars($intervenant['profile_photo']); ?>"
+                    alt="Photo de profil">
 
-            <?php else: ?>
+                <?php else: ?>
 
-                <img
-                src="../assets/images/default-user.png"
-                alt="Photo de profil">
+                    <img
+                    src="../assets/images/default-user.png"
+                    alt="Photo de profil">
 
-            <?php endif; ?>
+                <?php endif; ?>
 
-        </div>
-
+            </div>
         <!-- INFOS -->
 
         <div class="profile-info">

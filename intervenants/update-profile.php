@@ -11,22 +11,16 @@ require_once("../config/database.php");
    VERIFICATION CONNEXION
 ========================================= */
 
-if(!isset($_SESSION["user_id"])){
-
+if(!isset($_SESSION["user_id"]))
+{
     header("Location: ../login.php");
     exit();
-
 }
 
-/* =========================================
-   VERIFICATION POST
-========================================= */
-
-if($_SERVER["REQUEST_METHOD"] !== "POST"){
-
+if($_SERVER["REQUEST_METHOD"] != "POST")
+{
     header("Location: profil.php");
     exit();
-
 }
 
 $user_id = (int)$_SESSION["user_id"];
@@ -35,69 +29,142 @@ $user_id = (int)$_SESSION["user_id"];
    RECUPERATION DONNEES
 ========================================= */
 
-$birth_date        = $_POST['birth_date'] ?? null;
-$gender            = $_POST['gender'] ?? '';
-$address           = trim($_POST['address'] ?? '');
-$city              = trim($_POST['city'] ?? '');
-$nationality       = trim($_POST['nationality'] ?? '');
-$marital_status    = trim($_POST['marital_status'] ?? '');
-$education_level   = trim($_POST['education_level'] ?? '');
-$experience_years  = !empty($_POST['experience_years'])
-                    ? (int)$_POST['experience_years']
-                    : 0;
-$bio               = trim($_POST['bio'] ?? '');
-$emergency_contact = trim($_POST['emergency_contact'] ?? '');
+$first_name = isset($_POST['first_name'])
+    ? trim($_POST['first_name'])
+    : '';
+
+$last_name = isset($_POST['last_name'])
+    ? trim($_POST['last_name'])
+    : '';
+
+$phone = isset($_POST['phone'])
+    ? trim($_POST['phone'])
+    : '';
+
+$city = isset($_POST['city'])
+    ? trim($_POST['city'])
+    : '';
+
+$address = isset($_POST['address'])
+    ? trim($_POST['address'])
+    : '';
 
 /* =========================================
-   RECHERCHE CANDIDAT
+   PHOTO PROFIL
+========================================= */
+
+$photo_sql = "";
+
+if(
+    isset($_FILES['profile_photo']) &&
+    $_FILES['profile_photo']['error'] == 0
+)
+{
+    $extension = strtolower(
+        pathinfo(
+            $_FILES['profile_photo']['name'],
+            PATHINFO_EXTENSION
+        )
+    );
+
+    $allowed = array(
+        'jpg',
+        'jpeg',
+        'png',
+        'gif'
+    );
+
+    if(in_array($extension, $allowed))
+    {
+        $new_name =
+            'profile_' .
+            $user_id .
+            '_' .
+            time() .
+            '.' .
+            $extension;
+
+        $upload_dir =
+            "../uploads/profiles/";
+
+        if(!is_dir($upload_dir))
+        {
+            mkdir(
+                $upload_dir,
+                0777,
+                true
+            );
+        }
+
+        $destination =
+            $upload_dir .
+            $new_name;
+
+        if(
+            move_uploaded_file(
+                $_FILES['profile_photo']['tmp_name'],
+                $destination
+            )
+        )
+        {
+            $photo_path =
+            "uploads/profiles/" .
+            $new_name;
+
+            $photo_sql =
+            ", profile_photo = '" .
+            mysqli_real_escape_string(
+                $conn,
+                $photo_path
+            ) .
+            "'";
+        }
+    }
+}
+
+/* =========================================
+   UPDATE USERS
 ========================================= */
 
 $sql = "
 
-SELECT id
+UPDATE users
 
-FROM candidates
+SET
 
-WHERE user_id = ?
+    first_name = ?,
+    last_name = ?,
+    phone = ?
 
-LIMIT 1
+    $photo_sql
+
+WHERE id = ?
 
 ";
 
 $stmt = mysqli_prepare($conn, $sql);
 
-if(!$stmt){
-
-    die("Erreur SQL : " . mysqli_error($conn));
-
+if(!$stmt)
+{
+    die(
+        "Erreur SQL users : "
+        . mysqli_error($conn)
+    );
 }
 
 mysqli_stmt_bind_param(
     $stmt,
-    "i",
+    "sssi",
+    $first_name,
+    $last_name,
+    $phone,
     $user_id
 );
 
 mysqli_stmt_execute($stmt);
 
-$result = mysqli_stmt_get_result($stmt);
-
-if(mysqli_num_rows($result) === 0){
-
-    $_SESSION["error"] =
-    "Profil intervenant introuvable.";
-
-    header("Location: profil.php");
-    exit();
-
-}
-
-$candidate = mysqli_fetch_assoc($result);
-
-$candidate_id = (int)$candidate['id'];
-
 /* =========================================
-   MISE A JOUR
+   UPDATE CANDIDATES
 ========================================= */
 
 $sql = "
@@ -106,62 +173,39 @@ UPDATE candidates
 
 SET
 
-    birth_date = ?,
-    gender = ?,
-    address = ?,
     city = ?,
-    nationality = ?,
-    marital_status = ?,
-    education_level = ?,
-    experience_years = ?,
-    bio = ?,
-    emergency_contact = ?
+    address = ?
 
-WHERE id = ?
+WHERE user_id = ?
 
 ";
 
 $stmt = mysqli_prepare($conn, $sql);
 
-if(!$stmt){
-
-    die("Erreur préparation UPDATE : "
-        . mysqli_error($conn));
-
+if(!$stmt)
+{
+    die(
+        "Erreur SQL candidates : "
+        . mysqli_error($conn)
+    );
 }
 
 mysqli_stmt_bind_param(
-
     $stmt,
-
-    "sssssssissi",
-
-    $birth_date,
-    $gender,
-    $address,
+    "ssi",
     $city,
-    $nationality,
-    $marital_status,
-    $education_level,
-    $experience_years,
-    $bio,
-    $emergency_contact,
-    $candidate_id
-
+    $address,
+    $user_id
 );
 
-if(mysqli_stmt_execute($stmt)){
+mysqli_stmt_execute($stmt);
 
-    $_SESSION["success"] =
-    "Profil mis à jour avec succès.";
+/* =========================================
+   MESSAGE
+========================================= */
 
-}else{
-
-    $_SESSION["error"] =
-    "Erreur UPDATE : "
-    . mysqli_stmt_error($stmt);
-
-}
+$_SESSION["success"] =
+"Profil mis à jour avec succès.";
 
 /* =========================================
    REDIRECTION
