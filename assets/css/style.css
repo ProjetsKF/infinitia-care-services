@@ -2561,3 +2561,68 @@ footer{
 #videoModal .modal-footer {
     padding-right: 20px;
 }
+
+.profile-photo-section{
+
+    width:180px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+}
+
+.experience-badge-photo{
+
+    width:100%;
+
+    margin-top:18px;
+
+    background:#ff9800;
+
+    color:#ffffff;
+
+    border-radius:30px;
+
+    padding:10px 15px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    text-align:center;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+.experience-badge-photo i{
+
+    font-size:18px;
+
+}
+
+.profile-actions{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.profile-actions .action-btn{
+
+    width:100%;
+
+}
+

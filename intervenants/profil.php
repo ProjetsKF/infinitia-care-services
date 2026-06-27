@@ -98,7 +98,7 @@ $intervenant = $result->fetch_assoc();
 
     ?>
 
-<div class="main-content">
+<div class="main-content" id="printArea">
     
     <div class="page-title">
     Mon Profil
@@ -110,23 +110,38 @@ $intervenant = $result->fetch_assoc();
 
         <!-- PHOTO -->
 
-        <div class="profile-photo">
+        <div class="profile-photo-section">
 
-               <?php if(!empty($intervenant['profile_photo'])): ?>
+            <div class="profile-photo">
+
+                <?php if(!empty($intervenant['profile_photo'])): ?>
 
                     <img
-                    src="../<?php echo htmlspecialchars($intervenant['profile_photo']); ?>"
-                    alt="Photo de profil">
+                        src="../<?php echo htmlspecialchars($intervenant['profile_photo']); ?>"
+                        alt="Photo de profil">
 
                 <?php else: ?>
 
                     <img
-                    src="../assets/images/default-user.png"
-                    alt="Photo de profil">
+                        src="../assets/images/default-user.png"
+                        alt="Photo de profil">
 
                 <?php endif; ?>
 
             </div>
+
+            <!-- EXPERIENCE -->
+
+            <div class="experience-badge-photo">
+
+                <i class="material-icons tiny">workspace_premium</i>
+
+                <?php echo (int)$intervenant['experience_years']; ?> ans d'expérience
+
+            </div>
+
+        </div>
+
         <!-- INFOS -->
 
         <div class="profile-info">
@@ -182,41 +197,46 @@ $intervenant = $result->fetch_assoc();
 
         <div class="profile-actions">
 
-            <div class="experience-badge">
+            <a
+                href="#!"
+                onclick="printProfile();"
+                class="btn-large blue darken-4 action-btn">
 
-                <?php echo (int)$intervenant['experience_years']; ?> ans exp.
+                <i class="material-icons left">print</i>
 
-            </div>
+                Imprimer le profil
 
-    <a
-href="#modalProfil"
-class="btn-large teal modal-trigger action-btn">
+            </a>
 
-    <i class="material-icons left">edit</i>
+            <a
+                href="#modalProfil"
+                class="btn-large teal modal-trigger action-btn">
 
-    Modifier mon profil
+                <i class="material-icons left">edit</i>
 
-</a>
+                Modifier mon profil
 
-<a
-href="#modalProfessionnel"
-class="btn-large orange modal-trigger action-btn">
+            </a>
 
-    <i class="material-icons left">work</i>
+            <a
+                href="#modalProfessionnel"
+                class="btn-large orange modal-trigger action-btn">
 
-    Infos professionnelles
+                <i class="material-icons left">work</i>
 
-</a>
+                Infos professionnelles
 
-<a
-href="#modalPassword"
-class="btn-large red modal-trigger action-btn">
+            </a>
 
-    <i class="material-icons left">lock</i>
+            <a
+                href="#modalPassword"
+                class="btn-large red modal-trigger action-btn">
 
-    Sécurité du compte
+                <i class="material-icons left">lock</i>
 
-</a>
+                Sécurité du compte
+
+            </a>
 
         </div>
 
@@ -370,6 +390,40 @@ class="btn-large red modal-trigger action-btn">
                        value="<?php echo htmlspecialchars($intervenant['phone']); ?>">
                 <label class="active">Téléphone</label>
             </div>
+            <div class="input-field">
+
+            <input
+                type="date"
+                name="birth_date"
+                value="<?php echo htmlspecialchars($intervenant['birth_date']); ?>">
+
+            <label class="active">
+                Date de naissance
+            </label>
+
+        </div>
+
+        <div class="input-field">
+
+    <select name="gender">
+
+        <option value="Homme"
+            <?php if($intervenant['gender']=="Homme"){ echo "selected"; } ?>>
+            Homme
+        </option>
+
+        <option value="Femme"
+            <?php if($intervenant['gender']=="Femme"){ echo "selected"; } ?>>
+            Femme
+        </option>
+
+    </select>
+
+    <label>
+        Sexe
+    </label>
+
+</div>
 
             <div class="input-field">
                 <input type="text"
@@ -637,6 +691,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     M.textareaAutoResize(textareas);
 
+    M.FormSelect.init(document.querySelectorAll('select'));
+
 });
 
 </script>
@@ -672,5 +728,52 @@ document.addEventListener('DOMContentLoaded', function(){
 <?php unset($_SESSION['error']); ?>
 
 <?php endif; ?>
+
+<script>
+
+function printProfile()
+{
+    var content = document.getElementById("printArea").innerHTML;
+
+    var printWindow = window.open("", "", "width=1000,height=800");
+
+    printWindow.document.open();
+
+    printWindow.document.write('\
+    <html>\
+    <head>\
+        <title>Profil intervenant</title>\
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">\
+        <link rel="stylesheet" href="../assets/css/materialize.min.css">\
+        <link rel="stylesheet" href="../assets/css/style.css">\
+        <style>\
+            body{\
+                margin:30px;\
+                background:#ffffff;\
+            }\
+            .action-btn,\
+            .modal-trigger,\
+            .topbar{\
+                display:none !important;\
+            }\
+        </style>\
+    </head>\
+    <body>' + content + '</body>\
+    </html>');
+
+    printWindow.document.close();
+
+    printWindow.focus();
+
+    setTimeout(function(){
+
+        printWindow.print();
+
+        printWindow.close();
+
+    },500);
+}
+
+</script>
 </body>
 </html>

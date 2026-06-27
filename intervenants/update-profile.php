@@ -41,6 +41,14 @@ $phone = isset($_POST['phone'])
     ? trim($_POST['phone'])
     : '';
 
+$birth_date = isset($_POST['birth_date'])
+    ? trim($_POST['birth_date'])
+    : NULL;
+
+$gender = isset($_POST['gender'])
+    ? trim($_POST['gender'])
+    : '';
+
 $city = isset($_POST['city'])
     ? trim($_POST['city'])
     : '';
@@ -77,23 +85,18 @@ if(
     if(in_array($extension, $allowed))
     {
         $new_name =
-            'profile_' .
+            "profile_" .
             $user_id .
-            '_' .
+            "_" .
             time() .
-            '.' .
+            "." .
             $extension;
 
-        $upload_dir =
-            "../uploads/profiles/";
+        $upload_dir = "../uploads/profiles/";
 
         if(!is_dir($upload_dir))
         {
-            mkdir(
-                $upload_dir,
-                0777,
-                true
-            );
+            mkdir($upload_dir,0777,true);
         }
 
         $destination =
@@ -108,16 +111,16 @@ if(
         )
         {
             $photo_path =
-            "uploads/profiles/" .
-            $new_name;
+                "uploads/profiles/" .
+                $new_name;
 
             $photo_sql =
-            ", profile_photo = '" .
-            mysqli_real_escape_string(
-                $conn,
-                $photo_path
-            ) .
-            "'";
+                ", profile_photo='" .
+                mysqli_real_escape_string(
+                    $conn,
+                    $photo_path
+                ) .
+                "'";
         }
     }
 }
@@ -142,26 +145,32 @@ WHERE id = ?
 
 ";
 
-$stmt = mysqli_prepare($conn, $sql);
+$stmt = mysqli_prepare($conn,$sql);
 
 if(!$stmt)
 {
     die(
-        "Erreur SQL users : "
-        . mysqli_error($conn)
+        "Erreur SQL USERS : " .
+        mysqli_error($conn)
     );
 }
 
 mysqli_stmt_bind_param(
+
     $stmt,
+
     "sssi",
+
     $first_name,
     $last_name,
     $phone,
     $user_id
+
 );
 
 mysqli_stmt_execute($stmt);
+
+mysqli_stmt_close($stmt);
 
 /* =========================================
    UPDATE CANDIDATES
@@ -173,6 +182,8 @@ UPDATE candidates
 
 SET
 
+    birth_date = ?,
+    gender = ?,
     city = ?,
     address = ?
 
@@ -180,25 +191,33 @@ WHERE user_id = ?
 
 ";
 
-$stmt = mysqli_prepare($conn, $sql);
+$stmt = mysqli_prepare($conn,$sql);
 
 if(!$stmt)
 {
     die(
-        "Erreur SQL candidates : "
-        . mysqli_error($conn)
+        "Erreur SQL CANDIDATES : " .
+        mysqli_error($conn)
     );
 }
 
 mysqli_stmt_bind_param(
+
     $stmt,
-    "ssi",
+
+    "ssssi",
+
+    $birth_date,
+    $gender,
     $city,
     $address,
     $user_id
+
 );
 
 mysqli_stmt_execute($stmt);
+
+mysqli_stmt_close($stmt);
 
 /* =========================================
    MESSAGE

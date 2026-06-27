@@ -27,116 +27,148 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         );
 
-        $stmt->bind_param(
-            "s",
-            $email
-        );
+        if(!$stmt){
 
-        $stmt->execute();
+            $_SESSION["error"] =
+            "Erreur de connexion à la base de données.";
 
-        $result =
-        $stmt->get_result();
+        }else{
 
-        if($result->num_rows > 0){
+            $stmt->bind_param(
+                "s",
+                $email
+            );
 
-            $user =
-            $result->fetch_assoc();
+            $stmt->execute();
 
-            if(password_verify(
-                $password,
-                $user["password"]
-            )){
+            $result = $stmt->get_result();
 
-                if($user["status"] != "active"){
+            if($result->num_rows > 0){
 
-                    $_SESSION["error"] =
-                    "Votre compte est inactif ou suspendu.";
+                $user = $result->fetch_assoc();
+
+                if(password_verify(
+                    $password,
+                    $user["password"]
+                )){
+
+                    /* =====================================
+                       VERIFICATION STATUT DU COMPTE
+                    ====================================== */
+
+                    if($user["status"] == "inactive"){
+
+                        $_SESSION["error"] =
+                        "Votre compte est en attente d'activation par l'administrateur.";
+
+                    }
+                    elseif($user["status"] == "suspended"){
+
+                        $_SESSION["error"] =
+                        "Votre compte est suspendu. Veuillez contacter l'administrateur.";
+
+                    }
+                    elseif($user["status"] != "active"){
+
+                        $_SESSION["error"] =
+                        "Votre compte est indisponible.";
+
+                    }
+                    else{
+
+                        /* =====================================
+                           CREATION SESSION
+                        ====================================== */
+
+                        $_SESSION["user_id"]    = $user["id"];
+                        $_SESSION["role_id"]    = $user["role_id"];
+                        $_SESSION["first_name"] = $user["first_name"];
+                        $_SESSION["last_name"]  = $user["last_name"];
+                        $_SESSION["email"]      = $user["email"];
+
+                        /* =====================================
+                           DERNIERE CONNEXION
+                        ====================================== */
+
+                        $update = $conn->prepare(
+
+                            "UPDATE users
+                             SET last_login = NOW()
+                             WHERE id = ?"
+
+                        );
+
+                        if($update){
+
+                            $update->bind_param(
+                                "i",
+                                $user["id"]
+                            );
+
+                            $update->execute();
+                            $update->close();
+
+                        }
+
+                        /* =====================================
+                           REDIRECTION SELON LE ROLE
+                        ====================================== */
+
+                        if($user["role_id"] == 1){
+
+                            header(
+                                "Location: admin/dashboard.php"
+                            );
+                            exit();
+
+                        }
+                        elseif($user["role_id"] == 2){
+
+                            header(
+                                "Location: clients/clidashboard.php"
+                            );
+                            exit();
+
+                        }
+                        elseif($user["role_id"] == 3){
+
+                            header(
+                                "Location: intervenants/candidashboard.php"
+                            );
+                            exit();
+
+                        }
+                        else{
+
+                            $_SESSION["error"] =
+                            "Rôle utilisateur invalide.";
+
+                        }
+
+                    }
 
                 }else{
 
-                    $_SESSION["user_id"] =
-                    $user["id"];
-
-                    $_SESSION["role_id"] =
-                    $user["role_id"];
-
-                    $_SESSION["first_name"] =
-                    $user["first_name"];
-
-                    $_SESSION["last_name"] =
-                    $user["last_name"];
-
-                    $_SESSION["email"] =
-                    $user["email"];
-
-                    // Mise à jour dernière connexion
-
-                    $update = $conn->prepare(
-
-                        "UPDATE users
-                         SET last_login = NOW()
-                         WHERE id = ?"
-
-                    );
-
-                    $update->bind_param(
-                        "i",
-                        $user["id"]
-                    );
-
-                    $update->execute();
-
-                    // REDIRECTION SELON ROLE
-
-                    if($user["role_id"] == 1){
-
-                        header(
-                            "Location: admin/dashboard.php"
-                        );
-
-                        exit();
-
-                    }
-
-                    elseif($user["role_id"] == 2){
-
-                        header(
-                            "Location: clients/clidashboard.php"
-                        );
-
-                        exit();
-
-                    }
-
-                    elseif($user["role_id"] == 3){
-
-                        header(
-                            "Location: intervenants/candidashboard.php"
-                        );
-
-                        exit();
-
-                    }
+                    $_SESSION["error"] =
+                    "Mot de passe incorrect.";
 
                 }
 
             }else{
 
                 $_SESSION["error"] =
-                "Mot de passe incorrect.";
+                "Adresse email introuvable.";
 
             }
 
-        }else{
-
-            $_SESSION["error"] =
-            "Adresse email introuvable.";
+            $stmt->close();
 
         }
 
     }
 
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">

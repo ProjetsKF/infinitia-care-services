@@ -176,8 +176,8 @@ $role_id = 3;
 
 $sql = "
 
-INSERT INTO users(
-
+INSERT INTO users
+(
     role_id,
     first_name,
     last_name,
@@ -186,11 +186,9 @@ INSERT INTO users(
     password,
     profile_photo,
     status
-
 )
-
-VALUES(
-
+VALUES
+(
     ?,
     ?,
     ?,
@@ -198,8 +196,7 @@ VALUES(
     ?,
     ?,
     ?,
-    'active'
-
+    'inactive'
 )
 
 ";
