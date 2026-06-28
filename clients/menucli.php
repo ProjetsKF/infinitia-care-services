@@ -145,7 +145,7 @@ $client = $resultUser->fetch_assoc();
 
             </i>
 
-            Évaluation des services
+            Évaluation
 
         </a>
 
