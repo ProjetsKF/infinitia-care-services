@@ -1,3 +1,345 @@
+<?php
+
+session_start();
+
+require_once("../config/database.php");
+
+if(!isset($_SESSION["user_id"])){
+
+    header("Location: ../login.php");
+    exit();
+
+}
+
+if(!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2){
+
+    header("Location: ../login.php");
+    exit();
+
+}
+
+$user_id = (int)$_SESSION["user_id"];
+$client_id = 0;
+$intervenants = array();
+
+function safe_text($value)
+{
+    if($value === NULL || $value === ""){
+
+        return "";
+
+    }
+
+    return htmlspecialchars($value, ENT_QUOTES, "UTF-8");
+}
+
+function array_text($row, $key)
+{
+    if(isset($row[$key]) && $row[$key] !== NULL){
+
+        return $row[$key];
+
+    }
+
+    return "";
+}
+
+function format_date_fr($value)
+{
+    if($value === NULL || $value === ""){
+
+        return "";
+
+    }
+
+    $timestamp = strtotime($value);
+
+    if($timestamp === false){
+
+        return "";
+
+    }
+
+    return date("d/m/Y", $timestamp);
+}
+
+function mission_status_class($status)
+{
+    if($status == "en_attente"){
+
+        return "orange";
+
+    }
+
+    if($status == "affectee"){
+
+        return "blue";
+
+    }
+
+    if($status == "en_cours"){
+
+        return "green";
+
+    }
+
+    if($status == "terminee"){
+
+        return "grey";
+
+    }
+
+    return "grey";
+}
+
+function availability_status_class($status)
+{
+    if($status == "disponible"){
+
+        return "green";
+
+    }
+
+    if($status == "hors_ligne"){
+
+        return "red";
+
+    }
+
+    if($status != ""){
+
+        return "orange";
+
+    }
+
+    return "grey";
+}
+
+function status_label($status)
+{
+    if($status == "en_attente"){
+
+        return "En attente";
+
+    }
+
+    if($status == "affectee"){
+
+        return "Affectee";
+
+    }
+
+    if($status == "en_cours"){
+
+        return "En cours";
+
+    }
+
+    if($status == "terminee"){
+
+        return "Terminee";
+
+    }
+
+    if($status == "annulee"){
+
+        return "Annulee";
+
+    }
+
+    if($status == "disponible"){
+
+        return "Disponible";
+
+    }
+
+    if($status == "hors_ligne"){
+
+        return "Hors ligne";
+
+    }
+
+    if($status != ""){
+
+        return ucfirst(str_replace("_", " ", $status));
+
+    }
+
+    return "Non renseigne";
+}
+
+function urgency_label($urgency)
+{
+    if($urgency == "low"){
+
+        return "Faible";
+
+    }
+
+    if($urgency == "medium"){
+
+        return "Moyenne";
+
+    }
+
+    if($urgency == "high"){
+
+        return "Elevee";
+
+    }
+
+    return "Non renseigne";
+}
+
+function profile_photo_path($profile_photo)
+{
+    if($profile_photo === NULL || $profile_photo === ""){
+
+        return "../assets/images/default-user.png";
+
+    }
+
+    if(strpos($profile_photo, "uploads/") === 0){
+
+        return "../" . $profile_photo;
+
+    }
+
+    return "../uploads/profiles/" . $profile_photo;
+}
+
+$sql = "
+
+SELECT id
+FROM clients
+WHERE user_id = ?
+LIMIT 1
+
+";
+
+$stmt = mysqli_prepare($conn, $sql);
+
+if(!$stmt){
+
+    die("Erreur SQL : " . mysqli_error($conn));
+
+}
+
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_bind_result($stmt, $client_id);
+mysqli_stmt_fetch($stmt);
+mysqli_stmt_close($stmt);
+
+if($client_id <= 0){
+
+    header("Location: ../login.php");
+    exit();
+
+}
+
+$sql = "
+
+SELECT
+    m.id AS mission_id,
+    m.mission_status,
+    m.start_time,
+    m.end_time,
+
+    sr.id AS request_id,
+    sr.title,
+    sr.service_date,
+    sr.location,
+    sr.budget,
+    sr.urgency_level,
+
+    c.id AS candidate_id,
+    c.gender,
+    c.city,
+    c.experience_years,
+    c.availability_status,
+
+    u.first_name,
+    u.last_name,
+    u.profile_photo
+
+FROM service_requests sr
+
+INNER JOIN missions m
+ON m.service_request_id = sr.id
+
+INNER JOIN candidates c
+ON c.id = m.candidate_id
+
+INNER JOIN users u
+ON u.id = c.user_id
+
+WHERE sr.client_id = ?
+
+ORDER BY sr.service_date DESC, m.created_at DESC
+
+";
+
+$stmt = mysqli_prepare($conn, $sql);
+
+if(!$stmt){
+
+    die("Erreur SQL : " . mysqli_error($conn));
+
+}
+
+mysqli_stmt_bind_param($stmt, "i", $client_id);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_bind_result(
+    $stmt,
+    $mission_id,
+    $mission_status,
+    $start_time,
+    $end_time,
+    $request_id,
+    $title,
+    $service_date,
+    $location,
+    $budget,
+    $urgency_level,
+    $candidate_id,
+    $gender,
+    $city,
+    $experience_years,
+    $availability_status,
+    $first_name,
+    $last_name,
+    $profile_photo
+);
+
+while(mysqli_stmt_fetch($stmt)){
+
+    $intervenants[] = array(
+        "mission_id" => $mission_id,
+        "mission_status" => $mission_status,
+        "start_time" => $start_time,
+        "end_time" => $end_time,
+        "request_id" => $request_id,
+        "title" => $title,
+        "service_date" => $service_date,
+        "location" => $location,
+        "budget" => $budget,
+        "urgency_level" => $urgency_level,
+        "candidate_id" => $candidate_id,
+        "gender" => $gender,
+        "city" => $city,
+        "experience_years" => $experience_years,
+        "availability_status" => $availability_status,
+        "first_name" => $first_name,
+        "last_name" => $last_name,
+        "profile_photo" => $profile_photo
+    );
+
+}
+
+mysqli_stmt_close($stmt);
+
+?>
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -11,7 +353,7 @@
 
     <title>
 
-        Intervenants
+        Mes intervenants | INFINITIA
 
     </title>
 
@@ -38,19 +380,14 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-       <link rel="stylesheet" href="../assets/css/style.css">
 
-    <!-- ICON -->
-
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="stylesheet" href="../assets/css/style.css">
 
 </head>
 
 <body>
 
     <div class="dashboard">
-
-        
 
        <?php
 
@@ -68,252 +405,329 @@
 
             <!-- TOPBAR -->
 
-        <div class="topbar">
+            <div class="topbar">
 
-            <div>
+                <div>
 
-                <div class="page-title">
+                    <div class="page-title">
 
-                    <i class="material-icons left">
-                        groups
-                    </i>
+                        <i class="material-icons left">
+                            groups
+                        </i>
 
-                    Intervenants
+                        Mes intervenants
+
+                    </div>
+
+                    <div class="welcome-text">
+
+                        Consultez les intervenants affectes a vos demandes.
+
+                    </div>
 
                 </div>
 
-                <div class="welcome-text">
+            </div>
 
-                    Consultez les profils des intervenants disponibles et ceux affectés à vos demandes.
+            <?php if(count($intervenants) > 0){ ?>
+
+                <div class="row">
+
+                    <?php foreach($intervenants as $intervenant){ ?>
+
+                        <?php
+
+                        $mission_id_value = (int)array_text($intervenant, "mission_id");
+                        $candidate_id_value = (int)array_text($intervenant, "candidate_id");
+                        $first_name_value = array_text($intervenant, "first_name");
+                        $last_name_value = array_text($intervenant, "last_name");
+                        $full_name_value = trim($first_name_value . " " . $last_name_value);
+                        $gender_value = array_text($intervenant, "gender");
+                        $city_value = array_text($intervenant, "city");
+                        $experience_value = array_text($intervenant, "experience_years");
+                        $availability_value = array_text($intervenant, "availability_status");
+                        $mission_status_value = array_text($intervenant, "mission_status");
+                        $title_value = array_text($intervenant, "title");
+                        $service_date_value = array_text($intervenant, "service_date");
+                        $location_value = array_text($intervenant, "location");
+                        $budget_value = array_text($intervenant, "budget");
+                        $urgency_value = array_text($intervenant, "urgency_level");
+                        $start_time_value = array_text($intervenant, "start_time");
+                        $end_time_value = array_text($intervenant, "end_time");
+                        $profile_photo_value = array_text($intervenant, "profile_photo");
+                        $photo_path = profile_photo_path($profile_photo_value);
+
+                        if($full_name_value == ""){
+
+                            $full_name_value = "Intervenant";
+
+                        }
+
+                        $budget_label = "Non renseigne";
+
+                        if($budget_value !== ""){
+
+                            $budget_label = number_format((float)$budget_value, 2) . " USD";
+
+                        }
+
+                        ?>
+
+                        <div class="col s12 m6 l4">
+
+                            <div class="card hoverable">
+
+                                <div class="card-content">
+
+                                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+
+                                        <img src="<?php echo safe_text($photo_path); ?>"
+                                             alt="Photo intervenant"
+                                             width="68"
+                                             height="68"
+                                             style="border-radius:50%; object-fit:cover;">
+
+                                        <div>
+
+                                            <span class="card-title" style="font-weight:700; margin-bottom:4px;">
+
+                                                <?php echo safe_text($full_name_value); ?>
+
+                                            </span>
+
+                                            <span class="new badge <?php echo availability_status_class($availability_value); ?>"
+                                                  data-badge-caption="">
+
+                                                <?php echo safe_text(status_label($availability_value)); ?>
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="divider"></div>
+
+                                    <div style="margin-top:18px;">
+
+                                        <p>
+                                            <strong>Sexe :</strong>
+                                            <?php echo safe_text($gender_value != "" ? $gender_value : "Non renseigne"); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Ville :</strong>
+                                            <?php echo safe_text($city_value != "" ? $city_value : "Non renseigne"); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Experience :</strong>
+                                            <?php echo safe_text($experience_value !== "" ? $experience_value . " an(s)" : "Non renseigne"); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Service demande :</strong>
+                                            <?php echo safe_text($title_value != "" ? $title_value : "Non renseigne"); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Date prevue :</strong>
+                                            <?php echo safe_text(format_date_fr($service_date_value) != "" ? format_date_fr($service_date_value) : "Non renseigne"); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Lieu :</strong>
+                                            <?php echo safe_text($location_value != "" ? $location_value : "Non renseigne"); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Budget prevu :</strong>
+                                            <?php echo safe_text($budget_label); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Urgence :</strong>
+                                            <?php echo safe_text(urgency_label($urgency_value)); ?>
+                                        </p>
+
+                                        <p>
+                                            <strong>Mission :</strong>
+
+                                            <span class="new badge <?php echo mission_status_class($mission_status_value); ?>"
+                                                  data-badge-caption="">
+
+                                                <?php echo safe_text(status_label($mission_status_value)); ?>
+
+                                            </span>
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="card-action">
+
+                                    <a href="#profil<?php echo $candidate_id_value; ?>_<?php echo $mission_id_value; ?>"
+                                       class="modal-trigger blue-text">
+
+                                        Voir le profil
+
+                                    </a>
+
+                                    <a href="#mission<?php echo $mission_id_value; ?>"
+                                       class="modal-trigger green-text">
+
+                                        Voir la mission
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div id="profil<?php echo $candidate_id_value; ?>_<?php echo $mission_id_value; ?>"
+                             class="modal">
+
+                            <div class="modal-content">
+
+                                <h4>
+                                    <?php echo safe_text($full_name_value); ?>
+                                </h4>
+
+                                <p>
+                                    <strong>Sexe :</strong>
+                                    <?php echo safe_text($gender_value != "" ? $gender_value : "Non renseigne"); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Ville :</strong>
+                                    <?php echo safe_text($city_value != "" ? $city_value : "Non renseigne"); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Experience :</strong>
+                                    <?php echo safe_text($experience_value !== "" ? $experience_value . " an(s)" : "Non renseigne"); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Disponibilite :</strong>
+                                    <?php echo safe_text(status_label($availability_value)); ?>
+                                </p>
+
+                            </div>
+
+                            <div class="modal-footer">
+
+                                <a href="#!"
+                                   class="modal-close btn grey">
+
+                                    Fermer
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                        <div id="mission<?php echo $mission_id_value; ?>"
+                             class="modal">
+
+                            <div class="modal-content">
+
+                                <h4>
+                                    <?php echo safe_text($title_value != "" ? $title_value : "Mission"); ?>
+                                </h4>
+
+                                <p>
+                                    <strong>Date prevue :</strong>
+                                    <?php echo safe_text(format_date_fr($service_date_value) != "" ? format_date_fr($service_date_value) : "Non renseigne"); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Lieu :</strong>
+                                    <?php echo safe_text($location_value != "" ? $location_value : "Non renseigne"); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Budget :</strong>
+                                    <?php echo safe_text($budget_label); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Urgence :</strong>
+                                    <?php echo safe_text(urgency_label($urgency_value)); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Statut :</strong>
+                                    <?php echo safe_text(status_label($mission_status_value)); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Debut :</strong>
+                                    <?php echo safe_text(format_date_fr($start_time_value) != "" ? format_date_fr($start_time_value) : "Non renseigne"); ?>
+                                </p>
+
+                                <p>
+                                    <strong>Fin :</strong>
+                                    <?php echo safe_text(format_date_fr($end_time_value) != "" ? format_date_fr($end_time_value) : "Non renseigne"); ?>
+                                </p>
+
+                            </div>
+
+                            <div class="modal-footer">
+
+                                <a href="#!"
+                                   class="modal-close btn grey">
+
+                                    Fermer
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    <?php } ?>
 
                 </div>
 
-            </div>
+            <?php }else{ ?>
 
-        </div>
+                <div class="card">
 
-           <!-- STATISTIQUES -->
+                    <div class="card-content center">
 
-<div class="row">
-
-    <div class="col s12 m6 l4">
-
-        <div class="dashboard-card">
-
-            <div class="card-icon blue-gradient">
-
-                <i class="material-icons">
-
-                    groups
-
-                </i>
-
-            </div>
-
-            <h5>
-
-                Intervenants disponibles
-
-            </h5>
-
-            <h3>
-
-                12
-
-            </h3>
-
-        </div>
-
-    </div>
-
-    <div class="col s12 m6 l4">
-
-        <div class="dashboard-card">
-
-            <div class="card-icon pink-gradient">
-
-                <i class="material-icons">
-
-                    assignment_ind
-
-                </i>
-
-            </div>
-
-            <h5>
-
-                Affectés à vos missions
-
-            </h5>
-
-            <h3>
-
-                3
-
-            </h3>
-
-        </div>
-
-    </div>
-
-    <div class="col s12 m6 l4">
-
-        <div class="dashboard-card">
-
-            <div class="card-icon gold-gradient">
-
-                <i class="material-icons">
-
-                    star
-
-                </i>
-
-            </div>
-
-            <h5>
-
-                Note moyenne
-
-            </h5>
-
-            <h3>
-
-                4.8
-
-            </h3>
-
-        </div>
-
-    </div>
-
-</div>
-
-          <!-- LISTE DES INTERVENANTS -->
-
-<div class="table-card">
-
-    <div class="table-header">
-
-        <div class="table-title">
-
-            Liste des intervenants
-
-        </div>
-
-    </div>
-
-    <table class="highlight responsive-table">
-
-        <thead>
-
-            <tr>
-
-                <th>Photo</th>
-                <th>Nom</th>
-                <th>Spécialité</th>
-                <th>Ville</th>
-                <th>Expérience</th>
-                <th>Disponibilité</th>
-                <th>Note</th>
-                <th>Actions</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            <tr>
-
-                <td>
-
-                    <img src="../assets/images/default-user.png"
-                         width="50"
-                         style="border-radius:50%;">
-
-                </td>
-
-                <td>Marie Kasongo</td>
-
-                <td>Nettoyage résidentiel</td>
-
-                <td>Kolwezi</td>
-
-                <td>5 ans</td>
-
-                <td>
-
-                    <span class="status completed">
-                        Disponible
-                    </span>
-
-                </td>
-
-                <td>⭐ 4.9</td>
-
-                <td>
-
-                    <a href="#"
-                       class="blue-text">
-
-                        <i class="material-icons">
-                            visibility
+                        <i class="material-icons large blue-text text-darken-4">
+                            assignment_ind
                         </i>
 
-                    </a>
+                        <h5>
+                            Toutes vos demandes sont encore en attente d'affectation.
+                        </h5>
 
-                </td>
+                        <p class="grey-text text-darken-1">
+                            Des qu'un intervenant sera affecte a l'une de vos demandes, il apparaitra ici.
+                        </p>
 
-            </tr>
+                    </div>
 
-            <tr>
+                    <div class="card-action center">
 
-                <td>
+                        <a href="mes-demandes.php"
+                           class="btn modal-trigger waves-effect waves-light new-request-btn">
+            <i class="material-icons left">add</i>
+                            Nouvelle demande
 
-                    <img src="../assets/images/default-user.png"
-                         width="50"
-                         style="border-radius:50%;">
+                        </a>
 
-                </td>
+                    </div>
 
-                <td>Patrick Mutombo</td>
+                </div>
 
-                <td>Jardinage</td>
-
-                <td>Kolwezi</td>
-
-                <td>3 ans</td>
-
-                <td>
-
-                    <span class="status progress">
-                        Affecté
-                    </span>
-
-                </td>
-
-                <td>⭐ 4.7</td>
-
-                <td>
-
-                    <a href="#"
-                       class="blue-text">
-
-                        <i class="material-icons">
-                            visibility
-                        </i>
-
-                    </a>
-
-                </td>
-
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
+            <?php } ?>
 
         </div>
 
@@ -322,6 +736,18 @@
     <!-- MATERIALIZE JS -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        M.Modal.init(
+            document.querySelectorAll('.modal')
+        );
+
+    });
+
+    </script>
 
 </body>
 

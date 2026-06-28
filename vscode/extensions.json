@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "eamodio.gitlens",
+        "usernamehw.errorlens",
+        "pkief.material-icon-theme",
+        "mhutchie.git-graph",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "mehedidracula.php-namespace-resolver",
+        "xdebug.php-debug",
+        "esbenp.prettier-vscode"
+    ]
+}
