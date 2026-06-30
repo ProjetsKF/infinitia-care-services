@@ -36,7 +36,6 @@ session_start();
 
 <!-- CONTACT SECTION -->
 
-<!-- CONTACT SECTION -->
 
 <section class="section contact-section">
 
@@ -67,248 +66,232 @@ session_start();
         <div class="row contact-wrapper">
 
             <!-- LEFT SIDE -->
+<div class="col s12 l5">
 
-            <div class="col s12 l5">
+    <div class="contact-info-card">
 
-                <div class="contact-info-card">
+        <h4>Informations de contact</h4>
 
-                    <h4>
+        <!-- Adresse -->
 
-                        Informations de Contact
+        <div class="contact-item">
 
-                    </h4>
+            <div class="contact-icon blue darken-4">
+                <i class="material-icons">location_on</i>
+            </div>
 
-                    <!-- ITEM -->
+            <div class="contact-content">
 
-                    <div class="contact-item">
+                <h6>Adresse</h6>
 
-                        <div class="contact-icon blue darken-4">
-
-                            <i class="material-icons">
-
-                                location_on
-
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <h6>
-
-                                Adresse
-
-                            </h6>
-
-                            <p>
-
-                                02 Avenue Fridolin Mutunda,
-                                Quartier Joli Site,
-                                Commune de Manika,
-                                Kolwezi, Lualaba, RDC
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <!-- ITEM -->
-
-                    <div class="contact-item">
-
-                        <div class="contact-icon pink accent-2">
-
-                            <i class="material-icons">
-
-                                phone
-
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <h6>
-
-                                Téléphone
-
-                            </h6>
-
-                            <p>
-
-                                +243 843 794 809
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <!-- ITEM -->
-
-                    <div class="contact-item">
-
-                        <div class="contact-icon amber darken-2">
-
-                            <i class="material-icons">
-
-                                email
-
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <h6>
-
-                                Email
-
-                            </h6>
-
-                            <p>
-
-                                infinitiagroupsarlu@gmail.com
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <!-- ITEM -->
-
-                    <div class="contact-item">
-
-                        <div class="contact-icon green">
-
-                            <i class="material-icons">
-
-                                business_center
-
-                            </i>
-
-                        </div>
-
-                        <div>
-
-                            <h6>
-
-                                Nos Services
-
-                            </h6>
-
-                            <p>
-
-                                Recrutement • Plateformes numériques •
-                                Gestion RH • Services à domicile •
-                                Accompagnement des entreprises
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
+                <p>
+                    02 Avenue Fridolin Mutunda<br>
+                    Quartier Joli Site<br>
+                    Commune de Manika<br>
+                    Kolwezi - Lualaba - RDC
+                </p>
 
             </div>
 
-            <!-- RIGHT SIDE -->
+        </div>
 
-            <div class="col s12 l7">
+        <!-- Téléphone -->
 
-                <div class="contact-form-card">
+        <div class="contact-item">
 
-                    <h4>
+            <div class="contact-icon pink accent-2">
+                <i class="material-icons">phone</i>
+            </div>
 
-                        Envoyez-nous un message
+            <div class="contact-content">
 
-                    </h4>
+                <h6>Téléphone</h6>
 
-                    <form>
-
-                        <div class="row">
-
-                            <div class="input-field col s12 m6">
-
-                                <input type="text" id="name">
-
-                                <label for="name">
-
-                                    Nom complet
-
-                                </label>
-
-                            </div>
-
-                            <div class="input-field col s12 m6">
-
-                                <input type="text" id="phone">
-
-                                <label for="phone">
-
-                                    Téléphone
-
-                                </label>
-
-                            </div>
-
-                        </div>
-
-                        <div class="input-field">
-
-                            <input type="email" id="email">
-
-                            <label for="email">
-
-                                Adresse Email
-
-                            </label>
-
-                        </div>
-
-                        <div class="input-field">
-
-                            <input type="text" id="subject">
-
-                            <label for="subject">
-
-                                Sujet
-
-                            </label>
-
-                        </div>
-
-                        <div class="input-field">
-
-                            <textarea
-                            id="message"
-                            class="materialize-textarea"></textarea>
-
-                            <label for="message">
-
-                                Votre message
-
-                            </label>
-
-                        </div>
-
-                        <br>
-
-                        <button
-                        class="btn-large btn-primary waves-effect waves-light">
-
-                            Envoyer le message
-
-                        </button>
-
-                    </form>
-
-                </div>
+                <p>+243 843 794 809</p>
 
             </div>
+
+        </div>
+
+        <!-- Email -->
+
+        <div class="contact-item">
+
+            <div class="contact-icon amber darken-2">
+                <i class="material-icons">email</i>
+            </div>
+
+            <div class="contact-content">
+
+                <h6>Email</h6>
+
+                <p>infinitiagroupsarlu@gmail.com</p>
+
+            </div>
+
+        </div>
+
+        <!-- Services -->
+
+        <div class="contact-item">
+
+            <div class="contact-icon green">
+                <i class="material-icons">business_center</i>
+            </div>
+
+            <div class="contact-content">
+
+                <h6>Nos domaines d'activité</h6>
+
+                <p>
+                    Recrutement de personnel<br>
+                    Plateformes numériques<br>
+                    Gestion des ressources humaines<br>
+                    Services à domicile<br>
+                    Accompagnement des entreprises
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+           <!-- RIGHT SIDE -->
+
+<div class="col s12 l7">
+
+    <div class="contact-form-card modern-contact-form">
+
+        <h4>
+            Envoyez-nous un message
+        </h4>
+
+       <form action="send-contact-message.php" method="POST">
+
+    <div class="row">
+
+        <div class="input-field col s12 m6">
+
+            <input
+                type="text"
+                id="name"
+                name="name"
+                class="contact-input"
+                required>
+
+            <label for="name">
+                Nom complet
+            </label>
+
+        </div>
+
+        <div class="input-field col s12 m6">
+
+            <input
+                type="text"
+                id="phone"
+                name="phone"
+                class="contact-input"
+                required>
+
+            <label for="phone">
+                Téléphone
+            </label>
+
+        </div>
+
+    </div>
+
+    <div class="input-field">
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            class="contact-input"
+            required>
+
+        <label for="email">
+            Adresse Email
+        </label>
+
+    </div>
+
+    <div class="input-field">
+
+        <input
+            type="text"
+            id="subject"
+            name="subject"
+            class="contact-input"
+            required>
+
+        <label for="subject">
+            Sujet
+        </label>
+
+    </div>
+
+    <div class="input-field">
+
+        <textarea
+            id="message"
+            name="message"
+            class="materialize-textarea contact-input contact-textarea"
+            required></textarea>
+
+        <label for="message">
+            Votre message
+        </label>
+
+    </div>
+
+    <button
+        type="submit"
+        class="btn-large contact-submit waves-effect waves-light">
+
+        Envoyer le message
+
+        <i class="material-icons right">
+            send
+        </i>
+
+    </button>
+
+</form>
+
+<?php if(isset($_SESSION["contact_success"])): ?>
+
+<div class="success-message" id="successMessage">
+
+    <span>
+
+        <?php
+            echo $_SESSION["contact_success"];
+            unset($_SESSION["contact_success"]);
+        ?>
+
+    </span>
+
+    <button
+        type="button"
+        class="close-message"
+        onclick="document.getElementById('successMessage').style.display='none';">
+
+        &times;
+
+    </button>
+
+</div>
+
+<?php endif; ?>
+    </div>
+
+</div>
 
         </div>
 

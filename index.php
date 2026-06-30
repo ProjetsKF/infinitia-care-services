@@ -26,7 +26,9 @@ session_start();
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-
+    
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
 </head>
 
@@ -79,15 +81,13 @@ session_start();
 
                             <!-- DEMANDE SERVICE -->
 
-                            <a href="guest-request.php"
-                            class="btn-large btn-secondary waves-effect waves-light">
+                            <a href="tout_intervenants.php"
+                           class="btn-large btn-secondary waves-effect waves-light">
 
-                                Soumettre une demande
+                                Voir les intervenants
 
                                 <i class="material-icons right">
-
-                                    assignment
-
+                                    people
                                 </i>
 
                             </a>
@@ -111,114 +111,82 @@ session_start();
             <div class="center">
 
                 <h3>
-                    Nos Services
+
+                    Pourquoi choisir INFINITIA GROUP SARLU ?
+
                 </h3>
 
-                <p>
-                    Une plateforme complète pour la gestion
-                    des services professionnels.
+               <p>
+
+                    INFINITIA GROUP SARLU s'engage à fournir des solutions fiables,
+                    innovantes et adaptées aux besoins de ses clients grâce à une
+                    approche centrée sur la qualité, la réactivité et l'excellence
+                    opérationnelle.
+
                 </p>
 
             </div>
 
             <br><br>
 
-            <div class="row">
 
-                <!-- CARD -->
+   <!-- SERRRRRVICESSSSSSSSSSS-->
 
-                <div class="col s12 m4">
+       <div class="row">
 
-                    <div class="card service-card">
-
-                        <div class="card-content center">
-
-                            <i class="material-icons large blue-text">
-                                groups
-                            </i>
-
-                            <span class="card-title">
-
-                                Candidats
-
-                            </span>
-
-                            <p>
-
-                                Gestion des profils candidats
-                                et documents professionnels.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- CARD -->
-
-                <div class="col s12 m4">
-
-                    <div class="card service-card">
-
-                        <div class="card-content center">
-
-                            <i class="material-icons large green-text">
-                                assignment
-                            </i>
-
-                            <span class="card-title">
-
-                                Missions
-
-                            </span>
-
-                            <p>
-
-                                Affectation et suivi
-                                des missions de travail.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <!-- CARD -->
-
-                <div class="col s12 m4">
-
-                    <div class="card service-card">
-
-                        <div class="card-content center">
-
-                            <i class="material-icons large orange-text">
-                                school
-                            </i>
-
-                            <span class="card-title">
-
-                                Formations
-
-                            </span>
-
-                            <p>
-
-                                Gestion des formations
-                                et certifications.
-
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
+    <div class="col s12 m6 l3">
+        <div class="card service-card">
+            <div class="card-content center">
+                <i class="material-icons large blue-text">verified_user</i>
+                <span class="card-title">Fiabilité</span>
+                <p>
+                    Des profils vérifiés, un suivi structuré et des services organisés
+                    pour garantir une expérience professionnelle.
+                </p>
             </div>
+        </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+        <div class="card service-card">
+            <div class="card-content center">
+                <i class="material-icons large green-text">speed</i>
+                <span class="card-title">Réactivité</span>
+                <p>
+                    Une prise en charge rapide des besoins grâce à une organisation
+                    claire et des outils numériques adaptés.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+        <div class="card service-card">
+            <div class="card-content center">
+                <i class="material-icons large orange-text">groups</i>
+                <span class="card-title">Réseau qualifié</span>
+                <p>
+                    Un réseau d’intervenants, partenaires et compétences mobilisables
+                    selon les besoins des clients.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col s12 m6 l3">
+        <div class="card service-card">
+            <div class="card-content center">
+                <i class="material-icons large purple-text">insights</i>
+                <span class="card-title">Innovation</span>
+                <p>
+                    Des solutions modernes pour améliorer la gestion des services,
+                    des missions et des relations clients.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
 
         </div>
 
@@ -248,6 +216,13 @@ session_start();
         });
 
     </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.modal');
+    M.Modal.init(elems);
+});
+</script>
 
 </body>
 

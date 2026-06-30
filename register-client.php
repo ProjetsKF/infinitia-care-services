@@ -691,8 +691,8 @@ enctype="multipart/form-data">
 
             </i>
 
-            Ajouter une photo de profil
-            (JPG, PNG - max 5 MB)
+            Ajouter une photo de profil ou un logo d'entreprise (JPG, PNG - max 5 MB)
+
 
         </div>
 

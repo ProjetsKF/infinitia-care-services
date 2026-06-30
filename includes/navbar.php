@@ -1,4 +1,9 @@
 <!-- NAVBAR -->
+<?php
+
+$current_page = basename($_SERVER['PHP_SELF']);
+
+?>
 
 <nav class="blue darken-4">
 
@@ -38,21 +43,33 @@
             gap:15px;
             margin:0;">
 
-            <li>
-                <a href="index.php">Accueil</a>
-            </li>
+           <li>
+    <a href="index.php"
+       class="<?= ($current_page == 'index.php') ? 'active-nav' : ''; ?>">
+        Accueil
+    </a>
+</li>
 
-            <li>
-                <a href="services.php">Services</a>
-            </li>
+<li>
+    <a href="services.php"
+       class="<?= ($current_page == 'services.php') ? 'active-nav' : ''; ?>">
+        Services
+    </a>
+</li>
 
-            <li>
-                <a href="about.php">À propos</a>
-            </li>
+<li>
+    <a href="about.php"
+       class="<?= ($current_page == 'about.php') ? 'active-nav' : ''; ?>">
+        À propos
+    </a>
+</li>
 
-            <li>
-                <a href="contact.php">Contact</a>
-            </li>
+<li>
+    <a href="contact.php"
+       class="<?= ($current_page == 'contact.php') ? 'active-nav' : ''; ?>">
+        Contact
+    </a>
+</li>
 
             <li>
 

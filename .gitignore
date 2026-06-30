@@ -141,3 +141,32 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ==========================================
+# INFINITIA GROUP SARLU
+# ==========================================
+
+# Configuration SMTP (ne jamais publier)
+config/mail.php
+
+# Configuration locale (si utilisée)
+config/local.php
+
+# Sauvegardes
+*.bak
+*.old
+
+# Logs PHP
+*.log
+
+# Uploads temporaires (optionnel)
+uploads/tmp/
+
+# Cache
+cache/
+
+# Fichiers système Windows
+Thumbs.db
+
+# Fichiers système macOS
+.DS_Store
