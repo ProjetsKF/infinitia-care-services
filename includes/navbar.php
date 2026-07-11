@@ -16,7 +16,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         <!-- LOGO -->
 
-        <a href="index.php"
+        <a href="http://127.0.0.1:8080/www.infinitia-group.cd/index.php"
            class="brand-logo"
            style="
            position:relative;
