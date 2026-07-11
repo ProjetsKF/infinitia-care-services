@@ -361,10 +361,25 @@ $intervenant = $result->fetch_assoc();
         <!-- MODAL MODIFICATION N°1 -->
 
   <div id="modalProfil" class="modal">
+                    <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                padding:28px 40px;
+                                border-radius:18px 18px 0 0;
+                            ">
 
-    <div class="modal-content">
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                Modifier mon profil Intervenant
+                                </h4>
 
-        <h4>Modifier mon profil</h4>
+                            </div>
+
+    <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+
 
         <form action="update-profile.php"
               method="POST"
@@ -482,10 +497,25 @@ $intervenant = $result->fetch_assoc();
  <!-- MODAL MODIFICATION N°2 -->
 
 <div id="modalProfessionnel" class="modal">
+    <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                padding:28px 40px;
+                                border-radius:18px 18px 0 0;
+                            ">
 
-    <div class="modal-content">
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                Informations professionnelles
+                                </h4>
 
-        <h4>Informations professionnelles</h4>
+                            </div>
+
+    <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+
 
         <form action="update-professional-profile.php"
               method="POST">

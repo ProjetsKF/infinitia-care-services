@@ -560,7 +560,24 @@ mysqli_stmt_close($stmt);
                     <div id="mission<?php echo $mission_id_value; ?>"
                          class="modal">
 
-                        <div class="modal-content">
+                          <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                padding:28px 40px;
+                                border-radius:18px 18px 0 0;
+                            ">
+
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                Mission Details
+                                </h4>
+
+                            </div>
+
+                        <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
 
                             <h4>
                                 <?php echo safe_text($title_value != "" ? $title_value : "Mission"); ?>

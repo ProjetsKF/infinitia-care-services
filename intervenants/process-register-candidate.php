@@ -1,183 +1,174 @@
-```php
 <?php
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 session_start();
 
 require_once("../config/database.php");
 
-/* ==========================
-   VERIFICATION METHODE
-========================== */
+function redirect_with_error($message)
+{
+    $_SESSION["error"] = $message;
+    header("Location: ../register-candidate.php");
+    exit();
+}
 
 if($_SERVER["REQUEST_METHOD"] != "POST"){
 
-    die("Accès refusé");
+    redirect_with_error("Acces refuse.");
 
 }
 
-/* ==========================
-   RECUPERATION DONNEES
-========================== */
-
-$first_name        = trim($_POST['first_name']);
-$last_name         = trim($_POST['last_name']);
-$email             = trim($_POST['email']);
-$phone             = trim($_POST['phone']);
-
-$password          = $_POST['password'];
-$confirm_password  = $_POST['confirm_password'];
-
-$birth_date        = $_POST['birth_date'];
-$gender            = $_POST['gender'];
-
-$address           = trim($_POST['address']);
-$city              = trim($_POST['city']);
-$nationality       = trim($_POST['nationality']);
-
-$marital_status    = trim($_POST['marital_status']);
-$education_level   = trim($_POST['education_level']);
-
-$experience_years  = intval($_POST['experience_years']);
-
-$bio               = trim($_POST['bio']);
-
-$emergency_contact = trim($_POST['emergency_contact']);
-
-/* ==========================
-   VALIDATION
-========================== */
+$first_name = isset($_POST["first_name"]) ? trim($_POST["first_name"]) : "";
+$last_name = isset($_POST["last_name"]) ? trim($_POST["last_name"]) : "";
+$email = isset($_POST["email"]) ? trim($_POST["email"]) : "";
+$phone = isset($_POST["phone"]) ? trim($_POST["phone"]) : "";
+$password = isset($_POST["password"]) ? $_POST["password"] : "";
+$confirm_password = isset($_POST["confirm_password"]) ? $_POST["confirm_password"] : "";
+$birth_date = isset($_POST["birth_date"]) ? trim($_POST["birth_date"]) : "";
+$gender = isset($_POST["gender"]) ? trim($_POST["gender"]) : "";
+$address = isset($_POST["address"]) ? trim($_POST["address"]) : "";
+$city = isset($_POST["city"]) ? trim($_POST["city"]) : "";
+$nationality = isset($_POST["nationality"]) ? trim($_POST["nationality"]) : "";
+$marital_status = isset($_POST["marital_status"]) ? trim($_POST["marital_status"]) : "";
+$education_level = isset($_POST["education_level"]) ? trim($_POST["education_level"]) : "";
+$experience_years_raw = isset($_POST["experience_years"]) ? trim($_POST["experience_years"]) : "0";
+$bio = isset($_POST["bio"]) ? trim($_POST["bio"]) : "";
+$emergency_contact = isset($_POST["emergency_contact"]) ? trim($_POST["emergency_contact"]) : "";
 
 if(
-    empty($first_name) ||
-    empty($last_name) ||
-    empty($email) ||
-    empty($phone) ||
-    empty($password) ||
-    empty($confirm_password) ||
-    empty($birth_date) ||
-    empty($gender) ||
-    empty($address) ||
-    empty($city) ||
-    empty($nationality) ||
-    empty($marital_status) ||
-    empty($education_level) ||
-    empty($emergency_contact)
+    $first_name == "" ||
+    $last_name == "" ||
+    $email == "" ||
+    $phone == "" ||
+    $password == "" ||
+    $confirm_password == "" ||
+    $birth_date == "" ||
+    $gender == "" ||
+    $address == "" ||
+    $city == "" ||
+    $nationality == "" ||
+    $marital_status == "" ||
+    $education_level == "" ||
+    $emergency_contact == ""
 ){
 
-    die("Tous les champs obligatoires doivent être remplis.");
+    redirect_with_error("Tous les champs obligatoires doivent etre remplis.");
+
+}
+
+if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+
+    redirect_with_error("Adresse email invalide.");
+
+}
+
+if($gender != "Homme" && $gender != "Femme"){
+
+    redirect_with_error("Le sexe selectionne est invalide.");
 
 }
 
 if($password != $confirm_password){
 
-    die("Les mots de passe ne correspondent pas.");
+    redirect_with_error("Les mots de passe ne correspondent pas.");
 
 }
 
-/* ==========================
-   EMAIL EXISTANT ?
-========================== */
+if($experience_years_raw == ""){
 
-$sql = "SELECT id FROM users WHERE email = ?";
-
-$stmt = $conn->prepare($sql);
-
-$stmt->bind_param(
-    "s",
-    $email
-);
-
-$stmt->execute();
-
-$result = $stmt->get_result();
-
-if($result->num_rows > 0){
-
-    die("Cette adresse email existe déjà.");
+    $experience_years_raw = "0";
 
 }
 
-/* ==========================
-   PHOTO PROFIL
-========================== */
+if(!is_numeric($experience_years_raw) || (int)$experience_years_raw < 0){
+
+    redirect_with_error("Les annees d'experience doivent etre superieures ou egales a 0.");
+
+}
+
+$experience_years = (int)$experience_years_raw;
+
+$sql = "SELECT id FROM users WHERE email = ? LIMIT 1";
+$stmt = mysqli_prepare($conn, $sql);
+
+if(!$stmt){
+
+    redirect_with_error("Une erreur est survenue pendant la verification de l'email.");
+
+}
+
+mysqli_stmt_bind_param($stmt, "s", $email);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_store_result($stmt);
+
+if(mysqli_stmt_num_rows($stmt) > 0){
+
+    mysqli_stmt_close($stmt);
+    redirect_with_error("Cette adresse email existe deja.");
+
+}
+
+mysqli_stmt_close($stmt);
 
 $profile_photo = NULL;
+$uploaded_file_path = "";
 
-if(
-    isset($_FILES['profile_photo']) &&
-    $_FILES['profile_photo']['error'] == 0
-){
+if(isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] != UPLOAD_ERR_NO_FILE){
+
+    if($_FILES["profile_photo"]["error"] != UPLOAD_ERR_OK){
+
+        redirect_with_error("Le telechargement de la photo a echoue.");
+
+    }
+
+    $allowed_extensions = array("jpg", "jpeg", "png", "gif");
+    $extension = strtolower(pathinfo($_FILES["profile_photo"]["name"], PATHINFO_EXTENSION));
+
+    if(!in_array($extension, $allowed_extensions)){
+
+        redirect_with_error("Le format de la photo n'est pas autorise.");
+
+    }
 
     $upload_dir = "../uploads/profiles/";
 
     if(!is_dir($upload_dir)){
 
-        mkdir(
-            $upload_dir,
-            0777,
-            true
-        );
+        if(!mkdir($upload_dir, 0777, true)){
+
+            redirect_with_error("Impossible de preparer le dossier de telechargement.");
+
+        }
 
     }
 
-    $extension = pathinfo(
-        $_FILES['profile_photo']['name'],
-        PATHINFO_EXTENSION
-    );
+    $file_name = time() . "_" . uniqid() . "." . $extension;
+    $destination = $upload_dir . $file_name;
 
-    $file_name =
-    time() .
-    "_" .
-    uniqid() .
-    "." .
-    $extension;
+    if(!move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $destination)){
 
-    $destination =
-    $upload_dir .
-    $file_name;
-
-    if(
-        move_uploaded_file(
-            $_FILES['profile_photo']['tmp_name'],
-            $destination
-        )
-    ){
-
-        $profile_photo =
-        "uploads/profiles/" .
-        $file_name;
+        redirect_with_error("Le telechargement de la photo a echoue.");
 
     }
+
+    $uploaded_file_path = $destination;
+    $profile_photo = "uploads/profiles/" . $file_name;
 
 }
 
-/* ==========================
-   HASH PASSWORD
-========================== */
-
-$password_hash =
-password_hash(
-    $password,
-    PASSWORD_DEFAULT
-);
-
-/* ==========================
-   ROLE INTERVENANT
-========================== */
-
+$password_hash = password_hash($password, PASSWORD_DEFAULT);
 $role_id = 3;
+$availability_status = "hors_ligne";
+$verification_status = "en_attente";
+$user_id = 0;
+$transaction_ok = true;
+$error_message = "";
+$stmtUser = false;
+$stmtCandidate = false;
 
-/* ==========================
-   INSERTION USERS
-========================== */
+mysqli_autocommit($conn, false);
 
 $sql = "
-
-INSERT INTO users
-(
+INSERT INTO users(
     role_id,
     first_name,
     last_name,
@@ -187,8 +178,7 @@ INSERT INTO users
     profile_photo,
     status
 )
-VALUES
-(
+VALUES(
     ?,
     ?,
     ?,
@@ -198,143 +188,166 @@ VALUES
     ?,
     'inactive'
 )
-
 ";
 
-$stmt = $conn->prepare($sql);
+$stmtUser = mysqli_prepare($conn, $sql);
 
-if(!$stmt){
+if(!$stmtUser){
 
-    die($conn->error);
-
-}
-
-$stmt->bind_param(
-
-    "issssss",
-
-    $role_id,
-    $first_name,
-    $last_name,
-    $email,
-    $phone,
-    $password_hash,
-    $profile_photo
-
-);
-
-if(!$stmt->execute()){
-
-    die($stmt->error);
+    $transaction_ok = false;
+    $error_message = "Une erreur est survenue pendant la creation du compte.";
 
 }
 
-/* ==========================
-   USER ID
-========================== */
+if($transaction_ok){
 
-$user_id =
-$conn->insert_id;
+    mysqli_stmt_bind_param(
+        $stmtUser,
+        "issssss",
+        $role_id,
+        $first_name,
+        $last_name,
+        $email,
+        $phone,
+        $password_hash,
+        $profile_photo
+    );
 
-/* ==========================
-   INSERTION CANDIDATE
-========================== */
+    if(!mysqli_stmt_execute($stmtUser)){
 
-$availability_status =
-"hors_ligne";
+        $transaction_ok = false;
+        $error_message = "Une erreur est survenue pendant la creation du compte.";
 
-$verification_status =
-"en_attente";
+    }else{
 
-$sql = "
+        $user_id = mysqli_insert_id($conn);
 
-INSERT INTO candidates(
-
-    user_id,
-    birth_date,
-    gender,
-    address,
-    city,
-    nationality,
-    marital_status,
-    education_level,
-    experience_years,
-    bio,
-    availability_status,
-    verification_status,
-    emergency_contact
-
-)
-
-VALUES(
-
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?
-
-)
-
-";
-
-$stmt = $conn->prepare($sql);
-
-if(!$stmt){
-
-    die($conn->error);
+    }
 
 }
 
-$stmt->bind_param(
+if($stmtUser){
 
-    "isssssssissss",
-
-    $user_id,
-    $birth_date,
-    $gender,
-    $address,
-    $city,
-    $nationality,
-    $marital_status,
-    $education_level,
-    $experience_years,
-    $bio,
-    $availability_status,
-    $verification_status,
-    $emergency_contact
-
-);
-
-if(!$stmt->execute()){
-
-    die($stmt->error);
+    mysqli_stmt_close($stmtUser);
 
 }
 
-/* ==========================
-   SESSION
-========================== */
+if($transaction_ok && $user_id <= 0){
 
-$_SESSION['user_id'] = $user_id;
+    $transaction_ok = false;
+    $error_message = "Une erreur est survenue pendant la creation du compte.";
 
-/* ==========================
-   REDIRECTION
-========================== */
+}
 
-header(
-    "Location: candidashboard.php"
-);
+if($transaction_ok){
 
-exit();
+    $sql = "
+    INSERT INTO candidates(
+        user_id,
+        birth_date,
+        gender,
+        address,
+        city,
+        nationality,
+        marital_status,
+        education_level,
+        experience_years,
+        bio,
+        availability_status,
+        verification_status,
+        emergency_contact
+    )
+    VALUES(
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?
+    )
+    ";
+
+    $stmtCandidate = mysqli_prepare($conn, $sql);
+
+    if(!$stmtCandidate){
+
+        $transaction_ok = false;
+        $error_message = "Une erreur est survenue pendant la creation du profil intervenant.";
+
+    }
+
+    if($transaction_ok){
+
+        mysqli_stmt_bind_param(
+            $stmtCandidate,
+            "isssssssissss",
+            $user_id,
+            $birth_date,
+            $gender,
+            $address,
+            $city,
+            $nationality,
+            $marital_status,
+            $education_level,
+            $experience_years,
+            $bio,
+            $availability_status,
+            $verification_status,
+            $emergency_contact
+        );
+
+        if(!mysqli_stmt_execute($stmtCandidate)){
+
+            $transaction_ok = false;
+            $error_message = "Une erreur est survenue pendant la creation du profil intervenant.";
+
+        }
+
+    }
+
+    if($stmtCandidate){
+
+        mysqli_stmt_close($stmtCandidate);
+
+    }
+
+}
+
+if($transaction_ok){
+
+    mysqli_commit($conn);
+    mysqli_autocommit($conn, true);
+
+    $_SESSION["user_id"] = $user_id;
+
+    header("Location: candidashboard.php");
+    exit();
+
+}
+
+mysqli_rollback($conn);
+mysqli_autocommit($conn, true);
+
+if($uploaded_file_path != "" && file_exists($uploaded_file_path)){
+
+    unlink($uploaded_file_path);
+
+}
+
+if($error_message == ""){
+
+    $error_message = "Une erreur est survenue pendant la creation du compte.";
+
+}
+
+redirect_with_error($error_message . " Aucun compte incomplet n'a ete cree.");
 
 ?>
-```
+

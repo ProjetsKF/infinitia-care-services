@@ -106,91 +106,171 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
     <section class="section-services" id="services">
 
-        <div class="container">
+    <div class="container">
 
-            <div class="center">
+        <div class="center">
 
-                <h3>
+            <h3>
 
-                    Pourquoi choisir INFINITIA GROUP SARLU ?
+                Pourquoi choisir INFINITIA CARE SERVICES ?
 
-                </h3>
+            </h3>
 
-               <p>
+            <p>
 
-                    INFINITIA GROUP SARLU s'engage à fournir des solutions fiables,
-                    innovantes et adaptées aux besoins de ses clients grâce à une
-                    approche centrée sur la qualité, la réactivité et l'excellence
-                    opérationnelle.
+                INFINITIA Care Services facilite l’accès à des services de ménage
+                et d’entretien grâce à une plateforme numérique qui met en relation
+                les clients avec des intervenantes sélectionnées, formées et suivies.
 
-                </p>
+            </p>
 
-            </div>
-
-            <br><br>
-
-
-   <!-- SERRRRRVICESSSSSSSSSSS-->
-
-       <div class="row">
-
-    <div class="col s12 m6 l3">
-        <div class="card service-card">
-            <div class="card-content center">
-                <i class="material-icons large blue-text">verified_user</i>
-                <span class="card-title">Fiabilité</span>
-                <p>
-                    Des profils vérifiés, un suivi structuré et des services organisés
-                    pour garantir une expérience professionnelle.
-                </p>
-            </div>
         </div>
+
+        <br><br>
+
+        <div class="row services-row">
+
+            <!-- FIABILITE -->
+
+            <div class="col s12 m6 l3">
+
+                <div class="card service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large blue-text">
+
+                            verified_user
+
+                        </i>
+
+                        <span class="card-title">
+
+                            Profils vérifiés
+
+                        </span>
+
+                        <p>
+
+                            Les intervenantes passent par un processus de sélection,
+                            de vérification et d’évaluation avant d’être affectées
+                            aux demandes des clients.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- REACTIVITE -->
+
+            <div class="col s12 m6 l3">
+
+                <div class="card service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large green-text">
+
+                            speed
+
+                        </i>
+
+                        <span class="card-title">
+
+                            Prise en charge rapide
+
+                        </span>
+
+                        <p>
+
+                            Les demandes sont enregistrées, suivies et traitées
+                            rapidement afin de trouver une intervenante disponible
+                            selon le besoin du client.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- INTERVENANTES QUALIFIEES -->
+
+            <div class="col s12 m6 l3">
+
+                <div class="card service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large orange-text">
+
+                            groups
+
+                        </i>
+
+                        <span class="card-title">
+
+                            Intervenantes qualifiées
+
+                        </span>
+
+                        <p>
+
+                            La plateforme met à disposition des assistantes ménagères
+                            formées pour les services de ménage, de nettoyage,
+                            de lessive, de repassage et d’entretien.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SUIVI NUMERIQUE -->
+
+            <div class="col s12 m6 l3">
+
+                <div class="card service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large purple-text">
+
+                            dashboard
+
+                        </i>
+
+                        <span class="card-title">
+
+                            Suivi numérique
+
+                        </span>
+
+                        <p>
+
+                            Les clients peuvent soumettre leurs demandes,
+                            suivre les missions, consulter les intervenantes
+                            affectées et évaluer les services reçus.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="col s12 m6 l3">
-        <div class="card service-card">
-            <div class="card-content center">
-                <i class="material-icons large green-text">speed</i>
-                <span class="card-title">Réactivité</span>
-                <p>
-                    Une prise en charge rapide des besoins grâce à une organisation
-                    claire et des outils numériques adaptés.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col s12 m6 l3">
-        <div class="card service-card">
-            <div class="card-content center">
-                <i class="material-icons large orange-text">groups</i>
-                <span class="card-title">Réseau qualifié</span>
-                <p>
-                    Un réseau d’intervenants, partenaires et compétences mobilisables
-                    selon les besoins des clients.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col s12 m6 l3">
-        <div class="card service-card">
-            <div class="card-content center">
-                <i class="material-icons large purple-text">insights</i>
-                <span class="card-title">Innovation</span>
-                <p>
-                    Des solutions modernes pour améliorer la gestion des services,
-                    des missions et des relations clients.
-                </p>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-        </div>
-
-    </section>
+</section>
 
   
  <?php include "includes/footer.php"; ?>

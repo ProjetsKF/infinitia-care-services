@@ -286,7 +286,8 @@ enctype="multipart/form-data">
 
             <input
             type="date"
-            name="birth_date">
+            name="birth_date"
+            required>
 
             <label class="active">
                 Date de naissance
@@ -296,7 +297,7 @@ enctype="multipart/form-data">
 
         <div class="input-field col s12 m6">
 
-            <select name="gender">
+            <select name="gender" required>
 
                 <option value="" disabled selected>
                     Choisir
@@ -324,7 +325,8 @@ enctype="multipart/form-data">
 
             <textarea
             name="address"
-            class="materialize-textarea"></textarea>
+            class="materialize-textarea"
+            required></textarea>
 
             <label>Adresse</label>
 
@@ -338,7 +340,8 @@ enctype="multipart/form-data">
 
             <input
             type="text"
-            name="city">
+            name="city"
+            required>
 
             <label>Ville</label>
 
@@ -348,7 +351,8 @@ enctype="multipart/form-data">
 
             <input
             type="text"
-            name="nationality">
+            name="nationality"
+            required>
 
             <label>Nationalité</label>
 
@@ -362,7 +366,8 @@ enctype="multipart/form-data">
 
             <input
             type="text"
-            name="marital_status">
+            name="marital_status"
+            required>
 
             <label>État civil</label>
 
@@ -372,7 +377,8 @@ enctype="multipart/form-data">
 
             <input
             type="text"
-            name="education_level">
+            name="education_level"
+            required>
 
             <label>Niveau d'études</label>
 
@@ -400,7 +406,8 @@ enctype="multipart/form-data">
 
             <input
             type="text"
-            name="emergency_contact">
+            name="emergency_contact"
+            required>
 
             <label>
                 Contact d'urgence

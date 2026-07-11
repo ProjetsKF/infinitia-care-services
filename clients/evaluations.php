@@ -712,13 +712,30 @@ mysqli_stmt_close($stmt);
                     <div id="evaluation<?php echo $mission_id_value; ?>"
                          class="modal modal-fixed-footer">
 
+                          <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                padding:28px 40px;
+                                border-radius:18px 18px 0 0;
+                            ">
+
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                Evaluation de la mission
+                                </h4>
+
+                            </div>
+
                         <form action="evaluations.php" method="POST">
 
                             <input type="hidden"
                                    name="mission_id"
                                    value="<?php echo $mission_id_value; ?>">
 
-                            <div class="modal-content">
+                            <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
 
                                 <h4>
                                     <?php echo $review_id_value > 0 ? "Modifier l'evaluation" : "Evaluer la mission"; ?>
@@ -734,90 +751,115 @@ mysqli_stmt_close($stmt);
                                     <?php echo safe_text($full_name_value); ?>
                                 </p>
 
-                                <div class="row">
+                               <div class="row">
 
-                                    <div class="input-field col s12 m6">
+    <div class="input-field col s12 m6">
 
-                                        <input type="number"
-                                               min="1"
-                                               max="5"
-                                               name="note_generale"
-                                               id="note_generale<?php echo $mission_id_value; ?>"
-                                               value="<?php echo safe_text($note_generale_value); ?>"
-                                               required>
+        <input type="number"
+               min="1"
+               max="5"
+               name="note_generale"
+               id="note_generale<?php echo $mission_id_value; ?>"
+               value="<?php echo safe_text($note_generale_value); ?>"
+               placeholder="Attribuez une note de 1 à 5"
+               required>
 
-                                        <label class="active"
-                                               for="note_generale<?php echo $mission_id_value; ?>">
-                                            Note generale
-                                        </label>
+        <label class="active"
+               for="note_generale<?php echo $mission_id_value; ?>">
+            Note générale
+        </label>
 
-                                    </div>
+        <span class="helper-text">
+            Saisissez une note comprise entre <strong>1</strong> (Très mauvais) et <strong>5</strong> (Excellent).
+        </span>
 
-                                    <div class="input-field col s12 m6">
+    </div>
 
-                                        <input type="number"
-                                               min="1"
-                                               max="5"
-                                               name="note_ponctualite"
-                                               id="note_ponctualite<?php echo $mission_id_value; ?>"
-                                               value="<?php echo safe_text($note_ponctualite_value); ?>"
-                                               required>
+    <div class="input-field col s12 m6">
 
-                                        <label class="active"
-                                               for="note_ponctualite<?php echo $mission_id_value; ?>">
-                                            Note ponctualite
-                                        </label>
+        <input type="number"
+               min="1"
+               max="5"
+               name="note_ponctualite"
+               id="note_ponctualite<?php echo $mission_id_value; ?>"
+               value="<?php echo safe_text($note_ponctualite_value); ?>"
+               placeholder="Attribuez une note de 1 à 5"
+               required>
 
-                                    </div>
+        <label class="active"
+               for="note_ponctualite<?php echo $mission_id_value; ?>">
+            Ponctualité
+        </label>
 
-                                    <div class="input-field col s12 m6">
+        <span class="helper-text">
+            Saisissez une note comprise entre <strong>1</strong> (Très mauvais) et <strong>5</strong> (Excellent).
+        </span>
 
-                                        <input type="number"
-                                               min="1"
-                                               max="5"
-                                               name="note_professionnalisme"
-                                               id="note_professionnalisme<?php echo $mission_id_value; ?>"
-                                               value="<?php echo safe_text($note_professionnalisme_value); ?>"
-                                               required>
+    </div>
 
-                                        <label class="active"
-                                               for="note_professionnalisme<?php echo $mission_id_value; ?>">
-                                            Note professionnalisme
-                                        </label>
+    <div class="input-field col s12 m6">
 
-                                    </div>
+        <input type="number"
+               min="1"
+               max="5"
+               name="note_professionnalisme"
+               id="note_professionnalisme<?php echo $mission_id_value; ?>"
+               value="<?php echo safe_text($note_professionnalisme_value); ?>"
+               placeholder="Attribuez une note de 1 à 5"
+               required>
 
-                                    <div class="input-field col s12 m6">
+        <label class="active"
+               for="note_professionnalisme<?php echo $mission_id_value; ?>">
+            Professionnalisme
+        </label>
 
-                                        <input type="number"
-                                               min="1"
-                                               max="5"
-                                               name="note_qualite_service"
-                                               id="note_qualite_service<?php echo $mission_id_value; ?>"
-                                               value="<?php echo safe_text($note_qualite_service_value); ?>"
-                                               required>
+        <span class="helper-text">
+            Saisissez une note comprise entre <strong>1</strong> (Très mauvais) et <strong>5</strong> (Excellent).
+        </span>
 
-                                        <label class="active"
-                                               for="note_qualite_service<?php echo $mission_id_value; ?>">
-                                            Note qualite du service
-                                        </label>
+    </div>
 
-                                    </div>
+    <div class="input-field col s12 m6">
 
-                                    <div class="input-field col s12">
+        <input type="number"
+               min="1"
+               max="5"
+               name="note_qualite_service"
+               id="note_qualite_service<?php echo $mission_id_value; ?>"
+               value="<?php echo safe_text($note_qualite_service_value); ?>"
+               placeholder="Attribuez une note de 1 à 5"
+               required>
 
-                                        <textarea name="commentaire"
-                                                  id="commentaire<?php echo $mission_id_value; ?>"
-                                                  class="materialize-textarea"><?php echo safe_text($commentaire_value); ?></textarea>
+        <label class="active"
+               for="note_qualite_service<?php echo $mission_id_value; ?>">
+            Qualité du service
+        </label>
 
-                                        <label class="active"
-                                               for="commentaire<?php echo $mission_id_value; ?>">
-                                            Commentaire
-                                        </label>
+        <span class="helper-text">
+            Saisissez une note comprise entre <strong>1</strong> (Très mauvais) et <strong>5</strong> (Excellent).
+        </span>
 
-                                    </div>
+    </div>
 
-                                </div>
+    <div class="input-field col s12">
+
+        <textarea name="commentaire"
+                  id="commentaire<?php echo $mission_id_value; ?>"
+                  class="materialize-textarea"
+                  placeholder="Partagez votre expérience avec l'intervenant (facultatif)."><?php echo safe_text($commentaire_value); ?></textarea>
+
+        <label class="active"
+               for="commentaire<?php echo $mission_id_value; ?>">
+            Commentaire
+        </label>
+
+        <span class="helper-text">
+            Décrivez les points positifs, les difficultés rencontrées ou vos suggestions d'amélioration.
+        </span>
+
+    </div>
+
+</div>
 
                             </div>
 

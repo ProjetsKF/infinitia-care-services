@@ -26,7 +26,47 @@ if(!isset($_SESSION["user_id"])){
    AVEC PAGINATION
 ========================== */
 
-$user_id = $_SESSION["user_id"];
+$user_id = (int)$_SESSION["user_id"];
+$client_id = 0;
+
+$sqlClient = "
+    SELECT id
+    FROM clients
+    WHERE user_id = ?
+    LIMIT 1
+";
+
+$stmtClient = mysqli_prepare($conn, $sqlClient);
+
+if(!$stmtClient){
+
+    die("Erreur SQL client : " . mysqli_error($conn));
+
+}
+
+mysqli_stmt_bind_param(
+    $stmtClient,
+    "i",
+    $user_id
+);
+
+mysqli_stmt_execute($stmtClient);
+
+mysqli_stmt_bind_result(
+    $stmtClient,
+    $client_id
+);
+
+mysqli_stmt_fetch($stmtClient);
+
+mysqli_stmt_close($stmtClient);
+
+if($client_id <= 0){
+
+    header("Location: ../login.php");
+    exit();
+
+}
 
 /* Nombre de demandes par page */
 
@@ -58,10 +98,16 @@ $sqlCount = "SELECT COUNT(*) AS total
 
 $stmtCount = mysqli_prepare($conn, $sqlCount);
 
+if(!$stmtCount){
+
+    die("Erreur SQL comptage : " . mysqli_error($conn));
+
+}
+
 mysqli_stmt_bind_param(
     $stmtCount,
     "i",
-    $user_id
+    $client_id
 );
 
 mysqli_stmt_execute($stmtCount);
@@ -71,6 +117,8 @@ $resultCount = mysqli_stmt_get_result($stmtCount);
 $totalRows = mysqli_fetch_assoc($resultCount)['total'];
 
 $totalPages = ceil($totalRows / $limite);
+
+mysqli_stmt_close($stmtCount);
 
 /* ==========================
    RECUPERATION DES DEMANDES
@@ -84,10 +132,16 @@ $sql = "SELECT *
 
 $stmt = mysqli_prepare($conn, $sql);
 
+if(!$stmt){
+
+    die("Erreur SQL demandes : " . mysqli_error($conn));
+
+}
+
 mysqli_stmt_bind_param(
     $stmt,
     "iii",
-    $user_id,
+    $client_id,
     $limite,
     $offset
 );
@@ -899,6 +953,11 @@ while($modal = mysqli_fetch_assoc($result)):
 </div>
 
 <?php endwhile; ?>
+
+<?php
+mysqli_free_result($result);
+mysqli_stmt_close($stmt);
+?>
 
         </div>
 
