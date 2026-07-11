@@ -2976,3 +2976,26 @@ footer{
     overflow-y:auto;
 
 }
+.row.services-row{
+
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+
+}
+
+.row.services-row .col{
+
+    display:flex;
+
+}
+
+.service-card{
+
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+
+    min-height:280px;
+}

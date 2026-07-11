@@ -10,7 +10,7 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Infinitia Care Services</title>
+   <title>Nos services | INFINITIA CARE SERVICES</title>
 
     <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
 
@@ -37,23 +37,27 @@ session_start();
  
 <!-- SERVICES SECTION -->
 
+<!-- SERVICES SECTION -->
+
 <section class="section services-section">
 
     <div class="container">
 
         <!-- TITRE -->
 
-        <div class="center">
+        <div class="center services-header">
 
             <h3 class="blue-text text-darken-4">
-                Nos Services
+
+                Nos services
+
             </h3>
 
             <p class="grey-text text-darken-1 flow-text">
 
-                INFINITIA GROUP SARLU vous accompagne avec des solutions
-                numériques modernes, des services de recrutement,
-                de gestion et d’accompagnement des entreprises.
+                INFINITIA Care Services met à votre disposition
+                des intervenantes sélectionnées et formées pour répondre
+                à vos besoins de ménage, de nettoyage et d’entretien.
 
             </p>
 
@@ -61,31 +65,32 @@ session_start();
 
         <br><br>
 
-        <!-- SERVICES -->
-
-        <div class="row">
+        <div class="row services-row">
 
             <!-- SERVICE 1 -->
 
             <div class="col s12 m6 l4">
 
-                <div class="card hoverable">
+                <div class="card hoverable service-card">
 
                     <div class="card-content center">
 
-                        <i class="material-icons large blue-text text-darken-4">
-                            computer
+                        <i class="material-icons large icon-blue">
+
+                            home
+
                         </i>
 
                         <h5>
-                            Plateformes Numériques
+
+                            Ménage résidentiel
+
                         </h5>
 
                         <p>
 
-                            Développement et gestion de plateformes web,
-                            applications mobiles et solutions digitales
-                            modernes adaptées aux entreprises.
+                            Nettoyage et entretien régulier des maisons,
+                            appartements, chambres et espaces de vie.
 
                         </p>
 
@@ -99,23 +104,26 @@ session_start();
 
             <div class="col s12 m6 l4">
 
-                <div class="card hoverable">
+                <div class="card hoverable service-card">
 
                     <div class="card-content center">
 
-                        <i class="material-icons large pink-text accent-2">
-                            groups
+                        <i class="material-icons large icon-pink">
+
+                            business
+
                         </i>
 
                         <h5>
-                            Recrutement & Mise en Relation
+
+                            Nettoyage de bureaux
+
                         </h5>
 
                         <p>
 
-                            Services digitaux de recrutement,
-                            sélection de personnel et mise en relation
-                            dans plusieurs secteurs d’activités.
+                            Entretien des bureaux, espaces professionnels,
+                            commerces et locaux administratifs.
 
                         </p>
 
@@ -129,23 +137,26 @@ session_start();
 
             <div class="col s12 m6 l4">
 
-                <div class="card hoverable">
+                <div class="card hoverable service-card">
 
                     <div class="card-content center">
 
-                        <i class="material-icons large green-text">
-                            business_center
+                        <i class="material-icons large icon-gold">
+
+                            local_laundry_service
+
                         </i>
 
                         <h5>
-                            Gestion & Accompagnement
+
+                            Lessive et repassage
+
                         </h5>
 
                         <p>
 
-                            Accompagnement des entreprises,
-                            organisation administrative,
-                            gestion du personnel et ressources humaines.
+                            Lavage, séchage, pliage et repassage
+                            des vêtements et du linge de maison.
 
                         </p>
 
@@ -159,23 +170,26 @@ session_start();
 
             <div class="col s12 m6 l4">
 
-                <div class="card hoverable">
+                <div class="card hoverable service-card">
 
                     <div class="card-content center">
 
-                        <i class="material-icons large orange-text">
-                            engineering
+                        <i class="material-icons large green-text">
+
+                            cleaning_services
+
                         </i>
 
                         <h5>
-                            Consultation Professionnelle
+
+                            Grand ménage
+
                         </h5>
 
                         <p>
 
-                            Prestations de consultation,
-                            marketing et représentation
-                            dans divers domaines professionnels.
+                            Nettoyage complet et approfondi avant ou après
+                            un déménagement, une réception ou une longue absence.
 
                         </p>
 
@@ -189,23 +203,26 @@ session_start();
 
             <div class="col s12 m6 l4">
 
-                <div class="card hoverable">
+                <div class="card hoverable service-card">
 
                     <div class="card-content center">
 
-                        <i class="material-icons large teal-text">
-                            inventory_2
+                        <i class="material-icons large purple-text">
+
+                            kitchen
+
                         </i>
 
                         <h5>
-                            Agroalimentaire
+
+                            Entretien de la cuisine
+
                         </h5>
 
                         <p>
 
-                            Transformation, production et commercialisation
-                            de produits agroalimentaires,
-                            notamment les produits laitiers et le yaourt.
+                            Nettoyage de la cuisine, vaisselle,
+                            rangement et entretien des équipements ménagers.
 
                         </p>
 
@@ -219,24 +236,26 @@ session_start();
 
             <div class="col s12 m6 l4">
 
-                <div class="card hoverable">
+                <div class="card hoverable service-card">
 
                     <div class="card-content center">
 
-                        <i class="material-icons large purple-text">
-                            public
+                        <i class="material-icons large teal-text">
+
+                            yard
+
                         </i>
 
                         <h5>
-                            Services Multisectoriels
+
+                            Entretien des espaces extérieurs
+
                         </h5>
 
                         <p>
 
-                            Interventions dans les domaines
-                            de la logistique, agriculture,
-                            environnement, énergie,
-                            tourisme et transport.
+                            Nettoyage des cours, terrasses, entrées
+                            et autres espaces extérieurs du domicile.
 
                         </p>
 
@@ -245,6 +264,124 @@ session_start();
                 </div>
 
             </div>
+
+            <!-- SERVICE 7 -->
+
+            <div class="col s12 m6 l4">
+
+                <div class="card hoverable service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large orange-text">
+
+                            inventory_2
+
+                        </i>
+
+                        <h5>
+
+                            Rangement et organisation
+
+                        </h5>
+
+                        <p>
+
+                            Organisation des pièces, armoires, cuisines,
+                            réserves et espaces de rangement.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SERVICE 8 -->
+
+            <div class="col s12 m6 l4">
+
+                <div class="card hoverable service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large blue-grey-text">
+
+                            event_available
+
+                        </i>
+
+                        <h5>
+
+                            Nettoyage après événement
+
+                        </h5>
+
+                        <p>
+
+                            Remise en ordre et nettoyage des espaces
+                            après une fête, une réunion ou une cérémonie.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SERVICE 9 -->
+
+            <div class="col s12 m6 l4">
+
+                <div class="card hoverable service-card">
+
+                    <div class="card-content center">
+
+                        <i class="material-icons large pink-text">
+
+                            groups
+
+                        </i>
+
+                        <h5>
+
+                            Mise à disposition d’intervenantes
+
+                        </h5>
+
+                        <p>
+
+                            Recherche et affectation d’assistantes ménagères
+                            qualifiées selon les besoins du client.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ACTION -->
+
+        <div class="center services-action">
+
+            <a href="guest-request.php"
+            class="btn-large btn-primary waves-effect waves-light">
+
+                Soumettre une demande
+
+                <i class="material-icons right">
+
+                    send
+
+                </i>
+
+            </a>
 
         </div>
 

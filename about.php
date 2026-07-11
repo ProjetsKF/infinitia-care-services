@@ -10,7 +10,7 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Infinitia Care Services</title>
+    <title>À propos | INFINITIA CARE SERVICES</title>
 
     <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
 
@@ -39,117 +39,161 @@ session_start();
 <!-- ABOUT SECTION -->
 <!-- ABOUT SECTION -->
 
+<!-- ABOUT SECTION -->
+
 <section class="section about-section white">
 
     <div class="container">
 
-    <div class="row about-wrapper">
+        <div class="row about-wrapper">
 
-        <!-- IMAGE -->
+            <!-- IMAGE -->
 
-        <div class="col s12 m12 l6 about-image-container">
+            <div class="col s12 m12 l6 about-image-container">
 
-            <img
-            src="assets/images/aboutimg.png"
-            alt="Infinitia Care Services"
-            class="about-image z-depth-3">
+                <img
+                src="assets/images/aboutimg.png"
+                alt="Assistante ménagère INFINITIA Care Services"
+                class="about-image z-depth-3">
 
-        </div>
+            </div>
 
-        <!-- CONTENT -->
+            <!-- CONTENT -->
 
-        <div class="col s12 m12 l6">
+            <div class="col s12 m12 l6">
 
-            <div class="about-content">
+                <div class="about-content">
 
-                <h3 class="section-title">
+                    <h3 class="section-title">
 
-                    À Propos de Nous
+                        À propos d’INFINITIA Care Services
 
-                </h3>
+                    </h3>
 
-                <p class="flow-text grey-text text-darken-1">
+                    <p class="flow-text grey-text text-darken-1">
 
-                    INFINITIA GROUP SARLU est une entreprise
-                    innovante spécialisée dans les solutions numériques,
-                    le recrutement, la gestion des talents
-                    et l’accompagnement des entreprises.
+                        INFINITIA Care Services est une plateforme numérique
+                        spécialisée dans le recrutement, la formation et la mise
+                        en relation d’assistantes ménagères qualifiées avec les
+                        familles, les particuliers et les entreprises.
 
-                </p>
+                    </p>
 
-                <p>
+                    <p>
 
-                    Notre mission est de connecter les entreprises,
-                    les professionnels et les particuliers
-                    à des solutions modernes, fiables et accessibles
-                    grâce aux technologies digitales.
+                        Notre plateforme facilite la recherche de personnel
+                        fiable pour les services de ménage, de nettoyage,
+                        d’entretien du domicile, de lessive, de repassage
+                        et d’assistance ménagère.
 
-                </p>
+                    </p>
 
-                <p>
+                    <p>
 
-                    Nous développons des plateformes numériques,
-                    des applications web et mobiles,
-                    ainsi que des services de mise en relation,
-                    de gestion du personnel et de formation.
+                        Nous accompagnons les intervenantes à travers un processus
+                        de sélection, de vérification, de formation et de suivi
+                        afin d’améliorer la qualité des prestations proposées
+                        aux clients.
 
-                </p>
+                    </p>
 
-                <p>
+                    <p>
 
-                    INFINITIA GROUP intervient également
-                    dans plusieurs secteurs tels que
-                    l’agroalimentaire, la logistique,
-                    l’environnement, l’énergie,
-                    le tourisme et le transport.
+                        Notre objectif est de sécuriser les services à domicile,
+                        de simplifier la mise en relation et de créer des
+                        opportunités de travail décent pour les femmes et les
+                        jeunes dans la ville de Kolwezi et progressivement
+                        dans d’autres zones.
 
-                </p>
+                    </p>
 
-                <br>
+                    <p>
 
-                <!-- VALUES -->
+                        Grâce à la plateforme, les clients peuvent soumettre
+                        leurs demandes, suivre leurs missions, consulter les
+                        intervenantes affectées et évaluer les services reçus.
 
-                <div class="row">
+                    </p>
 
-                    <!-- VALUE 1 -->
+                    <div class="row about-values">
 
-                    <div class="col s12 m6">
+                        <div class="col s12 m6">
 
-                        <div class="card-panel blue darken-4 white-text center value-card">
+                            <div class="card-panel blue darken-4 white-text center value-card">
 
-                            <i class="material-icons medium">
+                                <i class="material-icons medium">
 
-                                verified
+                                    verified_user
 
-                            </i>
+                                </i>
 
-                            <h6>
+                                <h6>
 
-                                Professionnalisme
+                                    Confiance et sécurité
 
-                            </h6>
+                                </h6>
+
+                            </div>
 
                         </div>
 
-                    </div>
+                        <div class="col s12 m6">
 
-                    <!-- VALUE 2 -->
+                            <div class="card-panel pink accent-2 white-text center value-card">
 
-                    <div class="col s12 m6">
+                                <i class="material-icons medium">
 
-                        <div class="card-panel pink accent-2 white-text center value-card">
+                                    cleaning_services
 
-                            <i class="material-icons medium">
+                                </i>
 
-                                lightbulb
+                                <h6>
 
-                            </i>
+                                    Qualité de service
 
-                            <h6>
+                                </h6>
 
-                                Innovation
+                            </div>
 
-                            </h6>
+                        </div>
+
+                        <div class="col s12 m6">
+
+                            <div class="card-panel teal white-text center value-card">
+
+                                <i class="material-icons medium">
+
+                                    school
+
+                                </i>
+
+                                <h6>
+
+                                    Formation
+
+                                </h6>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col s12 m6">
+
+                            <div class="card-panel amber darken-2 white-text center value-card">
+
+                                <i class="material-icons medium">
+
+                                    diversity_3
+
+                                </i>
+
+                                <h6>
+
+                                    Inclusion professionnelle
+
+                                </h6>
+
+                            </div>
 
                         </div>
 
@@ -162,8 +206,6 @@ session_start();
         </div>
 
     </div>
-
-</div>
 
 </section>
 
