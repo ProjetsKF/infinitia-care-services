@@ -126,13 +126,8 @@ function bind_params($stmt, $types, $params)
 
 function pagination_url($page, $search)
 {
-    $params = array("page" => (int)$page);
-
-    if($search != ""){
-
-        $params["search"] = $search;
-
-    }
+    $params = $_GET;
+    $params["page"] = (int)$page;
 
     return "utilisateurs.php?" . http_build_query($params);
 }
@@ -241,7 +236,7 @@ $stats = array(
 $users = array();
 $search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
 $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
-$per_page = 10;
+$per_page = 50;
 
 if($page <= 0){
 
@@ -693,39 +688,50 @@ mysqli_stmt_close($stmt);
                 </table>
 
                 <div class="pagination-wrap">
+                    <ul class="pagination center-align">
                     <?php if($page > 1){ ?>
-                        <a class="btn-flat"
-                           href="<?php echo safe_text(pagination_url($page - 1, $search)); ?>">
-                            Precedent
-                        </a>
+                        <li class="waves-effect">
+                            <a href="<?php echo safe_text(pagination_url($page - 1, $search)); ?>">Precedent</a>
+                        </li>
                     <?php }else{ ?>
-                        <span class="btn-flat disabled grey-text">Precedent</span>
+                        <li class="disabled"><a href="#!">Precedent</a></li>
                     <?php } ?>
 
                     <?php
-                    $page_number = 1;
-                    for($page_number = 1; $page_number <= $total_pages; $page_number++){
+                    $start_page = max(1, $page - 2);
+                    $end_page = min($total_pages, $page + 2);
+
+                    if($start_page > 1){
+                    ?>
+                        <li class="waves-effect"><a href="<?php echo safe_text(pagination_url(1, $search)); ?>">1</a></li>
+                        <?php if($start_page > 2){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                    <?php } ?>
+
+                    <?php
+                    for($page_number = $start_page; $page_number <= $end_page; $page_number++){
                     ?>
                         <?php if($page_number == $page){ ?>
-                            <span class="btn blue-gradient white-text">
-                                <?php echo (int)$page_number; ?>
-                            </span>
+                            <li class="active"><a href="#!"><?php echo (int)$page_number; ?></a></li>
                         <?php }else{ ?>
-                            <a class="btn-flat"
-                               href="<?php echo safe_text(pagination_url($page_number, $search)); ?>">
-                                <?php echo (int)$page_number; ?>
-                            </a>
+                            <li class="waves-effect">
+                                <a href="<?php echo safe_text(pagination_url($page_number, $search)); ?>"><?php echo (int)$page_number; ?></a>
+                            </li>
                         <?php } ?>
                     <?php } ?>
 
-                    <?php if($page < $total_pages){ ?>
-                        <a class="btn-flat"
-                           href="<?php echo safe_text(pagination_url($page + 1, $search)); ?>">
-                            Suivant
-                        </a>
-                    <?php }else{ ?>
-                        <span class="btn-flat disabled grey-text">Suivant</span>
+                    <?php if($end_page < $total_pages){ ?>
+                        <?php if($end_page < $total_pages - 1){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                        <li class="waves-effect"><a href="<?php echo safe_text(pagination_url($total_pages, $search)); ?>"><?php echo (int)$total_pages; ?></a></li>
                     <?php } ?>
+
+                    <?php if($page < $total_pages){ ?>
+                        <li class="waves-effect">
+                            <a href="<?php echo safe_text(pagination_url($page + 1, $search)); ?>">Suivant</a>
+                        </li>
+                    <?php }else{ ?>
+                        <li class="disabled"><a href="#!">Suivant</a></li>
+                    <?php } ?>
+                    </ul>
                 </div>
             </div>
 

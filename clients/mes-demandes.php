@@ -3,12 +3,21 @@
 session_start();
 
 $success_message = "";
+$error_message = "";
 
 if(isset($_SESSION['success'])){
 
     $success_message = $_SESSION['success'];
 
     unset($_SESSION['success']);
+
+}
+
+if(isset($_SESSION['error'])){
+
+    $error_message = $_SESSION['error'];
+
+    unset($_SESSION['error']);
 
 }
 
@@ -28,6 +37,26 @@ if(!isset($_SESSION["user_id"])){
 
 $user_id = (int)$_SESSION["user_id"];
 $client_id = 0;
+/**
+ * @var array<int,array{id:int,name:string}> $service_categories
+ */
+$service_categories = array();
+
+if(!isset($_SESSION["service_request_csrf"]) || $_SESSION["service_request_csrf"] == ""){
+
+    if(function_exists("openssl_random_pseudo_bytes")){
+
+        $_SESSION["service_request_csrf"] = bin2hex(openssl_random_pseudo_bytes(32));
+
+    }else{
+
+        $_SESSION["service_request_csrf"] = sha1(uniqid(mt_rand(), true));
+
+    }
+
+}
+
+$service_request_csrf = $_SESSION["service_request_csrf"];
 
 $sqlClient = "
     SELECT id
@@ -65,6 +94,32 @@ if($client_id <= 0){
 
     header("Location: ../login.php");
     exit();
+
+}
+
+$sqlCategories = "
+    SELECT id, name
+    FROM service_categories
+    ORDER BY name ASC
+";
+
+$stmtCategories = mysqli_prepare($conn, $sqlCategories);
+
+if($stmtCategories){
+
+    mysqli_stmt_execute($stmtCategories);
+    mysqli_stmt_bind_result($stmtCategories, $category_id_result, $category_name_result);
+
+    while(mysqli_stmt_fetch($stmtCategories)){
+
+        $service_categories[] = array(
+            'id' => $category_id_result,
+            'name' => $category_name_result
+        );
+
+    }
+
+    mysqli_stmt_close($stmtCategories);
 
 }
 
@@ -975,6 +1030,11 @@ mysqli_stmt_close($stmt);
 
         <form action="process-demande.php" method="POST">
 
+            <input
+            type="hidden"
+            name="csrf_token"
+            value="<?php echo htmlspecialchars($service_request_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+
             <!-- CATEGORIE -->
 
             <div class="input-field col s12" >
@@ -987,29 +1047,16 @@ mysqli_stmt_close($stmt);
 
                     </option>
 
-                    <option value="1">
+                    <?php
+                    /** @var array{id:int,name:string} $categorie */
+                    foreach($service_categories as $categorie){
+                    ?>
 
-                        Ménage résidentiel
+                        <option value="<?php echo (int)$categorie['id']; ?>">
+                            <?php echo htmlspecialchars($categorie['name'], ENT_QUOTES, "UTF-8"); ?>
+                        </option>
 
-                    </option>
-
-                    <option value="2">
-
-                        Nettoyage bureaux
-
-                    </option>
-
-                    <option value="3">
-
-                        Lessive et repassage
-
-                    </option>
-
-                    <option value="4">
-
-                        Cuisine à domicile
-
-                    </option>
+                    <?php } ?>
 
                 </select>
 
@@ -1218,6 +1265,44 @@ mysqli_stmt_close($stmt);
 </div>
 
 <?php endif; ?>
+
+<?php if(!empty($error_message)): ?>
+
+<div id="errorModal" class="modal">
+
+    <div class="modal-content center">
+
+        <i class="material-icons red-text"
+        style="font-size:70px;">
+
+            error_outline
+
+        </i>
+
+        <h5>Erreur</h5>
+
+        <p>
+
+            <?php echo htmlspecialchars($error_message, ENT_QUOTES, "UTF-8"); ?>
+
+        </p>
+
+    </div>
+
+    <div class="modal-footer">
+
+        <a href="#!"
+        class="modal-close btn red">
+
+            Fermer
+
+        </a>
+
+    </div>
+
+</div>
+
+<?php endif; ?>
     <!-- MATERIALIZE JS -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -1254,6 +1339,16 @@ document.addEventListener('DOMContentLoaded', function() {
     );
 
     instance.open();
+
+    <?php endif; ?>
+
+    <?php if(!empty($error_message)): ?>
+
+    var errorInstance = M.Modal.getInstance(
+        document.getElementById('errorModal')
+    );
+
+    errorInstance.open();
 
     <?php endif; ?>
 

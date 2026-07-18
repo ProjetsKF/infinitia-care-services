@@ -30,6 +30,20 @@ $demandes_en_attente = 0;
 $missions_en_cours = 0;
 $missions_terminees = 0;
 $dernieres_demandes = array();
+$demandes_page = isset($_GET["page"])
+    ? (int)$_GET["page"]
+    : 1;
+$demandes_limit = 20;
+$demandes_total_pages = 1;
+$demandes_total_rows = 0;
+
+if($demandes_page < 1){
+
+    $demandes_page = 1;
+
+}
+
+$demandes_offset = ($demandes_page - 1) * $demandes_limit;
 
 $client = array(
     "first_name" => "",
@@ -61,6 +75,14 @@ function dashboard_count_query($conn, $sql, $client_id)
     }
 
     return (int)$total;
+}
+
+function dashboard_pagination_url($page)
+{
+    $params = $_GET;
+    $params["page"] = (int)$page;
+
+    return "clidashboard.php?" . http_build_query($params);
 }
 
 $sql = "
@@ -179,6 +201,27 @@ $missions_terminees = dashboard_count_query(
     $client_id
 );
 
+$demandes_total_rows = dashboard_count_query(
+    $conn,
+    "SELECT COUNT(*) FROM service_requests WHERE client_id = ?",
+    $client_id
+);
+
+$demandes_total_pages = (int)ceil($demandes_total_rows / $demandes_limit);
+
+if($demandes_total_pages < 1){
+
+    $demandes_total_pages = 1;
+
+}
+
+if($demandes_page > $demandes_total_pages){
+
+    $demandes_page = $demandes_total_pages;
+    $demandes_offset = ($demandes_page - 1) * $demandes_limit;
+
+}
+
 $sql = "
 
 SELECT
@@ -189,7 +232,8 @@ SELECT
 FROM service_requests
 WHERE client_id = ?
 ORDER BY created_at DESC
-LIMIT 5
+LIMIT ?
+OFFSET ?
 
 ";
 
@@ -197,7 +241,13 @@ $stmt = mysqli_prepare($conn, $sql);
 
 if($stmt){
 
-    mysqli_stmt_bind_param($stmt, "i", $client_id);
+    mysqli_stmt_bind_param(
+        $stmt,
+        "iii",
+        $client_id,
+        $demandes_limit,
+        $demandes_offset
+    );
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result(
         $stmt,
@@ -603,6 +653,52 @@ if($stmt){
                     </tbody>
 
                 </table>
+
+                <div class="center" style="margin-top:25px;">
+
+                    <ul class="pagination">
+
+                        <li class="<?php echo ($demandes_page <= 1) ? 'disabled' : 'waves-effect'; ?>">
+
+                            <a href="<?php echo ($demandes_page <= 1) ? '#!' : htmlspecialchars(dashboard_pagination_url($demandes_page - 1), ENT_QUOTES, 'UTF-8'); ?>">
+
+                                <i class="material-icons">
+                                    chevron_left
+                                </i>
+
+                            </a>
+
+                        </li>
+
+                        <?php for($i = 1; $i <= $demandes_total_pages; $i++){ ?>
+
+                            <li class="<?php echo ($i == $demandes_page) ? 'active' : 'waves-effect'; ?>">
+
+                                <a href="<?php echo htmlspecialchars(dashboard_pagination_url($i), ENT_QUOTES, 'UTF-8'); ?>">
+
+                                    <?php echo (int)$i; ?>
+
+                                </a>
+
+                            </li>
+
+                        <?php } ?>
+
+                        <li class="<?php echo ($demandes_page >= $demandes_total_pages) ? 'disabled' : 'waves-effect'; ?>">
+
+                            <a href="<?php echo ($demandes_page >= $demandes_total_pages) ? '#!' : htmlspecialchars(dashboard_pagination_url($demandes_page + 1), ENT_QUOTES, 'UTF-8'); ?>">
+
+                                <i class="material-icons">
+                                    chevron_right
+                                </i>
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </div>
 
             </div>
 

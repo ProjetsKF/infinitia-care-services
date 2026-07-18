@@ -16,6 +16,14 @@ if(!isset($_SESSION['user_id']))
 
 $user_id = (int)$_SESSION['user_id'];
 
+function missions_pagination_url($page_number)
+{
+    $params = $_GET;
+    $params["page"] = (int)$page_number;
+
+    return "mes-missions.php?" . http_build_query($params);
+}
+
 /* =====================================
    RECUPERATION CANDIDAT CONNECTE
 ===================================== */
@@ -126,6 +134,57 @@ if($stmt)
 ===================================== */
 
 $missions = array();
+$limit = 20;
+$page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+
+if($page < 1)
+{
+    $page = 1;
+}
+
+$total_missions = 0;
+
+$sql = "
+SELECT COUNT(*) AS total
+FROM missions
+WHERE candidate_id = ?
+";
+
+$stmt = mysqli_prepare($conn, $sql);
+
+if($stmt)
+{
+    mysqli_stmt_bind_param(
+        $stmt,
+        "i",
+        $candidate_id
+    );
+
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+
+    if($row = mysqli_fetch_assoc($result))
+    {
+        $total_missions = (int)$row['total'];
+    }
+
+    mysqli_stmt_close($stmt);
+}
+
+$total_pages = (int)ceil($total_missions / $limit);
+
+if($total_pages > 0 && $page > $total_pages)
+{
+    $page = $total_pages;
+}
+
+if($total_pages < 1)
+{
+    $page = 1;
+}
+
+$offset = ($page - 1) * $limit;
 
 $sql = "
 
@@ -154,6 +213,9 @@ WHERE m.candidate_id = ?
 
 ORDER BY sr.service_date DESC
 
+LIMIT ?
+OFFSET ?
+
 ";
 
 $stmt = mysqli_prepare($conn, $sql);
@@ -162,8 +224,10 @@ if($stmt)
 {
     mysqli_stmt_bind_param(
         $stmt,
-        "i",
-        $candidate_id
+        "iii",
+        $candidate_id,
+        $limit,
+        $offset
     );
 
     mysqli_stmt_execute($stmt);
@@ -413,6 +477,81 @@ if($stmt)
             </tbody>
 
         </table>
+
+        <?php if($total_pages > 1){ ?>
+
+            <div class="table-pagination" style="margin-top:25px; margin-bottom:20px; text-align:center;">
+
+                <ul class="pagination center-align">
+
+                    <?php if($page > 1){ ?>
+                        <li class="waves-effect">
+                            <a href="<?php echo htmlspecialchars(missions_pagination_url($page - 1)); ?>">
+                                PrÃ©cÃ©dent
+                            </a>
+                        </li>
+                    <?php }else{ ?>
+                        <li class="disabled">
+                            <a href="#!">PrÃ©cÃ©dent</a>
+                        </li>
+                    <?php } ?>
+
+                    <?php
+                    $start_page = max(1, $page - 2);
+                    $end_page = min($total_pages, $page + 2);
+
+                    if($start_page > 1){
+                    ?>
+                        <li class="waves-effect">
+                            <a href="<?php echo htmlspecialchars(missions_pagination_url(1)); ?>">1</a>
+                        </li>
+                        <?php if($start_page > 2){ ?>
+                            <li class="disabled"><a href="#!">...</a></li>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <?php for($page_number = $start_page; $page_number <= $end_page; $page_number++){ ?>
+                        <?php if($page_number == $page){ ?>
+                            <li class="active">
+                                <a href="#!"><?php echo (int)$page_number; ?></a>
+                            </li>
+                        <?php }else{ ?>
+                            <li class="waves-effect">
+                                <a href="<?php echo htmlspecialchars(missions_pagination_url($page_number)); ?>">
+                                    <?php echo (int)$page_number; ?>
+                                </a>
+                            </li>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <?php if($end_page < $total_pages){ ?>
+                        <?php if($end_page < $total_pages - 1){ ?>
+                            <li class="disabled"><a href="#!">...</a></li>
+                        <?php } ?>
+                        <li class="waves-effect">
+                            <a href="<?php echo htmlspecialchars(missions_pagination_url($total_pages)); ?>">
+                                <?php echo (int)$total_pages; ?>
+                            </a>
+                        </li>
+                    <?php } ?>
+
+                    <?php if($page < $total_pages){ ?>
+                        <li class="waves-effect">
+                            <a href="<?php echo htmlspecialchars(missions_pagination_url($page + 1)); ?>">
+                                Suivant
+                            </a>
+                        </li>
+                    <?php }else{ ?>
+                        <li class="disabled">
+                            <a href="#!">Suivant</a>
+                        </li>
+                    <?php } ?>
+
+                </ul>
+
+            </div>
+
+        <?php } ?>
 
     </div>
 

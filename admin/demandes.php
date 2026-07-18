@@ -69,6 +69,14 @@ function redirect_demandes()
     exit();
 }
 
+function demandes_pagination_url($page_number)
+{
+    $params = $_GET;
+    $params["page"] = (int)$page_number;
+
+    return "demandes.php?" . http_build_query($params);
+}
+
 function count_query($conn, $sql)
 {
     $total = 0;
@@ -387,6 +395,35 @@ $stats = array(
 );
 
 $requests = array();
+$limit = 50;
+$page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+
+if($page < 1){
+
+    $page = 1;
+
+}
+
+$total_requests = count_query($conn, "
+SELECT COUNT(*) AS total
+FROM service_requests sr
+");
+
+$total_pages = (int)ceil($total_requests / $limit);
+
+if($total_pages > 0 && $page > $total_pages){
+
+    $page = $total_pages;
+
+}
+
+if($total_pages < 1){
+
+    $page = 1;
+
+}
+
+$offset = ($page - 1) * $limit;
 
 $sql = "
 SELECT
@@ -432,19 +469,31 @@ GROUP BY
     u.phone,
     sc.name
 ORDER BY sr.created_at DESC
+LIMIT ?
+OFFSET ?
 ";
 
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare($conn, $sql);
 
-if($result){
+if($stmt){
 
-    while($row = mysqli_fetch_assoc($result)){
+    mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
-        $requests[] = $row;
+    if($result){
+
+        while($row = mysqli_fetch_assoc($result)){
+
+            $requests[] = $row;
+
+        }
+
+        mysqli_free_result($result);
 
     }
 
-    mysqli_free_result($result);
+    mysqli_stmt_close($stmt);
 
 }
 
@@ -531,6 +580,12 @@ if($result){
             font-size:12px;
             font-weight:600;
             text-transform:uppercase;
+        }
+
+        .table-pagination{
+            margin-top:25px;
+            margin-bottom:20px;
+            text-align:center;
         }
     </style>
 
@@ -700,6 +755,53 @@ if($result){
                         <?php } ?>
                     </tbody>
                 </table>
+
+                <?php if($total_pages > 1){ ?>
+                    <div class="table-pagination">
+                        <ul class="pagination center-align">
+                            <?php if($page > 1){ ?>
+                                <li class="waves-effect">
+                                    <a href="<?php echo safe_text(demandes_pagination_url($page - 1)); ?>">Precedent</a>
+                                </li>
+                            <?php }else{ ?>
+                                <li class="disabled"><a href="#!">Precedent</a></li>
+                            <?php } ?>
+
+                            <?php
+                            $start_page = max(1, $page - 2);
+                            $end_page = min($total_pages, $page + 2);
+
+                            if($start_page > 1){
+                            ?>
+                                <li class="waves-effect"><a href="<?php echo safe_text(demandes_pagination_url(1)); ?>">1</a></li>
+                                <?php if($start_page > 2){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                            <?php } ?>
+
+                            <?php for($page_number = $start_page; $page_number <= $end_page; $page_number++){ ?>
+                                <?php if($page_number == $page){ ?>
+                                    <li class="active"><a href="#!"><?php echo (int)$page_number; ?></a></li>
+                                <?php }else{ ?>
+                                    <li class="waves-effect">
+                                        <a href="<?php echo safe_text(demandes_pagination_url($page_number)); ?>"><?php echo (int)$page_number; ?></a>
+                                    </li>
+                                <?php } ?>
+                            <?php } ?>
+
+                            <?php if($end_page < $total_pages){ ?>
+                                <?php if($end_page < $total_pages - 1){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                                <li class="waves-effect"><a href="<?php echo safe_text(demandes_pagination_url($total_pages)); ?>"><?php echo (int)$total_pages; ?></a></li>
+                            <?php } ?>
+
+                            <?php if($page < $total_pages){ ?>
+                                <li class="waves-effect">
+                                    <a href="<?php echo safe_text(demandes_pagination_url($page + 1)); ?>">Suivant</a>
+                                </li>
+                            <?php }else{ ?>
+                                <li class="disabled"><a href="#!">Suivant</a></li>
+                            <?php } ?>
+                        </ul>
+                    </div>
+                <?php } ?>
             </div>
 
         <?php }else{ ?>

@@ -23,6 +23,20 @@ $client_id = 0;
 $missions_en_cours = 0;
 $missions_terminees = 0;
 $missions = array();
+$page = isset($_GET["page"])
+    ? (int)$_GET["page"]
+    : 1;
+$limit = 20;
+$total_rows = 0;
+$total_pages = 1;
+
+if($page < 1){
+
+    $page = 1;
+
+}
+
+$offset = ($page - 1) * $limit;
 
 function safe_text($value)
 {
@@ -133,6 +147,14 @@ function count_missions_by_status($conn, $client_id, $status)
     return (int)$total;
 }
 
+function missions_pagination_url($page)
+{
+    $params = $_GET;
+    $params["page"] = (int)$page;
+
+    return "missions.php?" . http_build_query($params);
+}
+
 $sql = "
 
 SELECT id
@@ -177,6 +199,47 @@ $missions_terminees = count_missions_by_status(
 
 $sql = "
 
+SELECT COUNT(*)
+FROM service_requests sr
+INNER JOIN missions m
+ON m.service_request_id = sr.id
+WHERE sr.client_id = ?
+AND m.mission_status IN ('en_cours', 'terminee')
+
+";
+
+$stmt = mysqli_prepare($conn, $sql);
+
+if(!$stmt){
+
+    die("Erreur SQL : " . mysqli_error($conn));
+
+}
+
+mysqli_stmt_bind_param($stmt, "i", $client_id);
+mysqli_stmt_execute($stmt);
+mysqli_stmt_bind_result($stmt, $total_rows);
+mysqli_stmt_fetch($stmt);
+mysqli_stmt_close($stmt);
+
+$total_rows = (int)$total_rows;
+$total_pages = (int)ceil($total_rows / $limit);
+
+if($total_pages < 1){
+
+    $total_pages = 1;
+
+}
+
+if($page > $total_pages){
+
+    $page = $total_pages;
+    $offset = ($page - 1) * $limit;
+
+}
+
+$sql = "
+
 SELECT
     m.id AS mission_id,
     m.mission_status,
@@ -210,6 +273,8 @@ WHERE sr.client_id = ?
 AND m.mission_status IN ('en_cours', 'terminee')
 
 ORDER BY sr.service_date DESC, m.created_at DESC
+LIMIT ?
+OFFSET ?
 
 ";
 
@@ -221,7 +286,13 @@ if(!$stmt){
 
 }
 
-mysqli_stmt_bind_param($stmt, "i", $client_id);
+mysqli_stmt_bind_param(
+    $stmt,
+    "iii",
+    $client_id,
+    $limit,
+    $offset
+);
 mysqli_stmt_execute($stmt);
 mysqli_stmt_bind_result(
     $stmt,
@@ -518,6 +589,52 @@ mysqli_stmt_close($stmt);
                         </tbody>
 
                     </table>
+
+                    <div class="center" style="margin-top:25px;">
+
+                        <ul class="pagination">
+
+                            <li class="<?php echo ($page <= 1) ? 'disabled' : 'waves-effect'; ?>">
+
+                                <a href="<?php echo ($page <= 1) ? '#!' : safe_text(missions_pagination_url($page - 1)); ?>">
+
+                                    <i class="material-icons">
+                                        chevron_left
+                                    </i>
+
+                                </a>
+
+                            </li>
+
+                            <?php for($i = 1; $i <= $total_pages; $i++){ ?>
+
+                                <li class="<?php echo ($i == $page) ? 'active' : 'waves-effect'; ?>">
+
+                                    <a href="<?php echo safe_text(missions_pagination_url($i)); ?>">
+
+                                        <?php echo (int)$i; ?>
+
+                                    </a>
+
+                                </li>
+
+                            <?php } ?>
+
+                            <li class="<?php echo ($page >= $total_pages) ? 'disabled' : 'waves-effect'; ?>">
+
+                                <a href="<?php echo ($page >= $total_pages) ? '#!' : safe_text(missions_pagination_url($page + 1)); ?>">
+
+                                    <i class="material-icons">
+                                        chevron_right
+                                    </i>
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
 
                 </div>
 

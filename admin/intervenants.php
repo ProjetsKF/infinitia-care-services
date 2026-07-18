@@ -64,6 +64,14 @@ function redirect_intervenants()
     exit();
 }
 
+function intervenants_pagination_url($page_number)
+{
+    $params = $_GET;
+    $params["page"] = (int)$page_number;
+
+    return "intervenants.php?" . http_build_query($params);
+}
+
 function count_query($conn, $sql)
 {
     $total = 0;
@@ -641,6 +649,38 @@ $documents_by_candidate = array();
 $trainings_by_candidate = array();
 $missions_by_candidate = array();
 $reviews_by_candidate = array();
+$limit = 50;
+$page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+
+if($page < 1){
+
+    $page = 1;
+
+}
+
+$total_candidates = count_query($conn, "
+SELECT COUNT(*) AS total
+FROM candidates c
+INNER JOIN users u
+ON u.id = c.user_id
+WHERE u.role_id = 3
+");
+
+$total_pages = (int)ceil($total_candidates / $limit);
+
+if($total_pages > 0 && $page > $total_pages){
+
+    $page = $total_pages;
+
+}
+
+if($total_pages < 1){
+
+    $page = 1;
+
+}
+
+$offset = ($page - 1) * $limit;
 
 $sql = "
 SELECT
@@ -672,30 +712,42 @@ INNER JOIN users u
 ON u.id = c.user_id
 WHERE u.role_id = 3
 ORDER BY u.first_name ASC, u.last_name ASC
+LIMIT ?
+OFFSET ?
 ";
 
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare($conn, $sql);
 
-if($result){
+if($stmt){
 
-    while($row = mysqli_fetch_assoc($result)){
+    mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
-        $reasons = array();
-        $score = calculate_ai_score($row, $reasons);
-        $row["ai_score"] = $score;
-        $row["score_level"] = score_level($score);
-        $row["score_reasons"] = $reasons;
-        $candidates[] = $row;
-        $candidate_id = (int)$row["candidate_id"];
-        $skills_by_candidate[$candidate_id] = array();
-        $documents_by_candidate[$candidate_id] = array();
-        $trainings_by_candidate[$candidate_id] = array();
-        $missions_by_candidate[$candidate_id] = array();
-        $reviews_by_candidate[$candidate_id] = array();
+    if($result){
+
+        while($row = mysqli_fetch_assoc($result)){
+
+            $reasons = array();
+            $score = calculate_ai_score($row, $reasons);
+            $row["ai_score"] = $score;
+            $row["score_level"] = score_level($score);
+            $row["score_reasons"] = $reasons;
+            $candidates[] = $row;
+            $candidate_id = (int)$row["candidate_id"];
+            $skills_by_candidate[$candidate_id] = array();
+            $documents_by_candidate[$candidate_id] = array();
+            $trainings_by_candidate[$candidate_id] = array();
+            $missions_by_candidate[$candidate_id] = array();
+            $reviews_by_candidate[$candidate_id] = array();
+
+        }
+
+        mysqli_free_result($result);
 
     }
 
-    mysqli_free_result($result);
+    mysqli_stmt_close($stmt);
 
 }
 
@@ -980,6 +1032,12 @@ if(count($candidates) > 0){
         .actions-wrap form{
             margin:0;
         }
+
+        .table-pagination{
+            margin-top:25px;
+            margin-bottom:20px;
+            text-align:center;
+        }
     </style>
 
 </head>
@@ -1196,6 +1254,53 @@ if(count($candidates) > 0){
                         <?php } ?>
                     </tbody>
                 </table>
+
+                <?php if($total_pages > 1){ ?>
+                    <div class="table-pagination">
+                        <ul class="pagination center-align">
+                            <?php if($page > 1){ ?>
+                                <li class="waves-effect">
+                                    <a href="<?php echo safe_text(intervenants_pagination_url($page - 1)); ?>">Precedent</a>
+                                </li>
+                            <?php }else{ ?>
+                                <li class="disabled"><a href="#!">Precedent</a></li>
+                            <?php } ?>
+
+                            <?php
+                            $start_page = max(1, $page - 2);
+                            $end_page = min($total_pages, $page + 2);
+
+                            if($start_page > 1){
+                            ?>
+                                <li class="waves-effect"><a href="<?php echo safe_text(intervenants_pagination_url(1)); ?>">1</a></li>
+                                <?php if($start_page > 2){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                            <?php } ?>
+
+                            <?php for($page_number = $start_page; $page_number <= $end_page; $page_number++){ ?>
+                                <?php if($page_number == $page){ ?>
+                                    <li class="active"><a href="#!"><?php echo (int)$page_number; ?></a></li>
+                                <?php }else{ ?>
+                                    <li class="waves-effect">
+                                        <a href="<?php echo safe_text(intervenants_pagination_url($page_number)); ?>"><?php echo (int)$page_number; ?></a>
+                                    </li>
+                                <?php } ?>
+                            <?php } ?>
+
+                            <?php if($end_page < $total_pages){ ?>
+                                <?php if($end_page < $total_pages - 1){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                                <li class="waves-effect"><a href="<?php echo safe_text(intervenants_pagination_url($total_pages)); ?>"><?php echo (int)$total_pages; ?></a></li>
+                            <?php } ?>
+
+                            <?php if($page < $total_pages){ ?>
+                                <li class="waves-effect">
+                                    <a href="<?php echo safe_text(intervenants_pagination_url($page + 1)); ?>">Suivant</a>
+                                </li>
+                            <?php }else{ ?>
+                                <li class="disabled"><a href="#!">Suivant</a></li>
+                            <?php } ?>
+                        </ul>
+                    </div>
+                <?php } ?>
             </div>
 
         <?php }else{ ?>

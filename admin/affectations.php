@@ -318,9 +318,26 @@ function redirect_affectations($request_id)
     exit();
 }
 
+function affectations_pagination_url($page_number)
+{
+    $params = $_GET;
+    $params["page"] = (int)$page_number;
+
+    return "affectations.php?" . http_build_query($params);
+}
+
 if(isset($_GET["request_id"])){
 
     $selected_request_id = (int)$_GET["request_id"];
+
+}
+
+$limit = 50;
+$page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+
+if($page < 1){
+
+    $page = 1;
 
 }
 
@@ -501,6 +518,51 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
 }
 
+$total_requests = 0;
+
+$sql = "
+SELECT COUNT(*) AS total
+FROM service_requests sr
+WHERE sr.status = 'en_attente'
+AND NOT EXISTS(
+    SELECT 1
+    FROM missions m
+    WHERE m.service_request_id = sr.id
+)
+";
+
+$result = mysqli_query($conn, $sql);
+
+if($result){
+
+    $row = mysqli_fetch_assoc($result);
+
+    if($row && isset($row["total"])){
+
+        $total_requests = (int)$row["total"];
+
+    }
+
+    mysqli_free_result($result);
+
+}
+
+$total_pages = (int)ceil($total_requests / $limit);
+
+if($total_pages > 0 && $page > $total_pages){
+
+    $page = $total_pages;
+
+}
+
+if($total_pages < 1){
+
+    $page = 1;
+
+}
+
+$offset = ($page - 1) * $limit;
+
 $sql = "
 SELECT
     sr.id,
@@ -529,25 +591,91 @@ AND NOT EXISTS(
     WHERE m.service_request_id = sr.id
 )
 ORDER BY sr.created_at DESC
+LIMIT ?
+OFFSET ?
 ";
 
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare($conn, $sql);
 
-if($result){
+if($stmt){
 
-    while($row = mysqli_fetch_assoc($result)){
+    mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
-        $requests[] = $row;
+    if($result){
 
-        if($selected_request_id > 0 && (int)$row["id"] == $selected_request_id){
+        while($row = mysqli_fetch_assoc($result)){
 
-            $selected_request = $row;
+            $requests[] = $row;
+
+            if($selected_request_id > 0 && (int)$row["id"] == $selected_request_id){
+
+                $selected_request = $row;
+
+            }
 
         }
 
+        mysqli_free_result($result);
+
     }
 
-    mysqli_free_result($result);
+    mysqli_stmt_close($stmt);
+
+}
+
+if($selected_request_id > 0 && !$selected_request){
+
+    $sql = "
+    SELECT
+        sr.id,
+        sr.title,
+        sr.description,
+        sr.location,
+        sr.service_date,
+        sr.budget,
+        sr.urgency_level,
+        sr.status,
+        sr.category_id,
+        u.first_name,
+        u.last_name,
+        sc.name AS category_name
+    FROM service_requests sr
+    INNER JOIN clients c
+    ON c.id = sr.client_id
+    INNER JOIN users u
+    ON u.id = c.user_id
+    LEFT JOIN service_categories sc
+    ON sc.id = sr.category_id
+    WHERE sr.id = ?
+    AND sr.status = 'en_attente'
+    AND NOT EXISTS(
+        SELECT 1
+        FROM missions m
+        WHERE m.service_request_id = sr.id
+    )
+    LIMIT 1
+    ";
+
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if($stmt){
+
+        mysqli_stmt_bind_param($stmt, "i", $selected_request_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        if($result){
+
+            $selected_request = mysqli_fetch_assoc($result);
+            mysqli_free_result($result);
+
+        }
+
+        mysqli_stmt_close($stmt);
+
+    }
 
 }
 
@@ -767,6 +895,12 @@ function sort_recommendations($a, $b)
         .reason-list{
             margin-left:18px;
         }
+
+        .table-pagination{
+            margin-top:25px;
+            margin-bottom:20px;
+            text-align:center;
+        }
     </style>
 
 </head>
@@ -866,6 +1000,53 @@ function sort_recommendations($a, $b)
                     <?php } ?>
                 </tbody>
             </table>
+
+            <?php if($total_pages > 1){ ?>
+                <div class="table-pagination">
+                    <ul class="pagination center-align">
+                        <?php if($page > 1){ ?>
+                            <li class="waves-effect">
+                                <a href="<?php echo safe_text(affectations_pagination_url($page - 1)); ?>">Precedent</a>
+                            </li>
+                        <?php }else{ ?>
+                            <li class="disabled"><a href="#!">Precedent</a></li>
+                        <?php } ?>
+
+                        <?php
+                        $start_page = max(1, $page - 2);
+                        $end_page = min($total_pages, $page + 2);
+
+                        if($start_page > 1){
+                        ?>
+                            <li class="waves-effect"><a href="<?php echo safe_text(affectations_pagination_url(1)); ?>">1</a></li>
+                            <?php if($start_page > 2){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                        <?php } ?>
+
+                        <?php for($page_number = $start_page; $page_number <= $end_page; $page_number++){ ?>
+                            <?php if($page_number == $page){ ?>
+                                <li class="active"><a href="#!"><?php echo (int)$page_number; ?></a></li>
+                            <?php }else{ ?>
+                                <li class="waves-effect">
+                                    <a href="<?php echo safe_text(affectations_pagination_url($page_number)); ?>"><?php echo (int)$page_number; ?></a>
+                                </li>
+                            <?php } ?>
+                        <?php } ?>
+
+                        <?php if($end_page < $total_pages){ ?>
+                            <?php if($end_page < $total_pages - 1){ ?><li class="disabled"><a href="#!">...</a></li><?php } ?>
+                            <li class="waves-effect"><a href="<?php echo safe_text(affectations_pagination_url($total_pages)); ?>"><?php echo (int)$total_pages; ?></a></li>
+                        <?php } ?>
+
+                        <?php if($page < $total_pages){ ?>
+                            <li class="waves-effect">
+                                <a href="<?php echo safe_text(affectations_pagination_url($page + 1)); ?>">Suivant</a>
+                            </li>
+                        <?php }else{ ?>
+                            <li class="disabled"><a href="#!">Suivant</a></li>
+                        <?php } ?>
+                    </ul>
+                </div>
+            <?php } ?>
         </div>
 
         <br>

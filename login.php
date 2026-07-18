@@ -6,11 +6,35 @@ ini_set('display_errors', 1);
 session_start();
 
 require_once("config/database.php");
+require_once("config/auth.php");
+
+infinitia_delete_expired_tokens($conn);
+
+if(!isset($_SESSION["user_id"])){
+
+    infinitia_auto_login($conn);
+
+}
+
+if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"])){
+
+    infinitia_redirect_by_role((int)$_SESSION["role_id"]);
+
+}
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
-    $email = trim($_POST["email"]);
-    $password = $_POST["password"];
+    $email = isset($_POST["email"])
+        ? trim($_POST["email"])
+        : "";
+
+    $password = isset($_POST["password"])
+        ? $_POST["password"]
+        : "";
+
+    $remember_me = isset($_POST["remember_me"])
+        ? 1
+        : 0;
 
     if(empty($email) || empty($password)){
 
@@ -19,9 +43,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     }else{
 
-        $stmt = $conn->prepare(
+        $stmt = mysqli_prepare(
+            $conn,
 
-            "SELECT *
+            "SELECT
+                id,
+                role_id,
+                first_name,
+                last_name,
+                email,
+                password,
+                status
              FROM users
              WHERE email = ?"
 
@@ -34,18 +66,36 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         }else{
 
-            $stmt->bind_param(
+            mysqli_stmt_bind_param(
+                $stmt,
                 "s",
                 $email
             );
 
-            $stmt->execute();
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_store_result($stmt);
+            mysqli_stmt_bind_result(
+                $stmt,
+                $db_user_id,
+                $db_role_id,
+                $db_first_name,
+                $db_last_name,
+                $db_email,
+                $db_password,
+                $db_status
+            );
 
-            $result = $stmt->get_result();
+            if(mysqli_stmt_num_rows($stmt) > 0 && mysqli_stmt_fetch($stmt)){
 
-            if($result->num_rows > 0){
-
-                $user = $result->fetch_assoc();
+                $user = array(
+                    "id" => $db_user_id,
+                    "role_id" => $db_role_id,
+                    "first_name" => $db_first_name,
+                    "last_name" => $db_last_name,
+                    "email" => $db_email,
+                    "password" => $db_password,
+                    "status" => $db_status
+                );
 
                 if(password_verify(
                     $password,
@@ -80,17 +130,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                            CREATION SESSION
                         ====================================== */
 
-                        $_SESSION["user_id"]    = $user["id"];
-                        $_SESSION["role_id"]    = $user["role_id"];
-                        $_SESSION["first_name"] = $user["first_name"];
-                        $_SESSION["last_name"]  = $user["last_name"];
-                        $_SESSION["email"]      = $user["email"];
+                        infinitia_apply_user_session($user);
 
                         /* =====================================
                            DERNIERE CONNEXION
                         ====================================== */
 
-                        $update = $conn->prepare(
+                        $update = mysqli_prepare(
+                            $conn,
 
                             "UPDATE users
                              SET last_login = NOW()
@@ -100,13 +147,30 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                         if($update){
 
-                            $update->bind_param(
+                            mysqli_stmt_bind_param(
+                                $update,
                                 "i",
                                 $user["id"]
                             );
 
-                            $update->execute();
-                            $update->close();
+                            mysqli_stmt_execute($update);
+                            mysqli_stmt_close($update);
+
+                        }
+
+                        if($remember_me){
+
+                            if(!infinitia_create_remember_token($conn, (int)$user["id"])){
+
+                                $_SESSION["error"] =
+                                "Connexion reussie, mais la fonction se souvenir de moi n'a pas pu etre activee.";
+
+                            }
+
+                        }else{
+
+                            infinitia_delete_user_tokens($conn, (int)$user["id"]);
+                            infinitia_delete_remember_cookie();
 
                         }
 
@@ -161,7 +225,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             }
 
-            $stmt->close();
+            mysqli_stmt_close($stmt);
 
         }
 
@@ -249,6 +313,19 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <?php
         echo $_SESSION['error'];
         unset($_SESSION['error']);
+        ?>
+
+    </div>
+
+<?php endif; ?>
+
+            <?php if(isset($_SESSION['success'])): ?>
+
+    <div class="card-panel green white-text">
+
+        <?php
+        echo htmlspecialchars($_SESSION['success']);
+        unset($_SESSION['success']);
         ?>
 
     </div>
@@ -352,7 +429,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                                 <label>
 
-                                    <input type="checkbox">
+                                    <input type="checkbox"
+                                    name="remember_me"
+                                    value="1">
 
                                     <span>
 
@@ -362,7 +441,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                                 </label>
 
-                                <a href="#"
+                                <a href="forgot-password.php"
                                 class="forgot-link">
 
                                     Mot de passe oublié ?
