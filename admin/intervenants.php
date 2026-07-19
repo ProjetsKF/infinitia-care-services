@@ -1574,8 +1574,23 @@ if(count($candidates) > 0){
             <input type="hidden" name="action" value="update_candidate">
             <input type="hidden" name="candidate_id" value="<?php echo $candidate_id; ?>">
 
-            <div class="modal-content">
-                <h4>Modifier l'intervenant</h4>
+            <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                padding:28px 40px;
+                                border-radius:18px 18px 0 0;">
+
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                               Modifier l'intervenant
+                                </h4>
+
+                            </div>
+            <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+        
 
                 <div class="input-field">
                     <input type="text"

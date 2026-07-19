@@ -70,37 +70,6 @@ session_start();
 
                 <div class="col s12 m10 offset-m1 l8 offset-l2">
 
- <!-- PROCESS BAR -->
-                    <div class="registration-steps">
-
-                    <div class="step active">
-                        <span class="step-number">1</span>
-                        <span class="step-label">Compte</span>
-                    </div>
-
-                    <div class="step-line"></div>
-
-                    <div class="step">
-                        <span class="step-number">2</span>
-                        <span class="step-label">Personnel</span>
-                    </div>
-
-                    <div class="step-line"></div>
-
-                    <div class="step">
-                        <span class="step-number">3</span>
-                        <span class="step-label">Professionnel</span>
-                    </div>
-
-                    <div class="step-line"></div>
-
-                    <div class="step">
-                        <span class="step-number">4</span>
-                        <span class="step-label">Documents</span>
-                    </div>
-
-                </div>
-
                     <div class="card register-card">
 
                         <!-- HEADER -->
@@ -128,7 +97,7 @@ session_start();
 
                                 <i class="material-icons left">error</i>
 
-                                <?= $_SESSION['error']; ?>
+                                <?= htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8'); ?>
 
                             </div>
 
@@ -143,7 +112,7 @@ session_start();
 
                                 <i class="material-icons left">check_circle</i>
 
-                                <?= $_SESSION['success']; ?>
+                                <?= htmlspecialchars($_SESSION['success'], ENT_QUOTES, 'UTF-8'); ?>
 
                             </div>
 
@@ -275,6 +244,72 @@ enctype="multipart/form-data">
         </div>
 
     </div>
+
+<!-- =========================
+     CONSENTEMENT À L'IMAGE
+========================== -->
+
+<div class="row">
+
+    <div class="col s12">
+
+        <div class="card-panel blue lighten-5 consent-photo-box">
+
+            <div class="consent-photo-title">
+
+                <i class="material-icons">
+                    photo_camera
+                </i>
+
+                <strong>
+                    Consentement à l’utilisation de la photographie
+                </strong>
+
+            </div>
+
+            <p class="consent-photo-text">
+
+                La photographie fournie pourra être utilisée par
+                INFINITIA CARE SERVICES pour créer et présenter mon profil
+                professionnel sur la plateforme, notamment dans la rubrique
+                « Nos intervenants ».
+
+            </p>
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="photo_consent"
+                    value="1"
+                    required>
+
+                <span>
+
+                    J’autorise expressément INFINITIA CARE SERVICES à publier
+                    et à utiliser ma photographie dans le cadre de la
+                    présentation de mon profil et des services proposés sur
+                    la plateforme.
+
+                </span>
+
+            </label>
+
+            <p class="consent-photo-legal">
+
+                Ce consentement est donné conformément à l’article 23 de
+                l’Ordonnance-loi n° 86-033 du 5 avril 1986 et aux dispositions
+                applicables du Code du numérique de la République
+                Démocratique du Congo relatives à la protection des données
+                personnelles.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
 
     <!-- =========================
          INFORMATIONS PERSONNELLES
@@ -433,31 +468,32 @@ enctype="multipart/form-data">
 
     </div>
 
-    <!-- =========================
-         CONDITIONS
-    ========================== -->
+ <!-- =========================
+     CONDITIONS D'UTILISATION
+========================== -->
 
-    <div class="row">
+<div class="row">
 
-        <div class="col s12">
+    <div class="col s12">
 
-            <label>
+        <label>
 
-                <input
+            <input
                 type="checkbox"
+                name="terms_accepted"
+                value="1"
                 required>
 
-                <span>
+            <span>
+                J’ai lu et j’accepte les conditions d’utilisation ainsi que
+                la politique de confidentialité d’INFINITIA CARE SERVICES.
+            </span>
 
-                    J'accepte les conditions d'utilisation.
-
-                </span>
-
-            </label>
-
-        </div>
+        </label>
 
     </div>
+
+</div>
 
     <!-- =========================
          ACTIONS

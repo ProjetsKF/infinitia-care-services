@@ -226,9 +226,7 @@ $competences = mysqli_stmt_get_result($stmt);
 
         <div style="margin-bottom:20px;">
 
-            <a
-            href="#modalAddSkill"
-            class="btn-large teal modal-trigger">
+            <a href="#modalAddSkill" class="btn-large teal modal-trigger">
 
                 <i class="material-icons left">
 
@@ -342,12 +340,25 @@ $competences = mysqli_stmt_get_result($stmt);
 
 
 <div id="modalAddSkill" class="modal">
+                        <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                 padding:28px 40px;
+                                border-radius:18px 18px 0 0;">
 
-    <div class="modal-content">
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                 Ajouter des compétences
+                                </h4>
 
-        <h4>
-            Ajouter des compétences
-        </h4>
+                            </div>
+
+    <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+
+      
 
         <form
             action="add-skill.php"
@@ -524,12 +535,25 @@ $competences = mysqli_stmt_get_result($stmt);
 
 <div id="modalEditSkill" class="modal">
 
-    <div class="modal-content">
+                                <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                padding:28px 40px;
+                                border-radius:18px 18px 0 0;">
 
-        <h4>
-            Modifier la compétence
-        </h4>
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                 Modifier la compétence 
+                                </h4>
 
+                            </div>
+
+    <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+
+    
         <form
             action="update-skill.php"
             method="POST">

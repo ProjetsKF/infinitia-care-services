@@ -3013,3 +3013,118 @@ footer{
 
     min-height:280px;
 }
+
+
+.consent-notice-wrapper{
+    padding:35px 7% 0;
+}
+
+.consent-notice{
+    max-width:1200px;
+    margin:0 auto;
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    background:#ffffff;
+    border-left:5px solid #071f7a;
+    border-radius:16px;
+    padding:22px 25px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.07);
+}
+
+.consent-notice-icon{
+    flex-shrink:0;
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#071f7a,#8e24aa);
+    color:#ffffff;
+}
+
+.consent-notice-icon i{
+    font-size:26px;
+}
+
+.consent-notice-content h6{
+    margin:0 0 8px;
+    color:#071f7a;
+    font-weight:700;
+    font-size:17px;
+}
+
+.consent-notice-content p{
+    margin:0;
+    color:#555555;
+    font-size:14px;
+    line-height:1.7;
+    text-align:justify;
+}
+
+@media screen and (max-width:600px){
+
+    .consent-notice-wrapper{
+        padding:25px 5% 0;
+    }
+
+    .consent-notice{
+        padding:18px;
+        gap:14px;
+    }
+
+    .consent-notice-icon{
+        width:42px;
+        height:42px;
+    }
+
+    .consent-notice-content p{
+        font-size:13px;
+        text-align:left;
+    }
+}
+
+
+    .consent-photo-box{
+        margin-top:15px;
+        margin-bottom:30px;
+        padding:22px;
+        border-left:5px solid #071f7a;
+        border-radius:12px;
+    }
+
+    .consent-photo-title{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        color:#071f7a;
+        margin-bottom:12px;
+        font-size:16px;
+    }
+
+    .consent-photo-title i{
+        font-size:25px;
+    }
+
+    .consent-photo-text{
+        color:#444444;
+        line-height:1.6;
+        margin-bottom:15px;
+    }
+
+    .consent-photo-box label span{
+        color:#333333;
+        line-height:1.6;
+        font-size:14px;
+    }
+
+    .consent-photo-legal{
+        margin-top:15px;
+        margin-bottom:0;
+        padding-top:12px;
+        border-top:1px solid rgba(7,31,122,0.15);
+        color:#666666;
+        font-size:12px;
+        line-height:1.6;
+    }

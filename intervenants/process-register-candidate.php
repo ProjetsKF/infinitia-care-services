@@ -17,6 +17,28 @@ if($_SERVER["REQUEST_METHOD"] != "POST"){
 
 }
 
+$photo_consent = isset($_POST["photo_consent"])
+    ? (int)$_POST["photo_consent"]
+    : 0;
+
+$terms_accepted = isset($_POST["terms_accepted"])
+    ? (int)$_POST["terms_accepted"]
+    : 0;
+
+if($photo_consent !== 1){
+
+    redirect_with_error("Vous devez autoriser l'utilisation de votre photographie pour créer votre profil public.");
+
+}
+
+if($terms_accepted !== 1){
+
+    redirect_with_error("Vous devez accepter les conditions d'utilisation.");
+
+}
+
+$photo_consent_date = date("Y-m-d H:i:s");
+
 $first_name = isset($_POST["first_name"]) ? trim($_POST["first_name"]) : "";
 $last_name = isset($_POST["last_name"]) ? trim($_POST["last_name"]) : "";
 $email = isset($_POST["email"]) ? trim($_POST["email"]) : "";
@@ -255,9 +277,13 @@ if($transaction_ok){
         bio,
         availability_status,
         verification_status,
-        emergency_contact
+        emergency_contact,
+        photo_consent,
+        photo_consent_date
     )
     VALUES(
+        ?,
+        ?,
         ?,
         ?,
         ?,
@@ -287,7 +313,7 @@ if($transaction_ok){
 
         mysqli_stmt_bind_param(
             $stmtCandidate,
-            "isssssssissss",
+            "isssssssissssis",
             $user_id,
             $birth_date,
             $gender,
@@ -300,7 +326,9 @@ if($transaction_ok){
             $bio,
             $availability_status,
             $verification_status,
-            $emergency_contact
+            $emergency_contact,
+            $photo_consent,
+            $photo_consent_date
         );
 
         if(!mysqli_stmt_execute($stmtCandidate)){
@@ -323,12 +351,13 @@ if($transaction_ok){
 if($transaction_ok){
 
     mysqli_commit($conn);
-    mysqli_autocommit($conn, true);
+mysqli_autocommit($conn, true);
 
-    $_SESSION["user_id"] = $user_id;
+$_SESSION["success"] =
+    "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.";
 
-    header("Location: candidashboard.php");
-    exit();
+header("Location: ../login.php");
+exit();
 
 }
 

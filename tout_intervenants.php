@@ -25,6 +25,7 @@ INNER JOIN candidates c
 WHERE u.role_id = 3
 AND u.status = 'active'
 AND c.verification_status = 'verifie'
+AND c.photo_consent = 1
 ";
 
 $result_count = mysqli_query($conn, $sql_count);
@@ -57,6 +58,7 @@ INNER JOIN candidates c
 WHERE u.role_id = 3
 AND u.status = 'active'
 AND c.verification_status = 'verifie'
+AND c.photo_consent = 1
 ORDER BY u.first_name ASC
 LIMIT ?, ?
 ";
@@ -113,6 +115,7 @@ if($stmt)
           rel="stylesheet">
     
           <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <style>
 
@@ -244,6 +247,42 @@ if($stmt)
 
 </section>
 
+<!-- INFORMATION SUR LE CONSENTEMENT ET LE DROIT À L'IMAGE -->
+
+<div class="consent-notice-wrapper">
+
+    <div class="consent-notice">
+
+        <div class="consent-notice-icon">
+
+            <i class="material-icons">
+                verified_user
+            </i>
+
+        </div>
+
+        <div class="consent-notice-content">
+
+            <h6>
+                Protection du droit à l’image
+            </h6>
+
+            <p>
+                Les photographies publiées sur cette plateforme sont utilisées
+                avec le consentement des personnes concernées, conformément à
+                l’article 23 de l’Ordonnance-loi n° 86-033 du 5 avril 1986
+                relative aux droits d’auteur ainsi qu’aux dispositions du Code
+                du numérique de la République Démocratique du Congo relatives
+                à la protection des données personnelles. Toute reproduction,
+                diffusion ou utilisation sans autorisation est interdite.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
 <div class="content-wrapper">
 
     <div class="row">
@@ -259,7 +298,7 @@ if($stmt)
                         <?php if(!empty($intervenant['profile_photo'])){ ?>
 
                             <img
-                                src="<?php echo htmlspecialchars($intervenant['profile_photo']); ?>"
+                                src="<?php echo htmlspecialchars($intervenant['profile_photo'], ENT_QUOTES, 'UTF-8'); ?>"
                                 class="intervenant-photo"
                                 alt="Photo intervenant">
 
@@ -276,7 +315,9 @@ if($stmt)
                             <?php
                             echo htmlspecialchars(
                                 $intervenant['first_name'] . ' ' .
-                                $intervenant['last_name']
+                                $intervenant['last_name'],
+                                ENT_QUOTES,
+                                'UTF-8'
                             );
                             ?>
                         </h5>
@@ -285,7 +326,7 @@ if($stmt)
 
                             <i class="material-icons tiny">location_on</i>
 
-                            <?php echo htmlspecialchars($intervenant['city']); ?>
+                            <?php echo htmlspecialchars($intervenant['city'], ENT_QUOTES, 'UTF-8'); ?>
 
                         </div>
 
@@ -322,7 +363,7 @@ if($stmt)
                         <?php if(!empty($intervenant['bio'])){ ?>
 
                             <p style="margin-top:15px;color:#666;">
-                                <?php echo htmlspecialchars(substr($intervenant['bio'],0,120)); ?>...
+                                <?php echo htmlspecialchars(substr($intervenant['bio'],0,120), ENT_QUOTES, 'UTF-8'); ?>...
                             </p>
 
                         <?php } ?>

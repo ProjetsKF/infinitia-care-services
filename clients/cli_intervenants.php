@@ -654,8 +654,7 @@ mysqli_stmt_close($stmt);
                              <div style="
                                 background:linear-gradient(90deg,#1b2d8f,#e63b88);
                                 padding:28px 40px;
-                                border-radius:18px 18px 0 0;
-                            ">
+                                border-radius:18px 18px 0 0;">
 
                                 <h4 style="
                                     margin:0;

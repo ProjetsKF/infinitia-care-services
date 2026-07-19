@@ -827,9 +827,24 @@ if($stmt){
     ?>
 
     <div id="viewRequest<?php echo $request_id; ?>" class="modal modal-fixed-footer">
-        <div class="modal-content">
-            <h4><?php echo safe_text(request_reference($request_id)); ?></h4>
+        <div style="
+                                background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                                 padding:28px 40px;
+                                border-radius:18px 18px 0 0;">
 
+                                <h4 style="
+                                    margin:0;
+                                    color:#fff;
+                                    font-size:38px;
+                                    font-weight:700;
+                                ">
+                                  <?php echo safe_text(request_reference($request_id)); ?>
+
+                                </h4>
+
+                            </div>
+        <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+           
             <div class="detail-grid">
                 <div class="detail-item">
                     <span class="detail-label">Client</span>

@@ -278,33 +278,6 @@ function verification_score($status, &$reasons)
     return 0;
 }
 
-function skill_matches($skill_name, $service_title, $category_name)
-{
-    $skill = normalize_text($skill_name);
-    $service = normalize_text($service_title);
-    $category = normalize_text($category_name);
-
-    if($skill == ""){
-
-        return false;
-
-    }
-
-    if($service != "" && (strpos($service, $skill) !== false || strpos($skill, $service) !== false)){
-
-        return true;
-
-    }
-
-    if($category != "" && (strpos($category, $skill) !== false || strpos($skill, $category) !== false)){
-
-        return true;
-
-    }
-
-    return false;
-}
-
 function redirect_affectations($request_id)
 {
     if($request_id > 0){
@@ -732,11 +705,27 @@ if($selected_request){
 
     }
 
+    $skill_category_column_exists = false;
+    $sql = "SHOW COLUMNS FROM candidate_skills LIKE 'service_category_id'";
+    $result = mysqli_query($conn, $sql);
+
+    if($result){
+
+        $skill_category_column_exists = mysqli_num_rows($result) > 0;
+        mysqli_free_result($result);
+
+    }
+
+    $skill_category_select = $skill_category_column_exists
+        ? "service_category_id"
+        : "NULL AS service_category_id";
+
     $sql = "
     SELECT
         candidate_id,
         skill_name,
-        level
+        level,
+        " . $skill_category_select . "
     FROM candidate_skills
     WHERE is_active = 1
     ";
@@ -761,16 +750,19 @@ if($selected_request){
 
     }
 
+    $selected_category_id = isset($selected_request["category_id"])
+        ? (int)$selected_request["category_id"]
+        : 0;
+
     foreach($candidates as $candidate){
 
         $candidate_id = (int)$candidate["candidate_id"];
         $reasons = array();
         $score = 0;
-        $matched_skill = "Aucune competence correspondante";
+        $matched_skill = "Aucune compétence correspondante";
         $skill_score = 0;
+        $has_matching_skill = false;
         $skills = isset($candidate_skills[$candidate_id]) ? $candidate_skills[$candidate_id] : array();
-        $service_title = isset($selected_request["title"]) ? $selected_request["title"] : "";
-        $category_name = isset($selected_request["category_name"]) ? $selected_request["category_name"] : "";
 
         $score += availability_score($candidate["availability_status"], $reasons);
 
@@ -778,29 +770,38 @@ if($selected_request){
 
             $skill_name = isset($skill["skill_name"]) ? $skill["skill_name"] : "";
             $skill_level = isset($skill["level"]) ? $skill["level"] : "";
+            $skill_category_id = isset($skill["service_category_id"])
+                ? (int)$skill["service_category_id"]
+                : 0;
 
-            if(skill_matches($skill_name, $service_title, $category_name)){
+            if(
+                $selected_category_id > 0
+                && $skill_category_id > 0
+                && $skill_category_id === $selected_category_id
+            ){
 
                 $candidate_skill_score = skill_level_score($skill_level);
 
-                if($candidate_skill_score > $skill_score){
+                if(!$has_matching_skill || $candidate_skill_score > $skill_score){
 
                     $skill_score = $candidate_skill_score;
                     $matched_skill = $skill_name . " (" . display_value($skill_level) . ")";
 
                 }
 
+                $has_matching_skill = true;
+
             }
 
         }
 
-        if($skill_score > 0){
+        if($has_matching_skill){
 
             $reasons[] = "Competence correspondante : " . $matched_skill . " (+" . $skill_score . ")";
 
         }else{
 
-            $reasons[] = "Aucune competence active ne correspond au service (+0)";
+            $reasons[] = "Aucune compétence active ne correspond à la catégorie du service (+0)";
 
         }
 
