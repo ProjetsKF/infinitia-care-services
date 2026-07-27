@@ -2,7 +2,7 @@
 
 session_start();
 
-require_once("../config/database.php");
+require_once(dirname(__FILE__) . "/../config/database.php");
 
 function redirect_demande()
 {
@@ -78,11 +78,65 @@ function format_request_date($value)
 
 function build_mailer()
 {
-    require_once("../vendor/phpmailer/phpmailer/src/Exception.php");
-    require_once("../vendor/phpmailer/phpmailer/src/PHPMailer.php");
-    require_once("../vendor/phpmailer/phpmailer/src/SMTP.php");
+    $base_path = dirname(__FILE__) . "/..";
+    $required_files = array(
+        $base_path . "/vendor/phpmailer/phpmailer/src/Exception.php",
+        $base_path . "/vendor/phpmailer/phpmailer/src/PHPMailer.php",
+        $base_path . "/vendor/phpmailer/phpmailer/src/SMTP.php"
+    );
+    $i = 0;
 
-    $config = require("../config/mail.php");
+    for($i = 0; $i < count($required_files); $i++){
+        if(!is_file($required_files[$i])){
+            throw new Exception("Dépendance e-mail introuvable.");
+        }
+
+        require_once($required_files[$i]);
+    }
+
+    if(!class_exists("PHPMailer\\PHPMailer\\PHPMailer")){
+        throw new Exception("Classe PHPMailer introuvable.");
+    }
+
+    $config_file = $base_path . "/config/mail.php";
+
+    if(!is_file($config_file)){
+        throw new Exception("Configuration e-mail introuvable.");
+    }
+
+    $config = require($config_file);
+    $required_keys = array(
+        "host",
+        "username",
+        "password",
+        "secure",
+        "port",
+        "from_email",
+        "from_name",
+        "to_email",
+        "to_name"
+    );
+
+    if(!is_array($config)){
+        throw new Exception("Configuration e-mail invalide.");
+    }
+
+    for($i = 0; $i < count($required_keys); $i++){
+        $key = $required_keys[$i];
+
+        if(!isset($config[$key]) || trim((string)$config[$key]) == ""){
+            throw new Exception("Configuration e-mail incomplète : " . $key . ".");
+        }
+    }
+
+    if(!in_array($config["secure"], array("ssl", "tls"), true)
+        || ($config["secure"] == "ssl" && (int)$config["port"] != 465)
+        || ($config["secure"] == "tls" && (int)$config["port"] != 587)
+        || !filter_var($config["from_email"], FILTER_VALIDATE_EMAIL)
+        || !filter_var($config["to_email"], FILTER_VALIDATE_EMAIL)){
+        throw new Exception("Paramètres e-mail invalides.");
+    }
+
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
     $mail->isSMTP();
@@ -92,6 +146,9 @@ function build_mailer()
     $mail->Password = $config["password"];
     $mail->SMTPSecure = $config["secure"];
     $mail->Port = (int)$config["port"];
+    $mail->Timeout = 5;
+    $mail->getSMTPInstance()->Timelimit = 5;
+    $mail->SMTPKeepAlive = true;
     $mail->CharSet = "UTF-8";
     $mail->setFrom($config["from_email"], $config["from_name"]);
 
@@ -102,6 +159,7 @@ function send_request_notifications($request)
 {
     $admin_sent = false;
     $client_sent = false;
+    $mail = NULL;
     $request_id = (int)$request["request_id"];
     $reference = "DEM-" . str_pad($request_id, 5, "0", STR_PAD_LEFT);
 
@@ -199,7 +257,15 @@ function send_request_notifications($request)
         }
 
     }catch(Exception $e){
-        error_log("Erreur SMTP demande #" . $request_id . " : " . $e->getMessage());
+        error_log(
+            "Erreur notification demande #" . $request_id
+            . " : " . $e->getMessage()
+            . " [" . $e->getFile() . ":" . $e->getLine() . "]"
+        );
+    }
+
+    if($mail instanceof PHPMailer\PHPMailer\PHPMailer){
+        $mail->smtpClose();
     }
 
     return $admin_sent && ($client_sent || !filter_var($request["client_email"], FILTER_VALIDATE_EMAIL));

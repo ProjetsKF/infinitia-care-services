@@ -269,10 +269,10 @@ enctype="multipart/form-data">
 
             <p class="consent-photo-text">
 
-                La photographie fournie pourra être utilisée par
-                INFINITIA CARE SERVICES pour créer et présenter mon profil
-                professionnel sur la plateforme, notamment dans la rubrique
-                « Nos intervenants ».
+                Vous êtes libre d’autoriser ou de refuser l’affichage public de
+                votre photographie. En cas de refus, votre profil professionnel
+                restera visible dans la rubrique « Nos intervenants », avec une
+                image générique à la place de votre vraie photo.
 
             </p>
 
@@ -281,8 +281,7 @@ enctype="multipart/form-data">
                 <input
                     type="checkbox"
                     name="photo_consent"
-                    value="1"
-                    required>
+                    value="1">
 
                 <span>
 
@@ -302,6 +301,8 @@ enctype="multipart/form-data">
                 applicables du Code du numérique de la République
                 Démocratique du Congo relatives à la protection des données
                 personnelles.
+                Vous pourrez modifier ou retirer ce consentement ultérieurement
+                depuis les paramètres de votre compte.
 
             </p>
 

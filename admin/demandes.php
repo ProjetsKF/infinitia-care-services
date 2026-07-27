@@ -136,35 +136,29 @@ function has_status($statuses, $status)
     return in_array($status, $statuses);
 }
 
-function status_label($status, $mission_total)
+function status_label($status)
 {
-    if($mission_total > 0){
-
-        return "Affectee";
-
-    }
-
     if($status == "en_attente"){
 
         return "En attente";
 
     }
 
-    if($status == "validee" || $status == "attribuee"){
+    if($status == "validee"){
 
-        return "Validee";
+        return "Validée";
 
     }
 
-    if($status == "affectee"){
+    if($status == "attribuee"){
 
-        return "Affectee";
+        return "Affectée";
 
     }
 
     if($status == "rejetee" || $status == "annulee"){
 
-        return "Rejetee";
+        return $status == "rejetee" ? "Rejetée" : "Annulée";
 
     }
 
@@ -176,16 +170,16 @@ function status_label($status, $mission_total)
 
     if($status == "terminee"){
 
-        return "Terminee";
+        return "Terminée";
 
     }
 
     return display_value($status);
 }
 
-function status_badge_class($status, $mission_total)
+function status_badge_class($status)
 {
-    if($mission_total > 0 || $status == "affectee" || $status == "en_cours" || $status == "terminee"){
+    if($status == "attribuee" || $status == "terminee"){
 
         return "green";
 
@@ -197,9 +191,15 @@ function status_badge_class($status, $mission_total)
 
     }
 
-    if($status == "validee" || $status == "attribuee"){
+    if($status == "validee"){
 
         return "blue";
+
+    }
+
+    if($status == "en_cours"){
+
+        return "teal";
 
     }
 
@@ -219,37 +219,8 @@ function status_badge_class($status, $mission_total)
 }
 
 $status_values = enum_values($conn, "service_requests", "status");
-
-$validated_status = "validee";
-$rejected_status = "rejetee";
-
-if(!has_status($status_values, $validated_status)){
-
-    if(has_status($status_values, "attribuee")){
-
-        $validated_status = "attribuee";
-
-    }else{
-
-        $validated_status = "en_attente";
-
-    }
-
-}
-
-if(!has_status($status_values, $rejected_status)){
-
-    if(has_status($status_values, "annulee")){
-
-        $rejected_status = "annulee";
-
-    }else{
-
-        $rejected_status = "en_attente";
-
-    }
-
-}
+$has_validated_status = has_status($status_values, "validee");
+$has_rejected_status = has_status($status_values, "rejetee");
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
@@ -303,6 +274,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if($action == "validate_request"){
 
+            if(!$has_validated_status){
+
+                $_SESSION["error"] = "Le statut 'validee' n'existe pas dans service_requests.status. La structure SQL doit être corrigée avant toute validation.";
+                redirect_demandes();
+
+            }
+
             if($current_status != "en_attente"){
 
                 $_SESSION["error"] = "Cette demande ne peut plus etre validee.";
@@ -312,7 +290,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             $sql = "
             UPDATE service_requests
-            SET status = ?
+            SET status = 'validee'
             WHERE id = ?
             AND status = 'en_attente'
             ";
@@ -325,11 +303,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             }
 
-            mysqli_stmt_bind_param($stmt, "si", $validated_status, $request_id);
+            mysqli_stmt_bind_param($stmt, "i", $request_id);
 
             if(mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0){
 
-                $_SESSION["success"] = "Demande validee avec succes.";
+                $_SESSION["success"] = "Demande validée avec succès. Elle est maintenant disponible pour l'affectation.";
 
             }else{
 
@@ -344,7 +322,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if($action == "reject_request"){
 
-            if($current_status != "en_attente" && $current_status != $validated_status && $current_status != "validee" && $current_status != "attribuee"){
+            if(!$has_rejected_status){
+
+                $_SESSION["error"] = "Le statut 'rejetee' n'existe pas dans service_requests.status. La structure SQL doit être corrigée avant tout rejet.";
+                redirect_demandes();
+
+            }
+
+            if($current_status != "en_attente" && $current_status != "validee"){
 
                 $_SESSION["error"] = "Cette demande ne peut plus etre rejetee.";
                 redirect_demandes();
@@ -353,8 +338,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             $sql = "
             UPDATE service_requests
-            SET status = ?
+            SET status = 'rejetee'
             WHERE id = ?
+            AND status IN ('en_attente', 'validee')
+            AND NOT EXISTS(
+                SELECT 1
+                FROM missions
+                WHERE missions.service_request_id = service_requests.id
+            )
             ";
 
             $stmt = mysqli_prepare($conn, $sql);
@@ -365,15 +356,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             }
 
-            mysqli_stmt_bind_param($stmt, "si", $rejected_status, $request_id);
+            mysqli_stmt_bind_param($stmt, "i", $request_id);
 
-            if(mysqli_stmt_execute($stmt)){
+            if(mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0){
 
-                $_SESSION["success"] = "Demande rejetee avec succes.";
+                $_SESSION["success"] = "Demande rejetée avec succès.";
 
             }else{
 
-                $_SESSION["error"] = "Erreur lors du rejet de la demande.";
+                $_SESSION["error"] = "Cette demande ne peut pas être rejetée ou possède déjà une mission.";
 
             }
 
@@ -389,8 +380,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 $stats = array(
     "total" => count_query($conn, "SELECT COUNT(*) AS total FROM service_requests"),
     "pending" => count_query($conn, "SELECT COUNT(*) AS total FROM service_requests WHERE status = 'en_attente'"),
-    "validated" => count_query($conn, "SELECT COUNT(*) AS total FROM service_requests WHERE status IN ('validee', 'attribuee') AND NOT EXISTS(SELECT 1 FROM missions WHERE missions.service_request_id = service_requests.id)"),
-    "assigned" => count_query($conn, "SELECT COUNT(DISTINCT service_request_id) AS total FROM missions"),
+    "validated" => count_query($conn, "SELECT COUNT(*) AS total FROM service_requests WHERE status = 'validee' AND NOT EXISTS(SELECT 1 FROM missions WHERE missions.service_request_id = service_requests.id)"),
+    "assigned" => count_query($conn, "SELECT COUNT(*) AS total FROM service_requests WHERE status = 'attribuee' OR EXISTS(SELECT 1 FROM missions WHERE missions.service_request_id = service_requests.id AND missions.mission_status = 'affectee')"),
     "rejected" => count_query($conn, "SELECT COUNT(*) AS total FROM service_requests WHERE status IN ('rejetee', 'annulee')")
 );
 
@@ -650,7 +641,7 @@ if($stmt){
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">task_alt</i></div>
-                    <h5>Validees</h5>
+                    <h5>Validées</h5>
                     <h3><?php echo (int)$stats["validated"]; ?></h3>
                 </div>
             </div>
@@ -658,7 +649,7 @@ if($stmt){
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon pink-gradient"><i class="material-icons">engineering</i></div>
-                    <h5>Affectees</h5>
+                    <h5>Affectées</h5>
                     <h3><?php echo (int)$stats["assigned"]; ?></h3>
                 </div>
             </div>
@@ -666,7 +657,7 @@ if($stmt){
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon gold-gradient"><i class="material-icons">block</i></div>
-                    <h5>Rejetees</h5>
+                    <h5>Rejetées</h5>
                     <h3><?php echo (int)$stats["rejected"]; ?></h3>
                 </div>
             </div>
@@ -698,7 +689,7 @@ if($stmt){
                             $mission_total = isset($request["mission_total"]) ? (int)$request["mission_total"] : 0;
                             $status = isset($request["status"]) ? $request["status"] : "";
                             $client_name = trim(display_value($request["first_name"]) . " " . display_value($request["last_name"]));
-                            $badge_class = status_badge_class($status, $mission_total);
+                            $badge_class = status_badge_class($status);
                             ?>
                             <tr>
                                 <td><?php echo safe_text(request_reference($request_id)); ?></td>
@@ -710,7 +701,7 @@ if($stmt){
                                 <td><?php echo safe_text(number_format((float)$request["budget"], 2)); ?></td>
                                 <td>
                                     <span class="new badge <?php echo safe_text($badge_class); ?>" data-badge-caption="">
-                                        <?php echo safe_text(status_label($status, $mission_total)); ?>
+                                        <?php echo safe_text(status_label($status)); ?>
                                     </span>
                                 </td>
                                 <td>
@@ -730,14 +721,14 @@ if($stmt){
                                             </form>
                                         <?php } ?>
 
-                                        <?php if($status == "en_attente" || $status == $validated_status || $status == "validee" || $status == "attribuee"){ ?>
+                                        <?php if(($status == "en_attente" || $status == "validee") && $mission_total <= 0){ ?>
                                             <a href="#rejectRequest<?php echo $request_id; ?>"
                                                class="btn-small red modal-trigger">
                                                 Rejeter
                                             </a>
                                         <?php } ?>
 
-                                        <?php if(($status == $validated_status || $status == "validee" || $status == "attribuee") && $mission_total <= 0){ ?>
+                                        <?php if($status == "validee" && $mission_total <= 0){ ?>
                                             <a href="affectations.php?request_id=<?php echo $request_id; ?>"
                                                class="btn-small orange">
                                                 Affecter
@@ -898,7 +889,7 @@ if($stmt){
 
                 <div class="detail-item">
                     <span class="detail-label">Statut</span>
-                    <?php echo safe_text(status_label($status, $mission_total)); ?>
+                    <?php echo safe_text(status_label($status)); ?>
                 </div>
 
                 <div class="detail-item">

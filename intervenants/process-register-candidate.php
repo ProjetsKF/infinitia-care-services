@@ -17,19 +17,21 @@ if($_SERVER["REQUEST_METHOD"] != "POST"){
 
 }
 
-$photo_consent = isset($_POST["photo_consent"])
-    ? (int)$_POST["photo_consent"]
-    : 0;
+$photo_consent_raw = isset($_POST["photo_consent"])
+    ? (string)$_POST["photo_consent"]
+    : "0";
 
 $terms_accepted = isset($_POST["terms_accepted"])
     ? (int)$_POST["terms_accepted"]
     : 0;
 
-if($photo_consent !== 1){
+if($photo_consent_raw !== "0" && $photo_consent_raw !== "1"){
 
-    redirect_with_error("Vous devez autoriser l'utilisation de votre photographie pour créer votre profil public.");
+    redirect_with_error("Choix de consentement photo invalide.");
 
 }
+
+$photo_consent = (int)$photo_consent_raw;
 
 if($terms_accepted !== 1){
 
@@ -37,7 +39,9 @@ if($terms_accepted !== 1){
 
 }
 
-$photo_consent_date = date("Y-m-d H:i:s");
+$photo_consent_date = $photo_consent === 1
+    ? date("Y-m-d H:i:s")
+    : NULL;
 
 $first_name = isset($_POST["first_name"]) ? trim($_POST["first_name"]) : "";
 $last_name = isset($_POST["last_name"]) ? trim($_POST["last_name"]) : "";
@@ -379,4 +383,3 @@ if($error_message == ""){
 redirect_with_error($error_message . " Aucun compte incomplet n'a ete cree.");
 
 ?>
-

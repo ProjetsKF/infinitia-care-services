@@ -4,17 +4,63 @@ session_start();
 
 require_once("config/database.php");
 
-/* Pagination */
-$limit = 10;
-
-$page = 1;
-
-if(isset($_GET['page']) && (int)$_GET['page'] > 0)
+function pagination_url($page_number, $search)
 {
-    $page = (int)$_GET['page'];
+    $params = array(
+        "page" => (int)$page_number
+    );
+
+    if($search != ""){
+        $params["search"] = $search;
+    }
+
+    return "tout_intervenants.php?" . http_build_query($params);
 }
 
-$offset = ($page - 1) * $limit;
+function public_profile_photo_path($profile_photo)
+{
+    if($profile_photo === NULL || trim($profile_photo) === ""){
+        return "assets/images/default-user.png";
+    }
+
+    $profile_photo = str_replace("\\", "/", trim($profile_photo));
+
+    if(strpos($profile_photo, ":") !== false){
+        return "assets/images/default-user.png";
+    }
+
+    if(strpos($profile_photo, "../uploads/") === 0){
+        $profile_photo = substr($profile_photo, 3);
+    }
+
+    if(strpos($profile_photo, "..") !== false){
+        return "assets/images/default-user.png";
+    }
+
+    if(strpos($profile_photo, "uploads/") === 0){
+        return $profile_photo;
+    }
+
+    if(strpos($profile_photo, "/") !== false){
+        return "assets/images/default-user.png";
+    }
+
+    return "uploads/profiles/" . $profile_photo;
+}
+
+$limit = 20;
+$page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+$search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
+
+if($page < 1){
+    $page = 1;
+}
+
+if(strlen($search) > 100){
+    $search = substr($search, 0, 100);
+}
+
+$search_like = "%" . $search . "%";
 
 /* Nombre total d'intervenants visibles */
 $sql_count = "
@@ -25,20 +71,69 @@ INNER JOIN candidates c
 WHERE u.role_id = 3
 AND u.status = 'active'
 AND c.verification_status = 'verifie'
-AND c.photo_consent = 1
 ";
-
-$result_count = mysqli_query($conn, $sql_count);
 
 $total_intervenants = 0;
 
-if($result_count)
-{
-    $row_count = mysqli_fetch_assoc($result_count);
-    $total_intervenants = (int)$row_count['total'];
+if($search != ""){
+    $sql_count .= "
+    AND (
+        u.first_name LIKE ?
+        OR u.last_name LIKE ?
+        OR CONCAT(u.first_name, ' ', u.last_name) LIKE ?
+        OR c.city LIKE ?
+        OR c.bio LIKE ?
+        OR c.availability_status LIKE ?
+    )
+    ";
+
+    $stmt_count = mysqli_prepare($conn, $sql_count);
+
+    if($stmt_count){
+        mysqli_stmt_bind_param(
+            $stmt_count,
+            "ssssss",
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like
+        );
+
+        if(mysqli_stmt_execute($stmt_count)){
+            mysqli_stmt_bind_result($stmt_count, $total_intervenants);
+            mysqli_stmt_fetch($stmt_count);
+            $total_intervenants = (int)$total_intervenants;
+        }
+
+        mysqli_stmt_close($stmt_count);
+    }
+}else{
+    $result_count = mysqli_query($conn, $sql_count);
+
+    if($result_count){
+        $row_count = mysqli_fetch_assoc($result_count);
+
+        if($row_count && isset($row_count["total"])){
+            $total_intervenants = (int)$row_count["total"];
+        }
+
+        mysqli_free_result($result_count);
+    }
 }
 
-$total_pages = ceil($total_intervenants / $limit);
+$total_pages = (int)ceil($total_intervenants / $limit);
+
+if($total_pages > 0 && $page > $total_pages){
+    $page = $total_pages;
+}
+
+if($total_pages < 1){
+    $page = 1;
+}
+
+$offset = ($page - 1) * $limit;
 
 /* Liste des intervenants */
 $sql = "
@@ -51,15 +146,31 @@ SELECT
     c.city,
     c.experience_years,
     c.availability_status,
-    c.bio
+    c.bio,
+    c.photo_consent
 FROM users u
 INNER JOIN candidates c
     ON u.id = c.user_id
 WHERE u.role_id = 3
 AND u.status = 'active'
 AND c.verification_status = 'verifie'
-AND c.photo_consent = 1
-ORDER BY u.first_name ASC
+";
+
+if($search != ""){
+    $sql .= "
+    AND (
+        u.first_name LIKE ?
+        OR u.last_name LIKE ?
+        OR CONCAT(u.first_name, ' ', u.last_name) LIKE ?
+        OR c.city LIKE ?
+        OR c.bio LIKE ?
+        OR c.availability_status LIKE ?
+    )
+    ";
+}
+
+$sql .= "
+ORDER BY u.first_name ASC, u.last_name ASC
 LIMIT ?, ?
 ";
 
@@ -69,20 +180,57 @@ $intervenants = array();
 
 if($stmt)
 {
-    mysqli_stmt_bind_param(
-        $stmt,
-        "ii",
-        $offset,
-        $limit
-    );
+    if($search != ""){
+        mysqli_stmt_bind_param(
+            $stmt,
+            "ssssssii",
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $offset,
+            $limit
+        );
+    }else{
+        mysqli_stmt_bind_param(
+            $stmt,
+            "ii",
+            $offset,
+            $limit
+        );
+    }
 
-    mysqli_stmt_execute($stmt);
+    if(mysqli_stmt_execute($stmt)){
+        mysqli_stmt_bind_result(
+            $stmt,
+            $user_id,
+            $first_name,
+            $last_name,
+            $profile_photo,
+            $phone,
+            $city,
+            $experience_years,
+            $availability_status,
+            $bio,
+            $photo_consent
+        );
 
-    $result = mysqli_stmt_get_result($stmt);
-
-    while($row = mysqli_fetch_assoc($result))
-    {
-        $intervenants[] = $row;
+        while(mysqli_stmt_fetch($stmt)){
+            $intervenants[] = array(
+                "id" => $user_id,
+                "first_name" => $first_name,
+                "last_name" => $last_name,
+                "profile_photo" => $profile_photo,
+                "phone" => $phone,
+                "city" => $city,
+                "experience_years" => $experience_years,
+                "availability_status" => $availability_status,
+                "bio" => $bio,
+                "photo_consent" => $photo_consent
+            );
+        }
     }
 
     mysqli_stmt_close($stmt);
@@ -226,6 +374,88 @@ if($stmt)
             box-shadow:0 10px 30px rgba(0,0,0,0.08);
         }
 
+        .search-section{
+            max-width:1000px;
+            margin:35px auto 10px;
+            padding:0 7%;
+        }
+
+        .search-form{
+            background:#ffffff;
+            border-radius:18px;
+            padding:18px;
+            box-shadow:0 10px 30px rgba(0,0,0,.08);
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+
+        .search-input-wrapper{
+            flex:1;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            border:1px solid #e0e0e0;
+            border-radius:12px;
+            padding:0 15px;
+        }
+
+        .search-input-wrapper i{
+            color:#071f7a;
+        }
+
+        .search-input-wrapper input{
+            border-bottom:none !important;
+            box-shadow:none !important;
+            margin:0 !important;
+        }
+
+        .search-button{
+            background:#071f7a;
+            border-radius:10px;
+        }
+
+        .search-button:hover,
+        .search-button:focus{
+            background:#8e24aa;
+        }
+
+        .reset-button{
+            border-radius:10px;
+        }
+
+        .results-summary{
+            color:#455a64;
+            font-weight:600;
+            margin:0 0 25px;
+            text-align:center;
+        }
+
+        .empty-box .show-all-link{
+            display:inline-block;
+            margin-top:18px;
+            color:#071f7a;
+            font-weight:600;
+        }
+
+        .pagination .ellipsis{
+            padding:0 10px;
+            line-height:30px;
+        }
+
+        @media(max-width:700px){
+            .search-form{
+                flex-direction:column;
+                align-items:stretch;
+            }
+
+            .search-button,
+            .reset-button{
+                width:100%;
+                text-align:center;
+            }
+        }
+
     </style>
 
 </head>
@@ -268,8 +498,10 @@ if($stmt)
             </h6>
 
             <p>
-                Les photographies publiées sur cette plateforme sont utilisées
-                avec le consentement des personnes concernées, conformément à
+                Les photographies réelles sont affichées uniquement avec le consentement
+                des personnes concernées. Lorsqu’un intervenant ne donne pas ou retire
+                son consentement, une image générique est affichée à la place. Son profil
+                professionnel reste néanmoins visible, conformément à
                 l’article 23 de l’Ordonnance-loi n° 86-033 du 5 avril 1986
                 relative aux droits d’auteur ainsi qu’aux dispositions du Code
                 du numérique de la République Démocratique du Congo relatives
@@ -283,7 +515,46 @@ if($stmt)
 
 </div>
 
+<div class="search-section">
+
+    <form action="tout_intervenants.php" method="GET" class="search-form">
+
+        <div class="search-input-wrapper">
+            <i class="material-icons">search</i>
+
+            <input
+                type="text"
+                name="search"
+                maxlength="100"
+                value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>"
+                placeholder="Rechercher par nom, ville ou disponibilité">
+        </div>
+
+        <button type="submit" class="btn search-button">
+            <i class="material-icons left">search</i>
+            Rechercher
+        </button>
+
+        <?php if($search != ""){ ?>
+            <a href="tout_intervenants.php" class="btn-flat reset-button">
+                Réinitialiser
+            </a>
+        <?php } ?>
+
+    </form>
+
+</div>
+
 <div class="content-wrapper">
+
+    <div class="results-summary">
+        <?php if($search != ""){ ?>
+            <?php echo (int)$total_intervenants; ?> résultat(s) trouvé(s) pour
+            “<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>”
+        <?php }else{ ?>
+            <?php echo (int)$total_intervenants; ?> intervenant(s) vérifié(s)
+        <?php } ?>
+    </div>
 
     <div class="row">
 
@@ -295,21 +566,22 @@ if($stmt)
 
                     <div class="intervenant-card">
 
-                        <?php if(!empty($intervenant['profile_photo'])){ ?>
+                        <?php
+                        $can_show_real_photo =
+                            isset($intervenant["photo_consent"])
+                            && (int)$intervenant["photo_consent"] === 1
+                            && isset($intervenant["profile_photo"])
+                            && trim((string)$intervenant["profile_photo"]) != "";
 
-                            <img
-                                src="<?php echo htmlspecialchars($intervenant['profile_photo'], ENT_QUOTES, 'UTF-8'); ?>"
-                                class="intervenant-photo"
-                                alt="Photo intervenant">
+                        $photo_path = $can_show_real_photo
+                            ? public_profile_photo_path($intervenant["profile_photo"])
+                            : "assets/images/default-user.png";
+                        ?>
 
-                        <?php }else{ ?>
-
-                            <img
-                                src="assets/images/default-user.png"
-                                class="intervenant-photo"
-                                alt="Photo intervenant">
-
-                        <?php } ?>
+                        <img
+                            src="<?php echo htmlspecialchars($photo_path, ENT_QUOTES, 'UTF-8'); ?>"
+                            class="intervenant-photo"
+                            alt="Photo intervenant">
 
                         <h5>
                             <?php
@@ -326,7 +598,14 @@ if($stmt)
 
                             <i class="material-icons tiny">location_on</i>
 
-                            <?php echo htmlspecialchars($intervenant['city'], ENT_QUOTES, 'UTF-8'); ?>
+                            <?php
+                            $display_city = isset($intervenant["city"])
+                                && trim((string)$intervenant["city"]) != ""
+                                ? $intervenant["city"]
+                                : "Ville non renseignée";
+
+                            echo htmlspecialchars($display_city, ENT_QUOTES, "UTF-8");
+                            ?>
 
                         </div>
 
@@ -334,7 +613,13 @@ if($stmt)
 
                             <i class="material-icons tiny">work</i>
 
-                            <?php echo (int)$intervenant['experience_years']; ?> ans d'expérience
+                            <?php
+                            $experience = isset($intervenant["experience_years"])
+                                ? (int)$intervenant["experience_years"]
+                                : 0;
+                            ?>
+                            <?php echo $experience; ?>
+                            <?php echo $experience == 1 ? "an d’expérience" : "ans d’expérience"; ?>
 
                         </div>
 
@@ -343,12 +628,16 @@ if($stmt)
                         $status_class = 'hors_ligne';
                         $status_label = 'Hors ligne';
 
-                        if($intervenant['availability_status'] == 'disponible')
+                        $current_status = isset($intervenant["availability_status"])
+                            ? $intervenant["availability_status"]
+                            : "hors_ligne";
+
+                        if($current_status == 'disponible')
                         {
                             $status_class = 'disponible';
                             $status_label = 'Disponible';
                         }
-                        elseif($intervenant['availability_status'] == 'occupé')
+                        elseif($current_status == 'occupé')
                         {
                             $status_class = 'occupe';
                             $status_label = 'Occupé';
@@ -360,10 +649,19 @@ if($stmt)
                             <?php echo $status_label; ?>
                         </span>
 
-                        <?php if(!empty($intervenant['bio'])){ ?>
+                        <?php if(isset($intervenant["bio"]) && trim((string)$intervenant["bio"]) != ""){ ?>
 
                             <p style="margin-top:15px;color:#666;">
-                                <?php echo htmlspecialchars(substr($intervenant['bio'],0,120), ENT_QUOTES, 'UTF-8'); ?>...
+                                <?php
+                                $bio_text = (string)$intervenant["bio"];
+                                $bio_excerpt = substr($bio_text, 0, 120);
+
+                                echo htmlspecialchars($bio_excerpt, ENT_QUOTES, "UTF-8");
+
+                                if(strlen($bio_text) > 120){
+                                    echo "...";
+                                }
+                                ?>
                             </p>
 
                         <?php } ?>
@@ -380,7 +678,15 @@ if($stmt)
 
                 <div class="empty-box">
 
-                    Aucun intervenant disponible pour le moment.
+                    <?php if($search != ""){ ?>
+                        Aucun intervenant ne correspond à votre recherche.
+                        <br>
+                        <a href="tout_intervenants.php" class="show-all-link">
+                            Afficher tous les intervenants
+                        </a>
+                    <?php }else{ ?>
+                        Aucun intervenant disponible pour le moment.
+                    <?php } ?>
 
                 </div>
 
@@ -399,7 +705,7 @@ if($stmt)
                 <?php if($page > 1){ ?>
 
                     <li class="waves-effect">
-                        <a href="tout_intervenants.php?page=<?php echo $page - 1; ?>">
+                        <a href="<?php echo htmlspecialchars(pagination_url($page - 1, $search), ENT_QUOTES, 'UTF-8'); ?>">
                             <i class="material-icons">chevron_left</i>
                         </a>
                     </li>
@@ -414,20 +720,41 @@ if($stmt)
 
                 <?php } ?>
 
-                <?php for($i = 1; $i <= $total_pages; $i++){ ?>
+                <?php
+                $pagination_pages = array();
+                $pagination_pages[1] = true;
+                $pagination_pages[$total_pages] = true;
+                $start_page = max(1, $page - 2);
+                $end_page = min($total_pages, $page + 2);
 
-                    <li class="<?php echo ($i == $page) ? 'active' : 'waves-effect'; ?>">
-                        <a href="tout_intervenants.php?page=<?php echo $i; ?>">
-                            <?php echo $i; ?>
+                for($i = $start_page; $i <= $end_page; $i++){
+                    $pagination_pages[$i] = true;
+                }
+
+                ksort($pagination_pages);
+                $previous_page_number = 0;
+
+                foreach($pagination_pages as $page_number => $unused){
+                    if($previous_page_number > 0 && $page_number > $previous_page_number + 1){
+                ?>
+                        <li class="disabled ellipsis"><span>...</span></li>
+                <?php } ?>
+
+                    <li class="<?php echo ($page_number == $page) ? 'active' : 'waves-effect'; ?>">
+                        <a href="<?php echo htmlspecialchars(pagination_url($page_number, $search), ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php echo (int)$page_number; ?>
                         </a>
                     </li>
 
-                <?php } ?>
+                <?php
+                    $previous_page_number = $page_number;
+                }
+                ?>
 
                 <?php if($page < $total_pages){ ?>
 
                     <li class="waves-effect">
-                        <a href="tout_intervenants.php?page=<?php echo $page + 1; ?>">
+                        <a href="<?php echo htmlspecialchars(pagination_url($page + 1, $search), ENT_QUOTES, 'UTF-8'); ?>">
                             <i class="material-icons">chevron_right</i>
                         </a>
                     </li>

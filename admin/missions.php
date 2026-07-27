@@ -229,34 +229,60 @@ function status_label($value)
     return display_value($value);
 }
 
-function get_mission_status($conn, $mission_id, &$start_time, &$end_time)
+function get_mission_workflow($conn, $mission_id, &$request_id, &$request_status, $for_update)
 {
     $status = "";
-    $start_time = "";
-    $end_time = "";
+    $request_id = 0;
+    $request_status = "";
 
     $sql = "
-    SELECT mission_status, start_time, end_time
-    FROM missions
-    WHERE id = ?
+    SELECT
+        m.mission_status,
+        m.service_request_id,
+        sr.status
+    FROM missions m
+    INNER JOIN service_requests sr
+    ON sr.id = m.service_request_id
+    WHERE m.id = ?
     LIMIT 1
     ";
+
+    if($for_update){
+
+        $sql .= " FOR UPDATE";
+
+    }
 
     $stmt = mysqli_prepare($conn, $sql);
 
     if(!$stmt){
 
-        die("Erreur SQL : " . mysqli_error($conn));
+        return "";
 
     }
 
     mysqli_stmt_bind_param($stmt, "i", $mission_id);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $status, $start_time, $end_time);
+
+    if(!mysqli_stmt_execute($stmt)){
+
+        mysqli_stmt_close($stmt);
+        return "";
+
+    }
+
+    mysqli_stmt_bind_result($stmt, $status, $request_id, $request_status);
     mysqli_stmt_fetch($stmt);
     mysqli_stmt_close($stmt);
 
     return $status;
+}
+
+function rollback_mission_workflow($conn, $message)
+{
+    mysqli_rollback($conn);
+    mysqli_autocommit($conn, true);
+    $_SESSION["error"] = $message;
+    redirect_missions();
 }
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -276,11 +302,33 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     }
 
-    $current_start = "";
-    $current_end = "";
-    $current_status = get_mission_status($conn, $mission_id, $current_start, $current_end);
+    $workflow_actions = array("start_mission", "close_mission", "cancel_mission");
+    $transaction_active = in_array($action, $workflow_actions, true);
+
+    if($transaction_active && !mysqli_autocommit($conn, false)){
+
+        $_SESSION["error"] = "Impossible de démarrer la mise à jour de la mission.";
+        redirect_missions();
+
+    }
+
+    $service_request_id = 0;
+    $request_status = "";
+    $current_status = get_mission_workflow(
+        $conn,
+        $mission_id,
+        $service_request_id,
+        $request_status,
+        $transaction_active
+    );
 
     if($current_status == ""){
+
+        if($transaction_active){
+
+            rollback_mission_workflow($conn, "Mission introuvable.");
+
+        }
 
         $_SESSION["error"] = "Mission introuvable.";
         redirect_missions();
@@ -356,10 +404,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     if($action == "start_mission"){
 
-        if($current_status != "affectee"){
+        if($current_status != "affectee" || $request_status != "attribuee"){
 
-            $_SESSION["error"] = "Cette mission ne peut pas etre demarree.";
-            redirect_missions();
+            rollback_mission_workflow($conn, "Cette mission ne peut être démarrée que si elle est affectée et si la demande est attribuée.");
 
         }
 
@@ -377,33 +424,64 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_mission_workflow($conn, "Une erreur est survenue pendant le démarrage de la mission.");
 
         }
 
         mysqli_stmt_bind_param($stmt, "i", $mission_id);
 
-        if(mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0){
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
 
-            $_SESSION["success"] = "Mission demarree avec succes.";
-
-        }else{
-
-            $_SESSION["error"] = "Erreur lors du demarrage de la mission.";
+            mysqli_stmt_close($stmt);
+            rollback_mission_workflow($conn, "La mission n'a pas pu être démarrée.");
 
         }
 
         mysqli_stmt_close($stmt);
+
+        $sql = "
+        UPDATE service_requests
+        SET status = 'en_cours'
+        WHERE id = ?
+        AND status = 'attribuee'
+        ";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if(!$stmt){
+
+            rollback_mission_workflow($conn, "Une erreur est survenue pendant la mise à jour de la demande.");
+
+        }
+
+        mysqli_stmt_bind_param($stmt, "i", $service_request_id);
+
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
+
+            mysqli_stmt_close($stmt);
+            rollback_mission_workflow($conn, "La demande n'a pas pu passer au statut en cours.");
+
+        }
+
+        mysqli_stmt_close($stmt);
+
+        if(!mysqli_commit($conn)){
+
+            rollback_mission_workflow($conn, "Le démarrage de la mission n'a pas pu être enregistré.");
+
+        }
+
+        mysqli_autocommit($conn, true);
+        $_SESSION["success"] = "Mission démarrée avec succès.";
         redirect_missions();
 
     }
 
     if($action == "close_mission"){
 
-        if($current_status != "en_cours"){
+        if($current_status != "en_cours" || $request_status != "en_cours"){
 
-            $_SESSION["error"] = "Cette mission ne peut pas etre cloturee.";
-            redirect_missions();
+            rollback_mission_workflow($conn, "Cette mission ne peut être terminée que si la mission et la demande sont en cours.");
 
         }
 
@@ -421,33 +499,69 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_mission_workflow($conn, "Une erreur est survenue pendant la clôture de la mission.");
 
         }
 
         mysqli_stmt_bind_param($stmt, "i", $mission_id);
 
-        if(mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0){
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
 
-            $_SESSION["success"] = "Mission cloturee avec succes.";
-
-        }else{
-
-            $_SESSION["error"] = "Erreur lors de la cloture de la mission.";
+            mysqli_stmt_close($stmt);
+            rollback_mission_workflow($conn, "La mission n'a pas pu être terminée.");
 
         }
 
         mysqli_stmt_close($stmt);
+
+        $sql = "
+        UPDATE service_requests
+        SET status = 'terminee'
+        WHERE id = ?
+        AND status = 'en_cours'
+        ";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if(!$stmt){
+
+            rollback_mission_workflow($conn, "Une erreur est survenue pendant la mise à jour de la demande.");
+
+        }
+
+        mysqli_stmt_bind_param($stmt, "i", $service_request_id);
+
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
+
+            mysqli_stmt_close($stmt);
+            rollback_mission_workflow($conn, "La demande n'a pas pu passer au statut terminé.");
+
+        }
+
+        mysqli_stmt_close($stmt);
+
+        if(!mysqli_commit($conn)){
+
+            rollback_mission_workflow($conn, "La clôture de la mission n'a pas pu être enregistrée.");
+
+        }
+
+        mysqli_autocommit($conn, true);
+        $_SESSION["success"] = "Mission terminée avec succès.";
         redirect_missions();
 
     }
 
     if($action == "cancel_mission"){
 
-        if($current_status == "terminee"){
+        if(
+            !(
+                ($current_status == "affectee" && $request_status == "attribuee")
+                || ($current_status == "en_cours" && $request_status == "en_cours")
+            )
+        ){
 
-            $_SESSION["error"] = "Une mission terminee ne peut pas etre annulee.";
-            redirect_missions();
+            rollback_mission_workflow($conn, "Cette mission ne peut pas être annulée dans son état actuel.");
 
         }
 
@@ -460,30 +574,62 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             notes = CONCAT(IFNULL(notes, ''), IF(notes IS NULL OR notes = '', '', '\n'), ?),
             updated_at = NOW()
         WHERE id = ?
-        AND mission_status <> 'terminee'
+        AND mission_status IN ('affectee', 'en_cours')
         ";
 
         $stmt = mysqli_prepare($conn, $sql);
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_mission_workflow($conn, "Une erreur est survenue pendant l'annulation de la mission.");
 
         }
 
         mysqli_stmt_bind_param($stmt, "si", $cancel_note, $mission_id);
 
-        if(mysqli_stmt_execute($stmt) && mysqli_stmt_affected_rows($stmt) > 0){
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
 
-            $_SESSION["success"] = "Mission annulee avec succes.";
-
-        }else{
-
-            $_SESSION["error"] = "Erreur lors de l'annulation de la mission.";
+            mysqli_stmt_close($stmt);
+            rollback_mission_workflow($conn, "La mission n'a pas pu être annulée.");
 
         }
 
         mysqli_stmt_close($stmt);
+
+        $sql = "
+        UPDATE service_requests
+        SET status = 'annulee'
+        WHERE id = ?
+        AND status IN ('attribuee', 'en_cours')
+        ";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if(!$stmt){
+
+            rollback_mission_workflow($conn, "Une erreur est survenue pendant la mise à jour de la demande.");
+
+        }
+
+        mysqli_stmt_bind_param($stmt, "i", $service_request_id);
+
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
+
+            mysqli_stmt_close($stmt);
+            rollback_mission_workflow($conn, "La demande n'a pas pu être annulée.");
+
+        }
+
+        mysqli_stmt_close($stmt);
+
+        if(!mysqli_commit($conn)){
+
+            rollback_mission_workflow($conn, "L'annulation de la mission n'a pas pu être enregistrée.");
+
+        }
+
+        mysqli_autocommit($conn, true);
+        $_SESSION["success"] = "Mission annulée avec succès.";
         redirect_missions();
 
     }

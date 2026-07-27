@@ -110,9 +110,15 @@ function status_label($value)
 
     }
 
+    if($value == "validee"){
+
+        return "Validée";
+
+    }
+
     if($value == "attribuee" || $value == "affectee"){
 
-        return "Affectee";
+        return "Affectée";
 
     }
 
@@ -124,7 +130,7 @@ function status_label($value)
 
     if($value == "terminee"){
 
-        return "Terminee";
+        return "Terminée";
 
     }
 
@@ -291,6 +297,14 @@ function redirect_affectations($request_id)
     exit();
 }
 
+function rollback_affectation($conn, $message, $request_id)
+{
+    mysqli_rollback($conn);
+    mysqli_autocommit($conn, true);
+    $_SESSION["error"] = $message;
+    redirect_affectations($request_id);
+}
+
 function affectations_pagination_url($page_number)
 {
     $params = $_GET;
@@ -337,42 +351,61 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         }
 
+        if(!mysqli_autocommit($conn, false)){
+
+            $_SESSION["error"] = "Impossible de démarrer l'affectation.";
+            redirect_affectations($request_id);
+
+        }
+
         $existing_request_id = 0;
 
         $sql = "
         SELECT id
         FROM service_requests
         WHERE id = ?
+        AND status = 'validee'
         LIMIT 1
+        FOR UPDATE
         ";
 
         $stmt = mysqli_prepare($conn, $sql);
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_affectation($conn, "Une erreur est survenue pendant la vérification de la demande.", $request_id);
 
         }
 
         mysqli_stmt_bind_param($stmt, "i", $request_id);
-        mysqli_stmt_execute($stmt);
+        if(!mysqli_stmt_execute($stmt)){
+
+            mysqli_stmt_close($stmt);
+            rollback_affectation($conn, "Une erreur est survenue pendant la vérification de la demande.", $request_id);
+
+        }
+
         mysqli_stmt_bind_result($stmt, $existing_request_id);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
 
         if($existing_request_id <= 0){
 
-            $_SESSION["error"] = "Demande introuvable.";
-            redirect_affectations(0);
+            rollback_affectation($conn, "Cette demande n'est pas disponible pour l'affectation.", 0);
 
         }
 
         $existing_candidate_id = 0;
 
         $sql = "
-        SELECT id
-        FROM candidates
-        WHERE id = ?
+        SELECT c.id
+        FROM candidates c
+        INNER JOIN users u
+        ON u.id = c.user_id
+        WHERE c.id = ?
+        AND u.role_id = 3
+        AND u.status = 'active'
+        AND c.verification_status = 'verifie'
         LIMIT 1
         ";
 
@@ -380,20 +413,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_affectation($conn, "Une erreur est survenue pendant la vérification de l'intervenant.", $request_id);
 
         }
 
         mysqli_stmt_bind_param($stmt, "i", $candidate_id);
-        mysqli_stmt_execute($stmt);
+        if(!mysqli_stmt_execute($stmt)){
+
+            mysqli_stmt_close($stmt);
+            rollback_affectation($conn, "Une erreur est survenue pendant la vérification de l'intervenant.", $request_id);
+
+        }
+
         mysqli_stmt_bind_result($stmt, $existing_candidate_id);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
 
         if($existing_candidate_id <= 0){
 
-            $_SESSION["error"] = "Intervenant introuvable.";
-            redirect_affectations($request_id);
+            rollback_affectation($conn, "Cet intervenant n'est pas actif ou son profil n'est pas vérifié.", $request_id);
 
         }
 
@@ -404,26 +442,32 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         FROM missions
         WHERE service_request_id = ?
         LIMIT 1
+        FOR UPDATE
         ";
 
         $stmt = mysqli_prepare($conn, $sql);
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_affectation($conn, "Une erreur est survenue pendant la vérification des missions existantes.", $request_id);
 
         }
 
         mysqli_stmt_bind_param($stmt, "i", $request_id);
-        mysqli_stmt_execute($stmt);
+        if(!mysqli_stmt_execute($stmt)){
+
+            mysqli_stmt_close($stmt);
+            rollback_affectation($conn, "Une erreur est survenue pendant la vérification des missions existantes.", $request_id);
+
+        }
+
         mysqli_stmt_bind_result($stmt, $mission_id);
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
 
         if($mission_id > 0){
 
-            $_SESSION["error"] = "Cette demande est deja affectee.";
-            redirect_affectations($request_id);
+            rollback_affectation($conn, "Cette demande est déjà affectée.", $request_id);
 
         }
 
@@ -443,7 +487,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            rollback_affectation($conn, "Une erreur est survenue pendant la création de la mission.", $request_id);
 
         }
 
@@ -455,37 +499,50 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             $admin_id
         );
 
-        if(mysqli_stmt_execute($stmt)){
+        if(!mysqli_stmt_execute($stmt)){
 
             mysqli_stmt_close($stmt);
-
-            $sql = "
-            UPDATE service_requests
-            SET status = 'attribuee'
-            WHERE id = ?
-            AND status = 'en_attente'
-            ";
-
-            $stmt = mysqli_prepare($conn, $sql);
-
-            if(!$stmt){
-
-                die("Erreur SQL : " . mysqli_error($conn));
-
-            }
-
-            mysqli_stmt_bind_param($stmt, "i", $request_id);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-
-            $_SESSION["success"] = "Intervenant affecte avec succes.";
-            redirect_affectations(0);
+            rollback_affectation($conn, "Erreur lors de la création de la mission.", $request_id);
 
         }
 
         mysqli_stmt_close($stmt);
-        $_SESSION["error"] = "Erreur lors de l'affectation.";
-        redirect_affectations($request_id);
+
+        $sql = "
+        UPDATE service_requests
+        SET status = 'attribuee'
+        WHERE id = ?
+        AND status = 'validee'
+        ";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if(!$stmt){
+
+            rollback_affectation($conn, "Une erreur est survenue pendant la mise à jour de la demande.", $request_id);
+
+        }
+
+        mysqli_stmt_bind_param($stmt, "i", $request_id);
+
+        if(!mysqli_stmt_execute($stmt) || mysqli_stmt_affected_rows($stmt) != 1){
+
+            mysqli_stmt_close($stmt);
+            rollback_affectation($conn, "La demande n'a pas pu être marquée comme affectée.", $request_id);
+
+        }
+
+        mysqli_stmt_close($stmt);
+
+        if(!mysqli_commit($conn)){
+
+            rollback_affectation($conn, "L'affectation n'a pas pu être enregistrée.", $request_id);
+
+        }
+
+        mysqli_autocommit($conn, true);
+        $_SESSION["success"] = "Intervenant affecté avec succès.";
+        redirect_affectations(0);
 
     }
 
@@ -496,7 +553,7 @@ $total_requests = 0;
 $sql = "
 SELECT COUNT(*) AS total
 FROM service_requests sr
-WHERE sr.status = 'en_attente'
+WHERE sr.status = 'validee'
 AND NOT EXISTS(
     SELECT 1
     FROM missions m
@@ -557,7 +614,7 @@ INNER JOIN users u
 ON u.id = c.user_id
 LEFT JOIN service_categories sc
 ON sc.id = sr.category_id
-WHERE sr.status = 'en_attente'
+WHERE sr.status = 'validee'
 AND NOT EXISTS(
     SELECT 1
     FROM missions m
@@ -622,7 +679,7 @@ if($selected_request_id > 0 && !$selected_request){
     LEFT JOIN service_categories sc
     ON sc.id = sr.category_id
     WHERE sr.id = ?
-    AND sr.status = 'en_attente'
+    AND sr.status = 'validee'
     AND NOT EXISTS(
         SELECT 1
         FROM missions m
@@ -654,7 +711,36 @@ if($selected_request_id > 0 && !$selected_request){
 
 if(!$selected_request && $selected_request_id > 0){
 
-    $selected_request_id = 0;
+    $unavailable_status = "";
+    $sql = "SELECT status FROM service_requests WHERE id = ? LIMIT 1";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if($stmt){
+
+        mysqli_stmt_bind_param($stmt, "i", $selected_request_id);
+
+        if(mysqli_stmt_execute($stmt)){
+
+            mysqli_stmt_bind_result($stmt, $unavailable_status);
+            mysqli_stmt_fetch($stmt);
+
+        }
+
+        mysqli_stmt_close($stmt);
+
+    }
+
+    if($unavailable_status == "en_attente"){
+
+        $_SESSION["error"] = "Cette demande doit d'abord être validée avant son affectation.";
+
+    }else{
+
+        $_SESSION["error"] = "Cette demande n'est pas disponible pour l'affectation.";
+
+    }
+
+    redirect_affectations(0);
 
 }
 
