@@ -13,6 +13,21 @@ if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["ro
 
 $admin_id = (int)$_SESSION["user_id"];
 
+if(!isset($_SESSION["csrf_token"]) || $_SESSION["csrf_token"] == ""){
+
+    $csrf_bytes = openssl_random_pseudo_bytes(32);
+
+    if($csrf_bytes === false){
+
+        $csrf_bytes = uniqid((string)mt_rand(), true);
+
+    }
+
+    $_SESSION["csrf_token"] = bin2hex($csrf_bytes);
+}
+
+$csrf_token = $_SESSION["csrf_token"];
+
 function safe_text($value)
 {
     if($value === NULL || $value === ""){
@@ -54,6 +69,143 @@ function format_date_fr($value)
     return date("d/m/Y H:i", $timestamp);
 }
 
+function extract_youtube_video_id($youtube_url)
+{
+    $youtube_url = trim((string)$youtube_url);
+
+    if($youtube_url == ""){
+
+        return "";
+
+    }
+
+    $parts = parse_url($youtube_url);
+
+    if($parts === false || !isset($parts["host"])){
+
+        return "";
+
+    }
+
+    $scheme = isset($parts["scheme"]) ? strtolower($parts["scheme"]) : "";
+    $host = strtolower($parts["host"]);
+    $path = isset($parts["path"]) ? trim($parts["path"], "/") : "";
+    $video_id = "";
+
+    if($scheme != "http" && $scheme != "https"){
+
+        return "";
+
+    }
+
+    if($host == "youtu.be" || $host == "www.youtu.be"){
+
+        $path_parts = explode("/", $path);
+        $video_id = isset($path_parts[0]) ? $path_parts[0] : "";
+
+    }elseif(
+        $host == "youtube.com" ||
+        $host == "www.youtube.com" ||
+        $host == "m.youtube.com"
+    ){
+
+        if($path == "watch"){
+
+            $query = array();
+
+            if(isset($parts["query"])){
+
+                parse_str($parts["query"], $query);
+
+            }
+
+            $video_id = isset($query["v"]) ? $query["v"] : "";
+
+        }else{
+
+            $path_parts = explode("/", $path);
+            $path_type = isset($path_parts[0]) ? $path_parts[0] : "";
+
+            if($path_type == "embed" || $path_type == "shorts"){
+
+                $video_id = isset($path_parts[1]) ? $path_parts[1] : "";
+
+            }
+
+        }
+
+    }
+
+    $video_id = rawurldecode($video_id);
+
+    if(!preg_match("/^[A-Za-z0-9_-]{11}$/", $video_id)){
+
+        return "";
+
+    }
+
+    return $video_id;
+}
+
+function youtube_embed_url($youtube_url)
+{
+    $video_id = extract_youtube_video_id($youtube_url);
+
+    if($video_id == ""){
+
+        return "";
+
+    }
+
+    return "https://www.youtube.com/embed/" . $video_id;
+}
+
+function training_status_label($status)
+{
+    if($status == "en_attente"){
+
+        return "En attente";
+
+    }
+
+    if($status == "en_cours"){
+
+        return "En cours";
+
+    }
+
+    if($status == "terminee"){
+
+        return "Terminée";
+
+    }
+
+    return "Inactive";
+}
+
+function training_status_badge_class($status)
+{
+    if($status == "en_attente"){
+
+        return "orange";
+
+    }
+
+    if($status == "en_cours"){
+
+        return "blue";
+
+    }
+
+    if($status == "terminee"){
+
+        return "green";
+
+    }
+
+    return "grey";
+}
+
 function redirect_formations()
 {
     header("Location: formations.php");
@@ -90,11 +242,60 @@ function count_query($conn, $sql)
     return $total;
 }
 
+function count_trainings_search($conn, $search_like)
+{
+    $total = 0;
+    $sql = "
+    SELECT COUNT(*) AS total
+    FROM trainings t
+    WHERE (
+        t.title LIKE ?
+        OR t.description LIKE ?
+        OR t.duration LIKE ?
+    )
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+
+        return $total;
+
+    }
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "sss",
+        $search_like,
+        $search_like,
+        $search_like
+    );
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $total);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
+
+    return (int)$total;
+}
+
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     $action = isset($_POST["action"])
         ? $_POST["action"]
         : "";
+
+    $posted_csrf_token = isset($_POST["csrf_token"])
+        ? $_POST["csrf_token"]
+        : "";
+
+    if(
+        $posted_csrf_token == "" ||
+        !hash_equals($_SESSION["csrf_token"], $posted_csrf_token)
+    ){
+
+        $_SESSION["error"] = "La session du formulaire a expire. Veuillez reessayer.";
+        redirect_formations();
+
+    }
 
     if($action == "add_training" || $action == "update_training"){
 
@@ -117,6 +318,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         if($title == "" || $youtube_url == ""){
 
             $_SESSION["error"] = "Le titre et le lien YouTube sont obligatoires.";
+            redirect_formations();
+
+        }
+
+        $youtube_embed_url = youtube_embed_url($youtube_url);
+
+        if($youtube_embed_url == ""){
+
+            $_SESSION["error"] = "Veuillez saisir un lien YouTube valide.";
             redirect_formations();
 
         }
@@ -303,15 +513,59 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     }
 
+    if($action == "deactivate_assignment"){
+
+        $candidate_training_id = isset($_POST["candidate_training_id"])
+            ? (int)$_POST["candidate_training_id"]
+            : 0;
+
+        if($candidate_training_id <= 0){
+
+            $_SESSION["error"] = "Attribution de formation invalide.";
+            redirect_formations();
+
+        }
+
+        $sql = "
+        UPDATE candidate_trainings
+        SET status = 'inactive'
+        WHERE id = ?
+        AND status IN ('en_attente', 'en_cours')
+        ";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if(!$stmt){
+
+            $_SESSION["error"] = "Erreur lors de la desactivation de l'attribution.";
+            redirect_formations();
+
+        }
+
+        mysqli_stmt_bind_param($stmt, "i", $candidate_training_id);
+        mysqli_stmt_execute($stmt);
+        $affected_rows = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if($affected_rows == 1){
+
+            $_SESSION["success"] = "L'attribution a ete desactivee.";
+
+        }else{
+
+            $_SESSION["error"] = "Cette attribution ne peut pas etre desactivee.";
+
+        }
+
+        redirect_formations();
+
+    }
+
     if($action == "assign_training"){
 
         $training_id = isset($_POST["training_id"])
             ? (int)$_POST["training_id"]
             : 0;
-
-        $assignment_status = isset($_POST["status"])
-            ? $_POST["status"]
-            : "active";
 
         $selected_candidates = array();
 
@@ -325,12 +579,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             $_SESSION["error"] = "Formation introuvable.";
             redirect_formations();
-
-        }
-
-        if($assignment_status != "active" && $assignment_status != "inactive"){
-
-            $assignment_status = "active";
 
         }
 
@@ -398,7 +646,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 status,
                 assigned_by
             )
-            VALUES(?, ?, ?, ?)
+            VALUES(?, ?, 'en_attente', ?)
             ";
 
             $stmt = mysqli_prepare($conn, $sql);
@@ -411,10 +659,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             mysqli_stmt_bind_param(
                 $stmt,
-                "iisi",
+                "iii",
                 $candidate_id,
                 $training_id,
-                $assignment_status,
                 $admin_id
             );
 
@@ -444,13 +691,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 $stats = array(
     "total_trainings" => count_query($conn, "SELECT COUNT(*) AS total FROM trainings"),
     "assigned_trainings" => count_query($conn, "SELECT COUNT(*) AS total FROM candidate_trainings"),
-    "active_trainings" => count_query($conn, "SELECT COUNT(*) AS total FROM candidate_trainings WHERE status = 'active'"),
+    "pending_trainings" => count_query($conn, "SELECT COUNT(*) AS total FROM candidate_trainings WHERE status = 'en_attente'"),
+    "in_progress_trainings" => count_query($conn, "SELECT COUNT(*) AS total FROM candidate_trainings WHERE status = 'en_cours'"),
+    "completed_trainings" => count_query($conn, "SELECT COUNT(*) AS total FROM candidate_trainings WHERE status = 'terminee'"),
     "candidates_with_training" => count_query($conn, "SELECT COUNT(DISTINCT candidate_id) AS total FROM candidate_trainings")
 );
 
 $trainings = array();
 $limit = 50;
 $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+$search = isset($_GET["search"])
+    ? trim($_GET["search"])
+    : "";
+$search = substr($search, 0, 100);
+$search_like = "%" . $search . "%";
+$training_search_sql = "";
 
 if($page < 1){
 
@@ -458,7 +713,22 @@ if($page < 1){
 
 }
 
-$total_trainings = count_query($conn, "SELECT COUNT(*) AS total FROM trainings");
+if($search != ""){
+
+    $total_trainings = count_trainings_search($conn, $search_like);
+    $training_search_sql = "
+    WHERE (
+        t.title LIKE ?
+        OR t.description LIKE ?
+        OR t.duration LIKE ?
+    )";
+
+}else{
+
+    $total_trainings = count_query($conn, "SELECT COUNT(*) AS total FROM trainings");
+
+}
+
 $total_pages = (int)ceil($total_trainings / $limit);
 
 if($total_pages > 0 && $page > $total_pages){
@@ -483,10 +753,14 @@ SELECT
     t.youtube_url,
     t.duration,
     t.created_at,
-    COUNT(ct.id) AS assigned_total
+    COUNT(ct.id) AS assigned_total,
+    SUM(CASE WHEN ct.status = 'en_attente' THEN 1 ELSE 0 END) AS pending_total,
+    SUM(CASE WHEN ct.status = 'en_cours' THEN 1 ELSE 0 END) AS in_progress_total,
+    SUM(CASE WHEN ct.status = 'terminee' THEN 1 ELSE 0 END) AS completed_total
 FROM trainings t
 LEFT JOIN candidate_trainings ct
 ON ct.training_id = t.id
+" . $training_search_sql . "
 GROUP BY
     t.id,
     t.title,
@@ -503,19 +777,53 @@ $stmt = mysqli_prepare($conn, $sql);
 
 if($stmt){
 
-    mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    if($search != ""){
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            "sssii",
+            $search_like,
+            $search_like,
+            $search_like,
+            $limit,
+            $offset
+        );
+
+    }else{
+
+        mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+
+    }
+
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    mysqli_stmt_bind_result(
+        $stmt,
+        $training_id,
+        $training_title,
+        $training_description,
+        $training_youtube_url,
+        $training_duration,
+        $training_created_at,
+        $training_assigned_total,
+        $training_pending_total,
+        $training_in_progress_total,
+        $training_completed_total
+    );
 
-    if($result){
+    while(mysqli_stmt_fetch($stmt)){
 
-        while($row = mysqli_fetch_assoc($result)){
-
-            $trainings[] = $row;
-
-        }
-
-        mysqli_free_result($result);
+        $trainings[] = array(
+            "id" => $training_id,
+            "title" => $training_title,
+            "description" => $training_description,
+            "youtube_url" => $training_youtube_url,
+            "duration" => $training_duration,
+            "created_at" => $training_created_at,
+            "assigned_total" => $training_assigned_total,
+            "pending_total" => $training_pending_total,
+            "in_progress_total" => $training_in_progress_total,
+            "completed_total" => $training_completed_total
+        );
 
     }
 
@@ -539,6 +847,9 @@ FROM candidates c
 INNER JOIN users u
 ON u.id = c.user_id
 WHERE u.role_id = 3
+AND u.status = 'active'
+AND c.verification_status = 'verifie'
+AND c.availability_status = 'disponible'
 ORDER BY u.first_name ASC, u.last_name ASC
 ";
 
@@ -549,6 +860,49 @@ if($result){
     while($row = mysqli_fetch_assoc($result)){
 
         $candidates[] = $row;
+
+    }
+
+    mysqli_free_result($result);
+
+}
+
+$training_assignments = array();
+
+$sql = "
+SELECT
+    ct.training_id,
+    ct.id,
+    ct.status,
+    ct.created_at,
+    u.first_name,
+    u.last_name,
+    u.email
+FROM candidate_trainings ct
+INNER JOIN candidates c
+ON c.id = ct.candidate_id
+INNER JOIN users u
+ON u.id = c.user_id
+ORDER BY ct.created_at DESC, ct.id DESC
+";
+
+$result = mysqli_query($conn, $sql);
+
+if($result){
+
+    while($row = mysqli_fetch_assoc($result)){
+
+        $assignment_training_id = isset($row["training_id"])
+            ? (int)$row["training_id"]
+            : 0;
+
+        if(!isset($training_assignments[$assignment_training_id])){
+
+            $training_assignments[$assignment_training_id] = array();
+
+        }
+
+        $training_assignments[$assignment_training_id][] = $row;
 
     }
 
@@ -621,6 +975,84 @@ if($result){
             text-align:center;
         }
 
+        .training-search-box{
+            background:#ffffff;
+            border-radius:12px;
+            padding:15px;
+            margin-bottom:20px;
+            box-shadow:0 6px 18px rgba(0,0,0,.06);
+        }
+
+        .training-search-form{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+        }
+
+        .training-search-form .input-field{
+            flex:1;
+            min-width:250px;
+            margin:0;
+        }
+
+        .training-result-summary{
+            color:#616161;
+            margin:0 0 15px;
+        }
+
+        .candidate-training-item{
+            padding:8px 4px;
+        }
+
+        .candidate-no-result{
+            display:none;
+            color:#757575;
+            padding:12px;
+            text-align:center;
+        }
+
+        .training-video-wrapper{
+            position:relative;
+            width:100%;
+            padding-top:56.25%;
+            margin-top:18px;
+            overflow:hidden;
+            border-radius:12px;
+            background:#000000;
+        }
+
+        .training-video-wrapper iframe{
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            border:0;
+        }
+
+        .training-status-badge{
+            border-radius:12px;
+            color:#ffffff;
+            display:inline-block;
+            font-size:12px;
+            font-weight:600;
+            line-height:1;
+            padding:7px 10px;
+        }
+
+        @media(max-width:700px){
+            .training-search-form{
+                flex-direction:column;
+                align-items:stretch;
+            }
+
+            .training-search-form .btn,
+            .training-search-form .btn-flat{
+                width:100%;
+            }
+        }
+
     </style>
 
 </head>
@@ -683,7 +1115,7 @@ if($result){
 
         <div class="row">
 
-            <div class="col s12 m6 l3">
+            <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient">
                         <i class="material-icons">school</i>
@@ -693,7 +1125,7 @@ if($result){
                 </div>
             </div>
 
-            <div class="col s12 m6 l3">
+            <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon pink-gradient">
                         <i class="material-icons">assignment_ind</i>
@@ -703,17 +1135,37 @@ if($result){
                 </div>
             </div>
 
-            <div class="col s12 m6 l3">
+            <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon gold-gradient">
-                        <i class="material-icons">play_circle</i>
+                        <i class="material-icons">schedule</i>
                     </div>
-                    <h5>Formations actives</h5>
-                    <h3><?php echo (int)$stats["active_trainings"]; ?></h3>
+                    <h5>En attente</h5>
+                    <h3><?php echo (int)$stats["pending_trainings"]; ?></h3>
                 </div>
             </div>
 
-            <div class="col s12 m6 l3">
+            <div class="col s12 m6 l2">
+                <div class="admin-summary-card">
+                    <div class="card-icon blue-gradient">
+                        <i class="material-icons">play_circle</i>
+                    </div>
+                    <h5>En cours</h5>
+                    <h3><?php echo (int)$stats["in_progress_trainings"]; ?></h3>
+                </div>
+            </div>
+
+            <div class="col s12 m6 l2">
+                <div class="admin-summary-card">
+                    <div class="card-icon blue-gradient">
+                        <i class="material-icons">check_circle</i>
+                    </div>
+                    <h5>Terminées</h5>
+                    <h3><?php echo (int)$stats["completed_trainings"]; ?></h3>
+                </div>
+            </div>
+
+            <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient">
                         <i class="material-icons">groups</i>
@@ -723,6 +1175,28 @@ if($result){
                 </div>
             </div>
 
+        </div>
+
+        <div class="training-search-box">
+            <form method="GET" action="formations.php" class="training-search-form">
+                <div class="input-field">
+                    <i class="material-icons prefix">search</i>
+                    <input type="text"
+                           name="search"
+                           id="trainingSearch"
+                           maxlength="100"
+                           placeholder="Rechercher une formation par titre, description ou duree"
+                           value="<?php echo safe_text($search); ?>">
+                </div>
+                <button type="submit" class="btn waves-effect waves-light">
+                    Rechercher
+                </button>
+                <?php if($search != ""){ ?>
+                    <a href="formations.php" class="btn-flat">
+                        Reinitialiser
+                    </a>
+                <?php } ?>
+            </form>
         </div>
 
         <div class="table-card">
@@ -735,6 +1209,15 @@ if($result){
 
             </div>
 
+            <p class="training-result-summary">
+                <?php if($search != ""){ ?>
+                    <?php echo (int)$total_trainings; ?> resultat(s) trouve(s) pour
+                    &laquo; <?php echo safe_text($search); ?> &raquo;
+                <?php }else{ ?>
+                    <?php echo (int)$total_trainings; ?> formation(s)
+                <?php } ?>
+            </p>
+
             <table class="highlight responsive-table">
 
                 <thead>
@@ -743,7 +1226,10 @@ if($result){
                         <th>Titre</th>
                         <th>Duree</th>
                         <th>Lien YouTube</th>
-                        <th>Intervenants assignes</th>
+                        <th>Total</th>
+                        <th>En attente</th>
+                        <th>En cours</th>
+                        <th>Terminées</th>
                         <th>Date de creation</th>
                         <th>Actions</th>
                     </tr>
@@ -765,6 +1251,9 @@ if($result){
                             $duration = isset($training["duration"]) ? $training["duration"] : "";
                             $created_at = isset($training["created_at"]) ? $training["created_at"] : "";
                             $assigned_total = isset($training["assigned_total"]) ? (int)$training["assigned_total"] : 0;
+                            $pending_total = isset($training["pending_total"]) ? (int)$training["pending_total"] : 0;
+                            $in_progress_total = isset($training["in_progress_total"]) ? (int)$training["in_progress_total"] : 0;
+                            $completed_total = isset($training["completed_total"]) ? (int)$training["completed_total"] : 0;
 
                             ?>
 
@@ -781,6 +1270,9 @@ if($result){
                                     <?php } ?>
                                 </td>
                                 <td><?php echo (int)$assigned_total; ?></td>
+                                <td><?php echo (int)$pending_total; ?></td>
+                                <td><?php echo (int)$in_progress_total; ?></td>
+                                <td><?php echo (int)$completed_total; ?></td>
                                 <td><?php echo safe_text(format_date_fr($created_at)); ?></td>
                                 <td>
                                     <a href="#viewTraining<?php echo $training_id; ?>"
@@ -807,6 +1299,7 @@ if($result){
                                           onsubmit="return confirm('Voulez-vous supprimer cette formation ?');">
                                         <input type="hidden" name="action" value="delete_training">
                                         <input type="hidden" name="training_id" value="<?php echo $training_id; ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
                                         <button type="submit"
                                                 class="btn-flat red-text"
                                                 title="Supprimer"
@@ -822,8 +1315,13 @@ if($result){
                     <?php }else{ ?>
 
                         <tr>
-                            <td colspan="6" class="center-align">
-                                Aucune formation n'est encore enregistree.
+                            <td colspan="9" class="center-align">
+                                <?php if($search != ""){ ?>
+                                    Aucune formation ne correspond a votre recherche.
+                                    <a href="formations.php">Afficher toutes les formations</a>
+                                <?php }else{ ?>
+                                    Aucune formation n'est encore enregistree.
+                                <?php } ?>
                             </td>
                         </tr>
 
@@ -889,9 +1387,26 @@ if($result){
 <div id="modalAddTraining" class="modal modal-fixed-footer">
     <form action="formations.php" method="POST">
         <input type="hidden" name="action" value="add_training">
+        <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
 
         <div class="modal-content">
-            <h4>Nouvelle formation</h4>
+             <div style="
+        background:linear-gradient(90deg,#1b2d8f,#e63b88);
+        padding:28px 40px;
+        border-radius:18px 18px 0 0;
+    ">
+
+        <h4 style="
+            margin:0;
+            color:#fff;
+            font-size:38px;
+            font-weight:700;
+        ">
+            Nouvelle formation
+        </h4>
+
+    </div>
+
 
             <div class="input-field">
                 <input type="text" name="title" id="add_title" required>
@@ -906,6 +1421,9 @@ if($result){
             <div class="input-field">
                 <input type="url" name="youtube_url" id="add_youtube_url" required>
                 <label for="add_youtube_url">Lien YouTube</label>
+                <span class="helper-text">
+                    Collez simplement le lien normal de la vidéo YouTube. Le lien d'intégration sera généré automatiquement.
+                </span>
             </div>
 
             <div class="input-field">
@@ -929,15 +1447,36 @@ if($result){
     $title = isset($training["title"]) ? $training["title"] : "";
     $description = isset($training["description"]) ? $training["description"] : "";
     $youtube_url = isset($training["youtube_url"]) ? $training["youtube_url"] : "";
+    $youtube_embed_url = youtube_embed_url($youtube_url);
     $duration = isset($training["duration"]) ? $training["duration"] : "";
     $created_at = isset($training["created_at"]) ? $training["created_at"] : "";
     $assigned_total = isset($training["assigned_total"]) ? (int)$training["assigned_total"] : 0;
+    $current_assignments = isset($training_assignments[$training_id])
+        ? $training_assignments[$training_id]
+        : array();
 
     ?>
 
     <div id="viewTraining<?php echo $training_id; ?>" class="modal modal-fixed-footer">
-        <div class="modal-content">
-            <h4><?php echo safe_text(display_value($title)); ?></h4>
+        <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
+
+        <div style="
+                    background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                    padding:28px 40px;
+                    border-radius:18px 18px 0 0;
+                ">
+
+                    <h4 style="
+                        margin:0;
+                        color:#fff;
+                        font-size:38px;
+                        font-weight:700;
+                    ">
+                        <?php echo safe_text(display_value($title)); ?>
+                    </h4>
+
+                </div>
+
 
             <p>
                 <strong>Description :</strong><br>
@@ -954,6 +1493,17 @@ if($result){
                 <?php echo safe_text(display_value($youtube_url)); ?>
             </p>
 
+            <?php if($youtube_embed_url != ""){ ?>
+                <div class="training-video-wrapper">
+                    <iframe
+                        src="<?php echo safe_text($youtube_embed_url); ?>"
+                        title="<?php echo safe_text(display_value($title)); ?>"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            <?php } ?>
+
             <p>
                 <strong>Date de creation :</strong>
                 <?php echo safe_text(format_date_fr($created_at)); ?>
@@ -963,6 +1513,60 @@ if($result){
                 <strong>Intervenants assignes :</strong>
                 <?php echo (int)$assigned_total; ?>
             </p>
+
+            <?php if(count($current_assignments) > 0){ ?>
+                <table class="highlight responsive-table">
+                    <thead>
+                        <tr>
+                            <th>Intervenant</th>
+                            <th>E-mail</th>
+                            <th>Statut</th>
+                            <th>Date d'attribution</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($current_assignments as $assignment){ ?>
+                            <?php
+                            $assignment_status = isset($assignment["status"]) ? $assignment["status"] : "";
+                            $assignment_name = trim(
+                                (isset($assignment["first_name"]) ? $assignment["first_name"] : "") .
+                                " " .
+                                (isset($assignment["last_name"]) ? $assignment["last_name"] : "")
+                            );
+                            ?>
+                            <tr>
+                                <td><?php echo safe_text(display_value($assignment_name)); ?></td>
+                                <td><?php echo safe_text(display_value($assignment["email"])); ?></td>
+                                <td>
+                                    <span class="training-status-badge <?php echo safe_text(training_status_badge_class($assignment_status)); ?>">
+                                        <?php echo safe_text(training_status_label($assignment_status)); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo safe_text(format_date_fr($assignment["created_at"])); ?></td>
+                                <td>
+                                    <?php if($assignment_status == "en_attente" || $assignment_status == "en_cours"){ ?>
+                                        <form action="formations.php" method="POST">
+                                            <input type="hidden" name="action" value="deactivate_assignment">
+                                            <input type="hidden" name="candidate_training_id" value="<?php echo (int)$assignment["id"]; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
+                                            <button type="submit"
+                                                    class="btn-small grey"
+                                                    onclick="return confirm('Desactiver cette attribution ?');">
+                                                Desactiver
+                                            </button>
+                                        </form>
+                                    <?php }else{ ?>
+                                        -
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </tbody>
+                </table>
+            <?php }else{ ?>
+                <p class="grey-text">Aucun intervenant n'est encore attribue a cette formation.</p>
+            <?php } ?>
         </div>
 
         <div class="modal-footer">
@@ -981,9 +1585,27 @@ if($result){
         <form action="formations.php" method="POST">
             <input type="hidden" name="action" value="update_training">
             <input type="hidden" name="training_id" value="<?php echo $training_id; ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
 
-            <div class="modal-content">
-                <h4>Modifier la formation</h4>
+            <div class="modal-content" >
+
+             <div style="
+                    background:linear-gradient(90deg,#1b2d8f,#e63b88);
+                    padding:28px 40px;
+                    border-radius:18px 18px 0 0;
+                ">
+
+                    <h4 style="
+                        margin:0;
+                        color:#fff;
+                        font-size:38px;
+                        font-weight:700;
+                    ">
+                        Modifier la formation
+                    </h4>
+
+                </div>
+
 
                 <div class="input-field">
                     <input type="text"
@@ -1008,6 +1630,9 @@ if($result){
                            value="<?php echo safe_text($youtube_url); ?>"
                            required>
                     <label class="active" for="edit_youtube<?php echo $training_id; ?>">Lien YouTube</label>
+                    <span class="helper-text">
+                        Collez simplement le lien normal de la vidéo YouTube. Le lien d'intégration sera généré automatiquement.
+                    </span>
                 </div>
 
                 <div class="input-field">
@@ -1030,20 +1655,25 @@ if($result){
         <form action="formations.php" method="POST">
             <input type="hidden" name="action" value="assign_training">
             <input type="hidden" name="training_id" value="<?php echo $training_id; ?>">
+            <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
 
             <div class="modal-content">
                 <h4>Attribuer la formation</h4>
                 <p><?php echo safe_text(display_value($title)); ?></p>
 
-                <div class="input-field">
-                    <select name="status" required>
-                        <option value="active" selected>Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                    <label>Statut de l'attribution</label>
-                </div>
+                <?php if(count($candidates) > 0){ ?>
+                    <div class="input-field">
+                        <i class="material-icons prefix">search</i>
+                        <input type="text"
+                               class="candidate-training-search"
+                               id="candidateSearch<?php echo $training_id; ?>"
+                               data-target-list="candidateList<?php echo $training_id; ?>"
+                               placeholder="Rechercher un intervenant">
+                    </div>
+                <?php } ?>
 
-                <div class="training-modal-list">
+                <div class="training-modal-list"
+                     id="candidateList<?php echo $training_id; ?>">
 
                     <?php if(count($candidates) > 0){ ?>
 
@@ -1055,6 +1685,7 @@ if($result){
                             $first_name = isset($candidate["first_name"]) ? $candidate["first_name"] : "";
                             $last_name = isset($candidate["last_name"]) ? $candidate["last_name"] : "";
                             $email = isset($candidate["email"]) ? $candidate["email"] : "";
+                            $phone = isset($candidate["phone"]) ? $candidate["phone"] : "";
                             $verification_status = isset($candidate["verification_status"]) ? $candidate["verification_status"] : "";
                             $full_name = trim($first_name . " " . $last_name);
 
@@ -1066,7 +1697,8 @@ if($result){
 
                             ?>
 
-                            <p>
+                            <p class="candidate-training-item"
+                               data-search="<?php echo safe_text($first_name . " " . $last_name . " " . $full_name . " " . $email . " " . $phone); ?>">
                                 <label>
                                     <input type="checkbox"
                                            name="candidates[]"
@@ -1083,10 +1715,14 @@ if($result){
 
                         <?php } ?>
 
+                        <p class="candidate-no-result">
+                            Aucun intervenant ne correspond a votre recherche.
+                        </p>
+
                     <?php }else{ ?>
 
                         <p class="grey-text">
-                            Aucun intervenant disponible.
+                            Aucun intervenant actif, verifie et disponible.
                         </p>
 
                     <?php } ?>
@@ -1107,9 +1743,55 @@ if($result){
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    M.Modal.init(document.querySelectorAll('.modal'));
+    M.Modal.init(document.querySelectorAll('.modal'), {
+        onCloseEnd: function(modalElement) {
+            var youtubeIframe = modalElement.querySelector('.training-video-wrapper iframe');
+
+            if(youtubeIframe){
+
+                var iframeSource = youtubeIframe.getAttribute('src');
+                youtubeIframe.setAttribute('src', '');
+
+                window.setTimeout(function() {
+                    youtubeIframe.setAttribute('src', iframeSource);
+                }, 0);
+
+            }
+        }
+    });
     M.FormSelect.init(document.querySelectorAll('select'));
     M.updateTextFields();
+
+    var candidateSearchFields = document.querySelectorAll('.candidate-training-search');
+
+    Array.prototype.forEach.call(candidateSearchFields, function(searchField) {
+        searchField.addEventListener('input', function() {
+            var targetList = document.getElementById(searchField.getAttribute('data-target-list'));
+            var searchTerm = searchField.value.toLowerCase();
+            var items = targetList.querySelectorAll('.candidate-training-item');
+            var visibleTotal = 0;
+            var noResult = targetList.querySelector('.candidate-no-result');
+
+            Array.prototype.forEach.call(items, function(item) {
+                var candidateText = item.getAttribute('data-search').toLowerCase();
+                var isVisible = candidateText.indexOf(searchTerm) !== -1;
+
+                item.style.display = isVisible ? '' : 'none';
+
+                if(isVisible){
+
+                    visibleTotal++;
+
+                }
+            });
+
+            if(noResult){
+
+                noResult.style.display = visibleTotal === 0 ? 'block' : 'none';
+
+            }
+        });
+    });
 });
 </script>
 

@@ -28,9 +28,21 @@ $stmtUser->bind_param("i", $user_id);
 
 $stmtUser->execute();
 
-$resultUser = $stmtUser->get_result();
+$stmtUser->bind_result($admin_first_name, $admin_last_name);
 
-$admin = $resultUser->fetch_assoc();
+$admin = array(
+    "first_name" => "",
+    "last_name" => ""
+);
+
+if($stmtUser->fetch()){
+
+    $admin["first_name"] = $admin_first_name;
+    $admin["last_name"] = $admin_last_name;
+
+}
+
+$stmtUser->close();
 
 ?>
 
@@ -161,6 +173,15 @@ $admin = $resultUser->fetch_assoc();
             <i class="material-icons">star</i>
 
             Évaluations
+
+        </a>
+
+        <a href="carte-clients.php"
+        class="<?php echo ($current_page == 'carte-clients') ? 'active' : ''; ?>">
+
+            <i class="material-icons">location_on</i>
+
+            Localisation des clients
 
         </a>
 

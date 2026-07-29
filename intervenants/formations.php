@@ -4,23 +4,55 @@ session_start();
 
 require_once("../config/database.php");
 
-if(!isset($_SESSION['user_id']))
-{
+if(
+    !isset($_SESSION["user_id"]) ||
+    !isset($_SESSION["role_id"]) ||
+    $_SESSION["role_id"] != 3
+){
     header("Location: ../login.php");
     exit();
 }
 
-$user_id = (int)$_SESSION['user_id'];
+$user_id = (int)$_SESSION["user_id"];
 $candidate_id = 0;
 $formations = array();
 $total_formations = 0;
-$total_duration_minutes = 0;
+$pending_formations = 0;
+$in_progress_formations = 0;
+$completed_formations = 0;
 $limit = 20;
 $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
 
-if($page < 1)
-{
+if(!isset($_SESSION["csrf_token"]) || $_SESSION["csrf_token"] == ""){
+
+    $csrf_bytes = openssl_random_pseudo_bytes(32);
+
+    if($csrf_bytes === false){
+
+        $csrf_bytes = uniqid((string)mt_rand(), true);
+
+    }
+
+    $_SESSION["csrf_token"] = bin2hex($csrf_bytes);
+}
+
+$csrf_token = $_SESSION["csrf_token"];
+
+if($page < 1){
+
     $page = 1;
+
+}
+
+function safe_text($value)
+{
+    if($value === NULL || $value === ""){
+
+        return "";
+
+    }
+
+    return htmlspecialchars((string)$value, ENT_QUOTES, "UTF-8");
 }
 
 function formations_pagination_url($page_number)
@@ -31,87 +63,121 @@ function formations_pagination_url($page_number)
     return "formations.php?" . http_build_query($params);
 }
 
-function duration_to_minutes($duration)
+function redirect_formations()
 {
-    if($duration === NULL || $duration === "")
-    {
-        return 0;
-    }
-
-    $value = strtolower((string)$duration);
-    $minutes = 0;
-
-    if(preg_match('/([0-9]+)\s*h/', $value, $matches))
-    {
-        $minutes += ((int)$matches[1]) * 60;
-    }
-
-    if(preg_match('/([0-9]+)\s*min/', $value, $matches))
-    {
-        $minutes += (int)$matches[1];
-    }
-
-    if($minutes == 0 && preg_match('/^[0-9]+$/', trim($value)))
-    {
-        $minutes = (int)trim($value);
-    }
-
-    return $minutes;
+    header("Location: formations.php");
+    exit();
 }
 
-function format_duration_minutes($minutes)
+function training_status_label($status)
 {
-    $minutes = (int)$minutes;
+    if($status == "en_attente"){
 
-    if($minutes <= 0)
-    {
-        return "0 min";
+        return "En attente";
+
     }
 
-    $hours = (int)floor($minutes / 60);
-    $remaining = $minutes % 60;
+    if($status == "en_cours"){
 
-    if($hours > 0 && $remaining > 0)
-    {
-        return $hours . " h " . $remaining . " min";
+        return "En cours";
+
     }
 
-    if($hours > 0)
-    {
-        return $hours . " h";
+    if($status == "terminee"){
+
+        return "Formation terminée";
+
     }
 
-    return $remaining . " min";
+    return "Formation indisponible";
 }
 
-function youtube_embed_url($url)
+function training_status_badge_class($status)
 {
-    if($url === NULL || $url === "")
-    {
+    if($status == "en_attente"){
+
+        return "orange";
+
+    }
+
+    if($status == "en_cours"){
+
+        return "blue";
+
+    }
+
+    if($status == "terminee"){
+
+        return "green";
+
+    }
+
+    return "grey";
+}
+
+function extract_youtube_video_id($youtube_url)
+{
+    $parts = parse_url(trim((string)$youtube_url));
+
+    if($parts === false || !isset($parts["host"])){
+
         return "";
+
     }
 
-    $url = trim($url);
-
-    if(strpos($url, "youtube.com/embed/") !== false)
-    {
-        return $url;
-    }
-
+    $host = strtolower($parts["host"]);
+    $path = isset($parts["path"]) ? trim($parts["path"], "/") : "";
     $video_id = "";
 
-    if(preg_match('/youtu\.be\/([^?&]+)/', $url, $matches))
-    {
-        $video_id = $matches[1];
-    }
-    elseif(preg_match('/[?&]v=([^?&]+)/', $url, $matches))
-    {
-        $video_id = $matches[1];
+    if($host == "youtu.be" || $host == "www.youtu.be"){
+
+        $path_parts = explode("/", $path);
+        $video_id = isset($path_parts[0]) ? $path_parts[0] : "";
+
+    }elseif(
+        $host == "youtube.com" ||
+        $host == "www.youtube.com" ||
+        $host == "m.youtube.com"
+    ){
+
+        if($path == "watch"){
+
+            $query = array();
+            parse_str(isset($parts["query"]) ? $parts["query"] : "", $query);
+            $video_id = isset($query["v"]) ? $query["v"] : "";
+
+        }else{
+
+            $path_parts = explode("/", $path);
+            $path_type = isset($path_parts[0]) ? $path_parts[0] : "";
+
+            if($path_type == "embed" || $path_type == "shorts"){
+
+                $video_id = isset($path_parts[1]) ? $path_parts[1] : "";
+
+            }
+
+        }
+
     }
 
-    if($video_id == "")
-    {
-        return $url;
+    if(!preg_match("/^[A-Za-z0-9_-]{11}$/", $video_id)){
+
+        return "";
+
+    }
+
+    return $video_id;
+}
+
+function youtube_embed_url($youtube_url)
+{
+    $video_id = extract_youtube_video_id($youtube_url);
+
+    if($video_id == ""){
+
+        return "";
+
     }
 
     return "https://www.youtube.com/embed/" . $video_id;
@@ -126,90 +192,158 @@ LIMIT 1
 
 $stmt = mysqli_prepare($conn, $sql);
 
-if($stmt)
-{
+if($stmt){
+
     mysqli_stmt_bind_param($stmt, "i", $user_id);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    if($row = mysqli_fetch_assoc($result))
-    {
-        $candidate_id = (int)$row["id"];
-    }
-
+    mysqli_stmt_bind_result($stmt, $candidate_id);
+    mysqli_stmt_fetch($stmt);
     mysqli_stmt_close($stmt);
+
 }
 
-if($candidate_id <= 0)
-{
+if($candidate_id <= 0){
+
     header("Location: ../login.php");
     exit();
+
+}
+
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+
+    $action = isset($_POST["action"]) ? $_POST["action"] : "";
+    $candidate_training_id = isset($_POST["candidate_training_id"])
+        ? (int)$_POST["candidate_training_id"]
+        : 0;
+    $posted_csrf_token = isset($_POST["csrf_token"])
+        ? $_POST["csrf_token"]
+        : "";
+
+    if(
+        $posted_csrf_token == "" ||
+        !hash_equals($_SESSION["csrf_token"], $posted_csrf_token)
+    ){
+
+        $_SESSION["error"] = "La session du formulaire a expire. Veuillez reessayer.";
+        redirect_formations();
+
+    }
+
+    if($candidate_training_id <= 0){
+
+        $_SESSION["error"] = "Attribution de formation invalide.";
+        redirect_formations();
+
+    }
+
+    if($action == "start_training"){
+
+        $sql = "
+        UPDATE candidate_trainings ct
+        INNER JOIN candidates c
+        ON c.id = ct.candidate_id
+        SET ct.status = 'en_cours'
+        WHERE ct.id = ?
+        AND c.user_id = ?
+        AND ct.status = 'en_attente'
+        ";
+        $success_message = "La formation a été commencée.";
+
+    }elseif($action == "complete_training"){
+
+        $sql = "
+        UPDATE candidate_trainings ct
+        INNER JOIN candidates c
+        ON c.id = ct.candidate_id
+        SET ct.status = 'terminee'
+        WHERE ct.id = ?
+        AND c.user_id = ?
+        AND ct.status = 'en_cours'
+        ";
+        $success_message = "La formation a été marquée comme terminée.";
+
+    }else{
+
+        $_SESSION["error"] = "Action de formation invalide.";
+        redirect_formations();
+
+    }
+
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+
+        $_SESSION["error"] = "Erreur lors de la mise a jour de la formation.";
+        redirect_formations();
+
+    }
+
+    mysqli_stmt_bind_param($stmt, "ii", $candidate_training_id, $user_id);
+    mysqli_stmt_execute($stmt);
+    $affected_rows = mysqli_stmt_affected_rows($stmt);
+    mysqli_stmt_close($stmt);
+
+    if($affected_rows == 1){
+
+        $_SESSION["success"] = $success_message;
+
+    }else{
+
+        $_SESSION["error"] = "Cette transition n'est pas autorisee ou cette formation ne vous appartient pas.";
+
+    }
+
+    redirect_formations();
+
 }
 
 $sql = "
-SELECT COUNT(*) AS total
-FROM candidate_trainings ct
-INNER JOIN trainings t
-ON t.id = ct.training_id
-WHERE ct.candidate_id = ?
-AND ct.status = 'active'
+SELECT
+    COUNT(*) AS total,
+    SUM(CASE WHEN status = 'en_attente' THEN 1 ELSE 0 END) AS pending_total,
+    SUM(CASE WHEN status = 'en_cours' THEN 1 ELSE 0 END) AS in_progress_total,
+    SUM(CASE WHEN status = 'terminee' THEN 1 ELSE 0 END) AS completed_total
+FROM candidate_trainings
+WHERE candidate_id = ?
 ";
 
 $stmt = mysqli_prepare($conn, $sql);
 
-if($stmt)
-{
+if($stmt){
+
     mysqli_stmt_bind_param($stmt, "i", $candidate_id);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    if($row = mysqli_fetch_assoc($result))
-    {
-        $total_formations = (int)$row["total"];
-    }
-
+    mysqli_stmt_bind_result(
+        $stmt,
+        $total_formations,
+        $pending_formations,
+        $in_progress_formations,
+        $completed_formations
+    );
+    mysqli_stmt_fetch($stmt);
     mysqli_stmt_close($stmt);
+
 }
 
+$total_formations = (int)$total_formations;
+$pending_formations = (int)$pending_formations;
+$in_progress_formations = (int)$in_progress_formations;
+$completed_formations = (int)$completed_formations;
 $total_pages = (int)ceil($total_formations / $limit);
 
-if($total_pages > 0 && $page > $total_pages)
-{
+if($total_pages > 0 && $page > $total_pages){
+
     $page = $total_pages;
+
 }
 
-if($total_pages < 1)
-{
+if($total_pages < 1){
+
     $page = 1;
+
 }
 
 $offset = ($page - 1) * $limit;
-
-$sql = "
-SELECT t.duration
-FROM candidate_trainings ct
-INNER JOIN trainings t
-ON t.id = ct.training_id
-WHERE ct.candidate_id = ?
-AND ct.status = 'active'
-";
-
-$stmt = mysqli_prepare($conn, $sql);
-
-if($stmt)
-{
-    mysqli_stmt_bind_param($stmt, "i", $candidate_id);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while($row = mysqli_fetch_assoc($result))
-    {
-        $duration = isset($row["duration"]) ? $row["duration"] : "";
-        $total_duration_minutes += duration_to_minutes($duration);
-    }
-
-    mysqli_stmt_close($stmt);
-}
 
 $sql = "
 SELECT
@@ -225,26 +359,46 @@ FROM candidate_trainings ct
 INNER JOIN trainings t
 ON t.id = ct.training_id
 WHERE ct.candidate_id = ?
-AND ct.status = 'active'
-ORDER BY ct.created_at DESC
+ORDER BY ct.created_at DESC, ct.id DESC
 LIMIT ?
 OFFSET ?
 ";
 
 $stmt = mysqli_prepare($conn, $sql);
 
-if($stmt)
-{
+if($stmt){
+
     mysqli_stmt_bind_param($stmt, "iii", $candidate_id, $limit, $offset);
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    mysqli_stmt_bind_result(
+        $stmt,
+        $candidate_training_id,
+        $training_id,
+        $training_title,
+        $training_description,
+        $training_youtube_url,
+        $training_duration,
+        $training_status,
+        $training_created_at
+    );
 
-    while($row = mysqli_fetch_assoc($result))
-    {
-        $formations[] = $row;
+    while(mysqli_stmt_fetch($stmt)){
+
+        $formations[] = array(
+            "candidate_training_id" => $candidate_training_id,
+            "training_id" => $training_id,
+            "title" => $training_title,
+            "description" => $training_description,
+            "youtube_url" => $training_youtube_url,
+            "duration" => $training_duration,
+            "status" => $training_status,
+            "created_at" => $training_created_at
+        );
+
     }
 
     mysqli_stmt_close($stmt);
+
 }
 
 ?>
@@ -281,6 +435,29 @@ if($stmt)
     <link rel="stylesheet"
           href="../assets/css/style.css">
 
+    <style>
+        .training-status-badge{
+            border-radius:12px;
+            color:#ffffff;
+            display:inline-block;
+            font-size:12px;
+            font-weight:600;
+            line-height:1;
+            padding:7px 10px;
+        }
+
+        .training-actions{
+            align-items:center;
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+        }
+
+        .training-actions form{
+            margin:0;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -306,13 +483,27 @@ if($stmt)
 
     </div>
 
+    <?php if(isset($_SESSION["success"])){ ?>
+        <div class="card-panel green white-text">
+            <?php echo safe_text($_SESSION["success"]); ?>
+        </div>
+        <?php unset($_SESSION["success"]); ?>
+    <?php } ?>
+
+    <?php if(isset($_SESSION["error"])){ ?>
+        <div class="card-panel red white-text">
+            <?php echo safe_text($_SESSION["error"]); ?>
+        </div>
+        <?php unset($_SESSION["error"]); ?>
+    <?php } ?>
+
     <div class="row">
 
-        <div class="col s12 m6">
+        <div class="col s12 m6 l3">
             <div class="card blue darken-3 white-text">
                 <div class="card-content">
                     <span class="card-title">
-                        Formations disponibles
+                        Total attribue
                     </span>
                     <h3>
                         <?php echo (int)$total_formations; ?>
@@ -321,14 +512,40 @@ if($stmt)
             </div>
         </div>
 
-        <div class="col s12 m6">
+        <div class="col s12 m6 l3">
+            <div class="card orange darken-2 white-text">
+                <div class="card-content">
+                    <span class="card-title">
+                        En attente
+                    </span>
+                    <h3>
+                        <?php echo (int)$pending_formations; ?>
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s12 m6 l3">
+            <div class="card blue white-text">
+                <div class="card-content">
+                    <span class="card-title">
+                        En cours
+                    </span>
+                    <h3>
+                        <?php echo (int)$in_progress_formations; ?>
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s12 m6 l3">
             <div class="card green darken-2 white-text">
                 <div class="card-content">
                     <span class="card-title">
-                        Durée totale
+                        Terminées
                     </span>
                     <h3>
-                        <?php echo htmlspecialchars(format_duration_minutes($total_duration_minutes)); ?>
+                        <?php echo (int)$completed_formations; ?>
                     </h3>
                 </div>
             </div>
@@ -350,6 +567,8 @@ if($stmt)
                     <th>Formation</th>
                     <th>Description</th>
                     <th>Durée</th>
+                    <th>Statut</th>
+                    <th>Video</th>
                     <th>Action</th>
                 </tr>
 
@@ -367,25 +586,38 @@ if($stmt)
                         $description = isset($formation["description"]) ? $formation["description"] : "";
                         $duration = isset($formation["duration"]) ? $formation["duration"] : "";
                         $youtube_url = isset($formation["youtube_url"]) ? $formation["youtube_url"] : "";
+                        $candidate_training_id = isset($formation["candidate_training_id"])
+                            ? (int)$formation["candidate_training_id"]
+                            : 0;
+                        $status = isset($formation["status"]) ? $formation["status"] : "";
                         ?>
 
                         <tr>
 
                             <td>
-                                <?php echo htmlspecialchars($title); ?>
+                                <?php echo safe_text($title); ?>
                             </td>
 
                             <td>
-                                <?php echo htmlspecialchars($description); ?>
+                                <?php echo safe_text($description); ?>
                             </td>
 
                             <td>
-                                <?php echo htmlspecialchars($duration); ?>
+                                <?php echo safe_text($duration); ?>
                             </td>
 
                             <td>
+                                <span class="training-status-badge <?php echo safe_text(training_status_badge_class($status)); ?>">
+                                    <?php echo safe_text(training_status_label($status)); ?>
+                                </span>
+                            </td>
 
-                                <?php if($youtube_url != ""){ ?>
+                            <td>
+                                <?php if($status == "inactive"){ ?>
+
+                                    <span class="grey-text">Video indisponible</span>
+
+                                <?php }elseif($youtube_url != "" && youtube_embed_url($youtube_url) != ""){ ?>
 
                                     <a href="#videoModal<?php echo $training_id; ?>"
                                        class="btn blue modal-trigger">
@@ -394,7 +626,7 @@ if($stmt)
                                             play_circle
                                         </i>
 
-                                        Suivre
+                                        Voir la video
 
                                     </a>
 
@@ -408,6 +640,34 @@ if($stmt)
 
                             </td>
 
+                            <td>
+                                <div class="training-actions">
+                                    <?php if($status == "en_attente"){ ?>
+                                        <form action="formations.php" method="POST">
+                                            <input type="hidden" name="action" value="start_training">
+                                            <input type="hidden" name="candidate_training_id" value="<?php echo $candidate_training_id; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
+                                            <button type="submit" class="btn orange waves-effect waves-light">
+                                                Commencer la formation
+                                            </button>
+                                        </form>
+                                    <?php }elseif($status == "en_cours"){ ?>
+                                        <form action="formations.php" method="POST">
+                                            <input type="hidden" name="action" value="complete_training">
+                                            <input type="hidden" name="candidate_training_id" value="<?php echo $candidate_training_id; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
+                                            <button type="submit" class="btn green waves-effect waves-light">
+                                                Marquer comme terminée
+                                            </button>
+                                        </form>
+                                    <?php }elseif($status == "terminee"){ ?>
+                                        <span class="green-text">Formation terminée</span>
+                                    <?php }else{ ?>
+                                        <span class="grey-text">Formation indisponible</span>
+                                    <?php } ?>
+                                </div>
+                            </td>
+
                         </tr>
 
                     <?php } ?>
@@ -416,7 +676,7 @@ if($stmt)
 
                     <tr>
 
-                        <td colspan="4" class="center-align">
+                        <td colspan="6" class="center-align">
                             Aucune formation disponible.
                         </td>
 
@@ -515,19 +775,20 @@ if($stmt)
     $training_id = isset($formation["training_id"]) ? (int)$formation["training_id"] : 0;
     $title = isset($formation["title"]) ? $formation["title"] : "";
     $youtube_url = isset($formation["youtube_url"]) ? $formation["youtube_url"] : "";
+    $status = isset($formation["status"]) ? $formation["status"] : "";
     $embed_url = youtube_embed_url($youtube_url);
     ?>
 
-    <?php if($youtube_url != ""){ ?>
+    <?php if($status != "inactive" && $embed_url != ""){ ?>
 
         <div id="videoModal<?php echo $training_id; ?>" class="modal">
 
             <div class="modal-content">
 
-                <h5><?php echo htmlspecialchars($title); ?></h5>
+                <h5><?php echo safe_text($title); ?></h5>
 
                 <iframe
-                    src="<?php echo htmlspecialchars($embed_url); ?>"
+                    src="<?php echo safe_text($embed_url); ?>"
                     style="
                         width:100%;
                         height:75vh;

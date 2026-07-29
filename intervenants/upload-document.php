@@ -77,7 +77,9 @@ $candidate_id = (int)$candidate['id'];
    TYPE DOCUMENT
 ===================================== */
 
-$document_type = trim($_POST['document_type']);
+$document_type = isset($_POST['document_type'])
+    ? trim($_POST['document_type'])
+    : "";
 
 if(empty($document_type)){
 
@@ -93,14 +95,44 @@ if(empty($document_type)){
    FICHIER
 ===================================== */
 
-if(
-    !isset($_FILES['document']) ||
-    $_FILES['document']['error'] != 0
-){
+if(!isset($_FILES['document'])){
 
-    $_SESSION['error'] =
-    "Veuillez sélectionner un fichier.";
+    $_SESSION['error'] = "Veuillez sélectionner un fichier.";
+    header("Location: mes-documents.php");
+    exit();
 
+}
+
+$upload_error = (int)$_FILES['document']['error'];
+
+$upload_error_messages = array(
+    UPLOAD_ERR_INI_SIZE => "Le fichier dépasse la taille maximale autorisée par le serveur.",
+    UPLOAD_ERR_FORM_SIZE => "Le fichier dépasse la taille maximale autorisée par le formulaire.",
+    UPLOAD_ERR_PARTIAL => "Le fichier n’a été que partiellement téléversé.",
+    UPLOAD_ERR_NO_FILE => "Veuillez sélectionner un fichier.",
+    UPLOAD_ERR_NO_TMP_DIR => "Le dossier temporaire du serveur est indisponible.",
+    UPLOAD_ERR_CANT_WRITE => "Le serveur n’a pas pu enregistrer le fichier.",
+    UPLOAD_ERR_EXTENSION => "Une extension PHP a interrompu le téléversement."
+);
+
+if($upload_error !== UPLOAD_ERR_OK){
+
+    error_log("Erreur upload document PHP : code " . $upload_error);
+
+    $_SESSION['error'] = isset($upload_error_messages[$upload_error])
+        ? $upload_error_messages[$upload_error]
+        : "Une erreur inconnue est survenue pendant le téléversement.";
+
+    header("Location: mes-documents.php");
+    exit();
+
+}
+
+$max_file_size = 10 * 1024 * 1024;
+
+if((int)$_FILES['document']['size'] > $max_file_size){
+
+    $_SESSION['error'] = "Le fichier ne doit pas dépasser 10 Mo.";
     header("Location: mes-documents.php");
     exit();
 
@@ -110,7 +142,7 @@ if(
    EXTENSIONS AUTORISEES
 ===================================== */
 
-$allowed_extensions = [
+$allowed_extensions = array(
 
     'pdf',
 
@@ -121,7 +153,7 @@ $allowed_extensions = [
     'doc',
     'docx'
 
-];
+);
 
 $file_name =
 $_FILES['document']['name'];
@@ -147,6 +179,44 @@ if(
     $_SESSION['error'] =
     "Format non autorisé.";
 
+    header("Location: mes-documents.php");
+    exit();
+
+}
+
+/* =====================================
+   VERIFICATION MIME
+===================================== */
+
+$allowed_mime_types = array(
+    'pdf' => array('application/pdf'),
+    'jpg' => array('image/jpeg'),
+    'jpeg' => array('image/jpeg'),
+    'png' => array('image/png'),
+    'doc' => array('application/msword'),
+    'docx' => array('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+);
+
+if(!function_exists('finfo_open') || !is_uploaded_file($tmp_name)){
+
+    $_SESSION['error'] = "Le fichier téléversé n’a pas pu être vérifié.";
+    header("Location: mes-documents.php");
+    exit();
+
+}
+
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+$mime_type = $finfo ? finfo_file($finfo, $tmp_name) : false;
+
+if($finfo){
+    finfo_close($finfo);
+}
+
+if($mime_type === false
+    || !isset($allowed_mime_types[$extension])
+    || !in_array($mime_type, $allowed_mime_types[$extension], true)){
+
+    $_SESSION['error'] = "Le contenu du fichier ne correspond pas au format autorisé.";
     header("Location: mes-documents.php");
     exit();
 

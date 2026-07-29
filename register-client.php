@@ -852,44 +852,111 @@ enctype="multipart/form-data">
 
 function getLocation(){
 
-    if(navigator.geolocation){
+    var gpsField = document.getElementById("gps_location");
+    var locationButton = document.querySelector(".gps-actions button");
 
-        navigator.geolocation.getCurrentPosition(
+    function finish(){
 
-            function(position){
+        if(locationButton){
 
-                let latitude =
-                position.coords.latitude;
+            locationButton.disabled = false;
 
-                let longitude =
-                position.coords.longitude;
+        }
 
-                document.getElementById(
-                    "gps_location"
-                ).value =
-                latitude + "," + longitude;
+    }
 
-                M.updateTextFields();
+    function showError(message){
 
-            },
+        gpsField.value = "";
+        M.updateTextFields();
+        finish();
+        alert(message);
 
-            function(error){
+    }
 
-                alert(
-                    "Impossible de récupérer la position."
-                );
+    if(locationButton){
+
+        locationButton.disabled = true;
+
+    }
+
+    gpsField.value = "Recherche de votre position...";
+    M.updateTextFields();
+
+    if(!navigator.geolocation){
+
+        showError("Erreur inconnue.");
+        return;
+
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            if(!position || !position.coords){
+
+                showError("Erreur inconnue.");
+                return;
 
             }
 
-        );
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
 
-    }else{
+            if(
+                typeof latitude !== "number" ||
+                typeof longitude !== "number" ||
+                !isFinite(latitude) ||
+                !isFinite(longitude) ||
+                latitude < -90 ||
+                latitude > 90 ||
+                longitude < -180 ||
+                longitude > 180
+            ){
 
-        alert(
-            "La géolocalisation n'est pas supportée."
-        );
+                showError("Erreur inconnue.");
+                return;
 
-    }
+            }
+
+            gpsField.value =
+                latitude.toFixed(6) + "," +
+                longitude.toFixed(6);
+
+            M.updateTextFields();
+            finish();
+
+        },
+
+        function(error){
+
+            var message = "Erreur inconnue.";
+
+            if(error && error.code === 1){
+
+                message = "Permission refusée.";
+
+            }else if(error && error.code === 2){
+
+                message = "Position indisponible.";
+
+            }else if(error && error.code === 3){
+
+                message = "Délai dépassé.";
+
+            }
+
+            showError(message);
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0
+        }
+    );
 
 }
 

@@ -94,6 +94,34 @@ function count_query($conn, $sql)
     return $total;
 }
 
+function count_search_query($conn, $sql, $search_pattern)
+{
+    $total = 0;
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+
+        return $total;
+
+    }
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "sssss",
+        $search_pattern,
+        $search_pattern,
+        $search_pattern,
+        $search_pattern,
+        $search_pattern
+    );
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $total);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
+
+    return (int)$total;
+}
+
 function normalize_text($value)
 {
     $value = strtolower((string)$value);
@@ -633,14 +661,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
 }
 
+$without_active_mission_sql = "
+AND NOT EXISTS (
+    SELECT 1
+    FROM missions active_mission
+    WHERE active_mission.candidate_id = c.id
+    AND active_mission.mission_status IN ('attribuee', 'en_cours')
+)";
+
 $stats = array(
-    "total" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3"),
-    "available" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.availability_status = 'disponible'"),
-    "busy" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.availability_status = 'occupé'"),
-    "offline" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.availability_status = 'hors_ligne'"),
-    "verified" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.verification_status = 'verifie'"),
-    "pending" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.verification_status = 'en_attente'"),
-    "active_accounts" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND u.status = 'active'")
+    "total" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 " . $without_active_mission_sql),
+    "available" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.availability_status = 'disponible' " . $without_active_mission_sql),
+    "busy" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.availability_status = 'occupé' " . $without_active_mission_sql),
+    "offline" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.availability_status = 'hors_ligne' " . $without_active_mission_sql),
+    "verified" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.verification_status = 'verifie' " . $without_active_mission_sql),
+    "pending" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND c.verification_status = 'en_attente' " . $without_active_mission_sql),
+    "active_accounts" => count_query($conn, "SELECT COUNT(*) AS total FROM candidates c INNER JOIN users u ON u.id = c.user_id WHERE u.role_id = 3 AND u.status = 'active' " . $without_active_mission_sql)
 );
 
 $candidates = array();
@@ -651,6 +687,9 @@ $missions_by_candidate = array();
 $reviews_by_candidate = array();
 $limit = 50;
 $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+$search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
+$search_pattern = "%" . $search . "%";
+$search_sql = "";
 
 if($page < 1){
 
@@ -658,13 +697,32 @@ if($page < 1){
 
 }
 
-$total_candidates = count_query($conn, "
+$count_sql = "
 SELECT COUNT(*) AS total
 FROM candidates c
 INNER JOIN users u
 ON u.id = c.user_id
 WHERE u.role_id = 3
-");
+" . $without_active_mission_sql;
+
+if($search != ""){
+
+    $search_sql = "
+    AND (
+        u.first_name LIKE ?
+        OR u.last_name LIKE ?
+        OR u.phone LIKE ?
+        OR u.email LIKE ?
+        OR c.city LIKE ?
+    )";
+    $count_sql .= $search_sql;
+    $total_candidates = count_search_query($conn, $count_sql, $search_pattern);
+
+}else{
+
+    $total_candidates = count_query($conn, $count_sql);
+
+}
 
 $total_pages = (int)ceil($total_candidates / $limit);
 
@@ -711,7 +769,10 @@ FROM candidates c
 INNER JOIN users u
 ON u.id = c.user_id
 WHERE u.role_id = 3
-ORDER BY u.first_name ASC, u.last_name ASC
+" . $without_active_mission_sql . $search_sql . "
+ORDER BY
+    c.created_at DESC,
+    c.id DESC
 LIMIT ?
 OFFSET ?
 ";
@@ -720,30 +781,93 @@ $stmt = mysqli_prepare($conn, $sql);
 
 if($stmt){
 
-    mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    if($search != ""){
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            "sssssii",
+            $search_pattern,
+            $search_pattern,
+            $search_pattern,
+            $search_pattern,
+            $search_pattern,
+            $limit,
+            $offset
+        );
+
+    }else{
+
+        mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+
+    }
+
     mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    mysqli_stmt_bind_result(
+        $stmt,
+        $candidate_id,
+        $user_id,
+        $birth_date,
+        $gender,
+        $address,
+        $city,
+        $nationality,
+        $marital_status,
+        $education_level,
+        $experience_years,
+        $bio,
+        $availability_status,
+        $verification_status,
+        $first_name,
+        $last_name,
+        $email,
+        $phone,
+        $profile_photo,
+        $account_status,
+        $active_skills,
+        $mission_total,
+        $average_rating,
+        $review_total
+    );
 
-    if($result){
+    while(mysqli_stmt_fetch($stmt)){
 
-        while($row = mysqli_fetch_assoc($result)){
-
-            $reasons = array();
-            $score = calculate_ai_score($row, $reasons);
-            $row["ai_score"] = $score;
-            $row["score_level"] = score_level($score);
-            $row["score_reasons"] = $reasons;
-            $candidates[] = $row;
-            $candidate_id = (int)$row["candidate_id"];
-            $skills_by_candidate[$candidate_id] = array();
-            $documents_by_candidate[$candidate_id] = array();
-            $trainings_by_candidate[$candidate_id] = array();
-            $missions_by_candidate[$candidate_id] = array();
-            $reviews_by_candidate[$candidate_id] = array();
-
-        }
-
-        mysqli_free_result($result);
+        $row = array(
+            "candidate_id" => $candidate_id,
+            "user_id" => $user_id,
+            "birth_date" => $birth_date,
+            "gender" => $gender,
+            "address" => $address,
+            "city" => $city,
+            "nationality" => $nationality,
+            "marital_status" => $marital_status,
+            "education_level" => $education_level,
+            "experience_years" => $experience_years,
+            "bio" => $bio,
+            "availability_status" => $availability_status,
+            "verification_status" => $verification_status,
+            "first_name" => $first_name,
+            "last_name" => $last_name,
+            "email" => $email,
+            "phone" => $phone,
+            "profile_photo" => $profile_photo,
+            "account_status" => $account_status,
+            "active_skills" => $active_skills,
+            "mission_total" => $mission_total,
+            "average_rating" => $average_rating,
+            "review_total" => $review_total
+        );
+        $reasons = array();
+        $score = calculate_ai_score($row, $reasons);
+        $row["ai_score"] = $score;
+        $row["score_level"] = score_level($score);
+        $row["score_reasons"] = $reasons;
+        $candidates[] = $row;
+        $candidate_id = (int)$row["candidate_id"];
+        $skills_by_candidate[$candidate_id] = array();
+        $documents_by_candidate[$candidate_id] = array();
+        $trainings_by_candidate[$candidate_id] = array();
+        $missions_by_candidate[$candidate_id] = array();
+        $reviews_by_candidate[$candidate_id] = array();
 
     }
 
@@ -1038,6 +1162,24 @@ if(count($candidates) > 0){
             margin-bottom:20px;
             text-align:center;
         }
+
+        .intervenants-search{
+            align-items:center;
+            display:flex;
+            flex-wrap:wrap;
+            gap:12px;
+            margin-bottom:20px;
+        }
+
+        .intervenants-search .input-field{
+            flex:1 1 320px;
+            margin:0;
+        }
+
+        .intervenants-search .btn,
+        .intervenants-search .btn-flat{
+            margin:0;
+        }
     </style>
 
 </head>
@@ -1131,6 +1273,29 @@ if(count($candidates) > 0){
                     <h5>Comptes actifs</h5>
                     <h3><?php echo (int)$stats["active_accounts"]; ?></h3>
                 </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-content">
+                <form action="intervenants.php" method="GET" class="intervenants-search">
+                    <div class="input-field">
+                        <i class="material-icons prefix">search</i>
+                        <input type="text"
+                               name="search"
+                               id="intervenantsSearch"
+                               value="<?php echo safe_text($search); ?>">
+                        <label for="intervenantsSearch" class="<?php if($search != ""){ echo "active"; } ?>">
+                            Rechercher par prenom, nom, telephone, email ou ville
+                        </label>
+                    </div>
+                    <button type="submit" class="btn blue darken-4">
+                        Rechercher
+                    </button>
+                    <a href="intervenants.php" class="btn-flat">
+                        Reinitialiser
+                    </a>
+                </form>
             </div>
         </div>
 

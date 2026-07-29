@@ -426,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     <input
                     type="file"
                     name="document"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     required>
 
                 </div>
@@ -439,6 +440,10 @@ document.addEventListener('DOMContentLoaded', function(){
                 </div>
 
             </div>
+
+            <p class="grey-text text-darken-1" style="margin-top:-5px;margin-bottom:20px;">
+                Formats acceptés : PDF, JPG, PNG, DOC et DOCX — taille maximale : 10 Mo.
+            </p>
 
             <button
             type="submit"
