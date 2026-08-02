@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -54,7 +54,7 @@ function format_date_fr($value)
 
 function redirect_utilisateurs()
 {
-    header("Location: utilisateurs.php");
+    header("Location: " . app_url("admin/utilisateurs"));
     exit();
 }
 
@@ -129,7 +129,7 @@ function pagination_url($page, $search)
     $params = $_GET;
     $params["page"] = (int)$page;
 
-    return "utilisateurs.php?" . http_build_query($params);
+    return app_url_with_query("admin/utilisateurs", $params);
 }
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -403,7 +403,7 @@ mysqli_stmt_close($stmt);
 
     <title>Utilisateurs | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -417,7 +417,7 @@ mysqli_stmt_close($stmt);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -584,7 +584,7 @@ mysqli_stmt_close($stmt);
         </div>
 
         <div class="search-card">
-            <form action="utilisateurs.php" method="GET">
+            <form action="<?php echo app_url_html("admin/utilisateurs"); ?>" method="GET">
                 <div class="row" style="margin-bottom:0;">
                     <div class="input-field col s12 m8">
                         <i class="material-icons prefix">search</i>
@@ -602,7 +602,7 @@ mysqli_stmt_close($stmt);
                             <i class="material-icons left">search</i>
                             Rechercher
                         </button>
-                        <a href="utilisateurs.php" class="btn-flat">Reinitialiser</a>
+                        <a href="<?php echo app_url_html("admin/utilisateurs"); ?>" class="btn-flat">Reinitialiser</a>
                     </div>
                 </div>
             </form>
@@ -658,7 +658,7 @@ mysqli_stmt_close($stmt);
                                         </a>
 
                                         <?php if($status != "active"){ ?>
-                                            <form action="utilisateurs.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/utilisateurs"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="set_active">
                                                 <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                                                 <button type="submit" class="btn-small blue">Activer</button>
@@ -666,7 +666,7 @@ mysqli_stmt_close($stmt);
                                         <?php } ?>
 
                                         <?php if($status != "inactive"){ ?>
-                                            <form action="utilisateurs.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/utilisateurs"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="set_inactive">
                                                 <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                                                 <button type="submit" class="btn-small grey darken-1">Desactiver</button>
@@ -674,7 +674,7 @@ mysqli_stmt_close($stmt);
                                         <?php } ?>
 
                                         <?php if($status != "suspended"){ ?>
-                                            <form action="utilisateurs.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/utilisateurs"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="set_suspended">
                                                 <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                                                 <button type="submit" class="btn-small red">Suspendre</button>

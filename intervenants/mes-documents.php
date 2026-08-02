@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     <link rel="icon"
           type="image/x-icon"
-          href="../assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function(){
           rel="stylesheet">
 
     <link rel="stylesheet"
-          href="../assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     </a>
 
-    <a href="delete-document.php?id=<?php echo $doc['id']; ?>"
+    <a href="<?php echo app_url_with_query_html("intervenant/document/supprimer", array("id" => (int)$doc["id"])); ?>"
        class="btn-small red"
        onclick="return confirm('Voulez-vous vraiment supprimer ce document ?');">
 
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function(){
         <h4>Ajouter un document</h4>
 
         <form
-        action="upload-document.php"
+        action="<?php echo app_url_html("intervenant/document/televerser"); ?>"
         method="POST"
         enctype="multipart/form-data">
 

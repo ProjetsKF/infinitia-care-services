@@ -51,7 +51,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 "Les mots de passe ne correspondent pas.";
 
                 header(
-                    "Location: ../register-client.php"
+                    "Location: " . app_url("inscription/client")
                 );
 
                 exit();
@@ -81,7 +81,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             "Cette adresse email existe déjà.";
 
             header(
-                "Location: ../register-client.php"
+                "Location: " . app_url("inscription/client")
             );
 
             exit();
@@ -293,7 +293,7 @@ if($insert_user->execute()){
         "Compte créé avec succès. Vous pouvez maintenant vous connecter.";
 
         header(
-            "Location: ../login.php"
+            "Location: " . app_url("login")
         );
 
         exit();
@@ -305,7 +305,7 @@ if($insert_user->execute()){
         $insert_client->error;
 
         header(
-            "Location: register-client.php"
+            "Location: " . app_url("inscription/client")
         );
 
         exit();
@@ -319,7 +319,7 @@ if($insert_user->execute()){
     $insert_user->error;
 
     header(
-        "Location: ../register-client.php"
+        "Location: " . app_url("inscription/client")
     );
 
     exit();
@@ -329,7 +329,7 @@ if($insert_user->execute()){
 }else{
 
     header(
-        "Location: ../register-client.php"
+        "Location: " . app_url("inscription/client")
     );
 
     exit();

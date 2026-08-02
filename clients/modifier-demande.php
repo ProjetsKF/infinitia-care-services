@@ -44,5 +44,5 @@ mysqli_stmt_execute($stmt);
 $_SESSION['success'] =
 "Demande modifiée avec succès.";
 
-header("Location: mes-demandes.php");
+header("Location: " . app_url("client/demandes"));
 exit;

@@ -6,14 +6,14 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
 
 if(!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -218,7 +218,7 @@ mysqli_stmt_close($stmt);
 
 if($client_id <= 0){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -253,7 +253,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         if($payment_id <= 0 || !in_array($payment_method, $allowed_methods) || $phone_number == ""){
 
             $_SESSION["error"] = "Veuillez renseigner une methode de paiement et un numero valide.";
-            header("Location: paiements.php");
+            header("Location: " . app_url("client/paiements"));
             exit();
 
         }
@@ -307,7 +307,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         if($current_status != "en_attente" && $current_status != "echoue"){
 
             $_SESSION["error"] = "Ce paiement ne peut pas etre initie.";
-            header("Location: paiements.php");
+            header("Location: " . app_url("client/paiements"));
             exit();
 
         }
@@ -372,7 +372,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         mysqli_stmt_close($stmt);
 
-        header("Location: paiements.php");
+        header("Location: " . app_url("client/paiements"));
         exit();
 
     }
@@ -520,7 +520,7 @@ mysqli_stmt_close($stmt);
 
     </title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -544,7 +544,7 @@ mysqli_stmt_close($stmt);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -881,7 +881,7 @@ mysqli_stmt_close($stmt);
                     <div id="payment<?php echo $payment_id_value; ?>"
                          class="modal modal-fixed-footer">
 
-                        <form action="paiements.php" method="POST">
+                        <form action="<?php echo app_url_html("client/paiements"); ?>" method="POST">
 
                             <input type="hidden"
                                    name="action"

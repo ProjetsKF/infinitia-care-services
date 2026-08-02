@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once("config/app.php");
 ?>
 
 <!DOCTYPE html>
@@ -7,17 +8,19 @@ session_start();
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
    <title>Nos services | INFINITIA CARE SERVICES</title>
 
-    <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- Materialize CSS -->
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -370,7 +373,7 @@ session_start();
 
         <div class="center services-action">
 
-            <a href="guest-request.php"
+            <a href="<?php echo app_url_html("demande-service"); ?>"
             class="btn-large btn-primary waves-effect waves-light">
 
                 Soumettre une demande

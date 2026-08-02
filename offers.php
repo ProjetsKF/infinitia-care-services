@@ -42,6 +42,8 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -51,7 +53,7 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
 
     <link rel="icon"
           type="image/x-icon"
-          href="assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -64,7 +66,7 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <link rel="stylesheet"
-          href="assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
 
@@ -191,7 +193,7 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
 
     <div class="hero-top">
 
-        <a href="index.php"
+        <a href="<?php echo app_url_html(""); ?>"
            class="btn-flat back-home">
 
             <i class="material-icons left">
@@ -254,7 +256,7 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
                                 <?php if($is_client){ ?>
 
                                     <a
-                                        href="clients/new-request.php?category_id=<?php echo (int)$category['id']; ?>"
+                                        href="<?php echo app_url_with_query_html("client/nouvelle-demande", array("category_id" => (int)$category["id"])); ?>"
                                         class="btn teal waves-effect waves-light">
 
                                         Demander ce service
@@ -268,7 +270,7 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
                                 <?php }else{ ?>
 
                                     <a
-                                        href="login.php"
+                                        href="<?php echo app_url_html("login"); ?>"
                                         class="btn blue darken-3 waves-effect waves-light">
 
                                         Se connecter pour demander

@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once("config/app.php");
 
 ?>
 
@@ -7,6 +8,8 @@ session_start();
 <html lang="fr">
 
 <head>
+
+    <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">
 
@@ -24,7 +27,7 @@ session_start();
 
     <link rel="icon"
     type="image/x-icon"
-    href="assets/images/ico.ico">
+    href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE CSS -->
 
@@ -354,7 +357,7 @@ session_start();
 <div class="card-content">
 
     <form
-action="clients/process-register-client.php"
+action="<?php echo app_url_html("inscription/client/traiter"); ?>"
 method="POST"
 enctype="multipart/form-data">
 
@@ -744,7 +747,7 @@ enctype="multipart/form-data">
 
             <!-- CANCEL -->
 
-            <a href="register.php"
+            <a href="<?php echo app_url_html("inscription"); ?>"
             class="cancel-btn waves-effect">
 
                 <i class="material-icons left">

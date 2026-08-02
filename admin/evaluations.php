@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -199,7 +199,7 @@ function pagination_url($page, $search, $note, $periode)
 
     }
 
-    return "evaluations.php?" . http_build_query($params);
+    return app_url_with_query("admin/evaluations", $params);
 }
 
 $stats = array(
@@ -456,7 +456,7 @@ mysqli_stmt_close($stmt);
 
     <title>Evaluations | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -465,7 +465,7 @@ mysqli_stmt_close($stmt);
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -612,7 +612,7 @@ mysqli_stmt_close($stmt);
         </div>
 
         <div class="search-card">
-            <form action="evaluations.php" method="GET">
+            <form action="<?php echo app_url_html("admin/evaluations"); ?>" method="GET">
                 <div class="row" style="margin-bottom:0;">
                     <div class="input-field col s12 l4">
                         <i class="material-icons prefix">search</i>
@@ -642,7 +642,7 @@ mysqli_stmt_close($stmt);
                     </div>
                     <div class="col s12 l2" style="padding-top:22px;">
                         <button type="submit" class="btn waves-effect waves-light">Filtrer</button>
-                        <a href="evaluations.php" class="btn-flat">Reset</a>
+                        <a href="<?php echo app_url_html("admin/evaluations"); ?>" class="btn-flat">Reset</a>
                     </div>
                 </div>
             </form>

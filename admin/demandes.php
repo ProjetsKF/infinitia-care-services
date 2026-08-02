@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -65,7 +65,7 @@ function request_reference($id)
 
 function redirect_demandes()
 {
-    header("Location: demandes.php");
+    header("Location: " . app_url("admin/demandes"));
     exit();
 }
 
@@ -74,7 +74,7 @@ function demandes_pagination_url($page_number)
     $params = $_GET;
     $params["page"] = (int)$page_number;
 
-    return "demandes.php?" . http_build_query($params);
+    return app_url_with_query("admin/demandes", $params);
 }
 
 function count_query($conn, $sql)
@@ -501,7 +501,7 @@ if($stmt){
 
     <title>Demandes | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -516,7 +516,7 @@ if($stmt){
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -712,7 +712,7 @@ if($stmt){
                                         </a>
 
                                         <?php if($status == "en_attente"){ ?>
-                                            <form action="demandes.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/demandes"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="validate_request">
                                                 <input type="hidden" name="request_id" value="<?php echo $request_id; ?>">
                                                 <button type="submit" class="btn-small blue">
@@ -729,7 +729,7 @@ if($stmt){
                                         <?php } ?>
 
                                         <?php if($status == "validee" && $mission_total <= 0){ ?>
-                                            <a href="affectations.php?request_id=<?php echo $request_id; ?>"
+                                            <a href="<?php echo app_url_with_query_html("admin/affectations", array("request_id" => $request_id)); ?>"
                                                class="btn-small orange">
                                                 Affecter
                                             </a>
@@ -910,7 +910,7 @@ if($stmt){
     </div>
 
     <div id="rejectRequest<?php echo $request_id; ?>" class="modal">
-        <form action="demandes.php" method="POST">
+        <form action="<?php echo app_url_html("admin/demandes"); ?>" method="POST">
             <input type="hidden" name="action" value="reject_request">
             <input type="hidden" name="request_id" value="<?php echo $request_id; ?>">
 

@@ -1,7 +1,10 @@
+<?php require_once("config/app.php"); ?>
 <!DOCTYPE html>
 <html lang="fr">
 
 <head>
+
+    <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">
 
@@ -9,7 +12,7 @@
     content="width=device-width, initial-scale=1.0">
 
     <title>Inscription | Infinitia Care Services</title>
-    <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -200,7 +203,7 @@
 
 <div class="back-home">
 
-    <a href="index.php"
+    <a href="<?php echo app_url_html(""); ?>"
     class="back-btn waves-effect">
 
         <i class="material-icons">
@@ -269,7 +272,7 @@
 
                             </p>
 
-                            <a href="register-client.php"
+                            <a href="<?php echo app_url_html("inscription/client"); ?>"
                             class="btn-large blue darken-4 btn-register waves-effect waves-light">
 
                                 Créer un compte client
@@ -312,7 +315,7 @@
 
                             </p>
 
-                            <a href="register-candidate.php"
+                            <a href="<?php echo app_url_html("inscription/intervenant"); ?>"
                             class="btn-large pink accent-2 btn-register waves-effect waves-light">
 
                                 Devenir intervenant

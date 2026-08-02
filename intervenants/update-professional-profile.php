@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION['user_id'])){
 
-    header("Location: login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -29,7 +29,7 @@ if(
     $_SESSION['error'] =
     "Veuillez remplir tous les champs professionnels.";
 
-    header("Location: profil.php");
+    header("Location: " . app_url("intervenant/profil"));
     exit();
 
 }
@@ -79,7 +79,7 @@ if(mysqli_stmt_execute($stmt)){
 
 }
 
-header("Location: profil.php");
+header("Location: " . app_url("intervenant/profil"));
 exit();
 
 ?>

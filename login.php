@@ -178,31 +178,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                            REDIRECTION SELON LE ROLE
                         ====================================== */
 
-                        if($user["role_id"] == 1){
+                        if(in_array((int)$user["role_id"], array(1, 2, 3), true)){
 
-                            header(
-                                "Location: admin/dashboard.php"
-                            );
-                            exit();
+                            infinitia_redirect_by_role((int)$user["role_id"]);
 
-                        }
-                        elseif($user["role_id"] == 2){
-
-                            header(
-                                "Location: clients/clidashboard.php"
-                            );
-                            exit();
-
-                        }
-                        elseif($user["role_id"] == 3){
-
-                            header(
-                                "Location: intervenants/candidashboard.php"
-                            );
-                            exit();
-
-                        }
-                        else{
+                        }else{
 
                             $_SESSION["error"] =
                             "Rôle utilisateur invalide.";
@@ -239,6 +219,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -248,7 +230,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     <link rel="icon"
     type="image/x-icon"
-    href="assets/images/ico.ico">
+    href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -264,12 +246,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-     <link rel="stylesheet" href="assets/css/style.css">
+     <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <!-- CSS -->
 
     <link rel="stylesheet"
-    href="assets/css/style.css">
+    href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 
 </head>
@@ -441,7 +423,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                                 </label>
 
-                                <a href="forgot-password.php"
+                                <a href="<?php echo app_url_html("mot-de-passe-oublie"); ?>"
                                 class="forgot-link">
 
                                     Mot de passe oublié ?
@@ -458,7 +440,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                                 <!-- CANCEL -->
 
-                                <a href="index.php"
+                                <a href="<?php echo app_url_html(""); ?>"
                                 class="cancel-btn waves-effect">
 
                                     <i class="material-icons left">
@@ -500,7 +482,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                                 Vous n’avez pas de compte ?
 
-                                <a href="register.php">
+                                <a href="<?php echo app_url_html("inscription"); ?>">
 
                                     S’inscrire
 

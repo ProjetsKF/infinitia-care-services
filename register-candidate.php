@@ -2,6 +2,7 @@
 
 
 session_start();
+require_once("config/app.php");
 
 ?>
 
@@ -9,6 +10,8 @@ session_start();
 <html lang="fr">
 
 <head>
+
+    <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">
 
@@ -21,7 +24,7 @@ session_start();
         Infinitia Care Services
 
     </title>
- <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
+ <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
     <!-- MATERIALIZE CSS -->
 
     <link rel="stylesheet"
@@ -36,7 +39,7 @@ session_start();
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"rel="stylesheet">
 
-      <link rel="stylesheet" href="assets/css/style.css">
+      <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -121,7 +124,7 @@ session_start();
                             <?php endif; ?>
 
 <form
-action="intervenants/process-register-candidate.php"
+action="<?php echo app_url_html("inscription/intervenant/traiter"); ?>"
 method="POST"
 enctype="multipart/form-data">
 
@@ -502,7 +505,7 @@ enctype="multipart/form-data">
 
     <div class="form-actions">
 
-        <a href="register.php"
+        <a href="<?php echo app_url_html("inscription"); ?>"
            class="cancel-btn waves-effect">
 
             Annuler

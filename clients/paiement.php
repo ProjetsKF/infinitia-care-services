@@ -1,3 +1,4 @@
+<?php require_once("../config/app.php"); ?>
 
 <!DOCTYPE html>
 <html lang="fr">
@@ -15,7 +16,7 @@
 
     </title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -38,11 +39,11 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-       <link rel="stylesheet" href="../assets/css/style.css">
+       <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <!-- ICON -->
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
 </head>
 

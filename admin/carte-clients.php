@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -87,7 +87,7 @@ function map_pagination_url($page, $client_name, $city, $client_type)
         "page" => (int)$page
     );
 
-    return "carte-clients.php?" . http_build_query($params, "", "&");
+    return app_url_with_query("admin/localisation-clients", $params);
 }
 
 $client_name = map_get_filter("client_name", 150);
@@ -330,13 +330,13 @@ if($map_json === false){
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Localisation des clients | INFINITIA</title>
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIINfQ3ynhED3sBbr6qU1Hd5HfzglaGNVwI=" crossorigin="">
 
@@ -511,7 +511,7 @@ if($map_json === false){
         <?php } ?>
 
         <div class="filter-card">
-            <form action="carte-clients.php" method="GET">
+            <form action="<?php echo app_url_html("admin/localisation-clients"); ?>" method="GET">
                 <div class="row" style="margin-bottom:0;">
                     <div class="input-field col s12 m6 l3">
                         <i class="material-icons prefix">search</i>
@@ -549,7 +549,7 @@ if($map_json === false){
                         <button type="submit" class="btn waves-effect waves-light">
                             <i class="material-icons left">filter_list</i>Filtrer
                         </button>
-                        <a href="carte-clients.php" class="btn-flat waves-effect">Réinitialiser</a>
+                        <a href="<?php echo app_url_html("admin/localisation-clients"); ?>" class="btn-flat waves-effect">Réinitialiser</a>
                     </div>
                 </div>
             </form>

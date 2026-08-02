@@ -242,7 +242,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $link_error == ""){
                     mysqli_autocommit($conn, true);
                     unset($_SESSION["reset_password_csrf"]);
                     $_SESSION["success"] = "Votre mot de passe a ete reinitialise avec succes. Vous pouvez maintenant vous connecter.";
-                    header("Location: login.php");
+                    header("Location: " . app_url("login"));
                     exit();
 
                 }
@@ -267,14 +267,16 @@ $csrf_token = infinitia_csrf_token("reset_password_csrf");
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reinitialiser le mot de passe | Infinitia Care Services</title>
-    <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -299,7 +301,7 @@ $csrf_token = infinitia_csrf_token("reset_password_csrf");
                         <?php echo htmlspecialchars($link_error); ?>
                     </div>
                     <div class="center">
-                        <a href="forgot-password.php" class="btn blue">Demander un nouveau lien</a>
+                        <a href="<?php echo app_url_html("mot-de-passe-oublie"); ?>" class="btn blue">Demander un nouveau lien</a>
                     </div>
                 <?php }else{ ?>
 
@@ -324,7 +326,7 @@ $csrf_token = infinitia_csrf_token("reset_password_csrf");
 
                             <br>
 
-                            <form action="reset-password.php?selector=<?php echo urlencode($selector); ?>&validator=<?php echo urlencode($validator); ?>" method="POST">
+                            <form action="<?php echo app_url_with_query_html("reinitialiser-mot-de-passe", array("selector" => $selector, "validator" => $validator)); ?>" method="POST">
 
                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
 
@@ -355,7 +357,7 @@ $csrf_token = infinitia_csrf_token("reset_password_csrf");
                                 </p>
 
                                 <div class="login-actions">
-                                    <a href="login.php" class="cancel-btn waves-effect">
+                                    <a href="<?php echo app_url_html("login"); ?>" class="cancel-btn waves-effect">
                                         <i class="material-icons left">arrow_back</i>
                                         Connexion
                                     </a>

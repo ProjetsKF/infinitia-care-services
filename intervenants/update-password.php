@@ -36,7 +36,7 @@ if(
     $_SESSION['error'] =
     "Mot de passe actuel incorrect.";
 
-    header("Location: profil.php");
+    header("Location: " . app_url("intervenant/profil"));
     exit();
 
 }
@@ -46,7 +46,7 @@ if($new_password != $confirm_password){
     $_SESSION['error'] =
     "Les mots de passe ne correspondent pas.";
 
-    header("Location: profil.php");
+    header("Location: " . app_url("intervenant/profil"));
     exit();
 
 }
@@ -56,7 +56,7 @@ if(strlen($new_password) < 6){
     $_SESSION['error'] =
     "Le mot de passe doit contenir au moins 6 caractères.";
 
-    header("Location: profil.php");
+    header("Location: " . app_url("intervenant/profil"));
     exit();
 
 }
@@ -87,7 +87,7 @@ mysqli_stmt_execute($stmt);
 $_SESSION['success'] =
 "Mot de passe modifié avec succès.";
 
-header("Location: profil.php");
+header("Location: " . app_url("intervenant/profil"));
 exit();
 
 ?>

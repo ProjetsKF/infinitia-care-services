@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -60,7 +60,7 @@ function format_date_fr($value, $with_time)
 
 function redirect_intervenants()
 {
-    header("Location: intervenants.php");
+    header("Location: " . app_url("admin/intervenants"));
     exit();
 }
 
@@ -69,7 +69,7 @@ function intervenants_pagination_url($page_number)
     $params = $_GET;
     $params["page"] = (int)$page_number;
 
-    return "intervenants.php?" . http_build_query($params);
+    return app_url_with_query("admin/intervenants", $params);
 }
 
 function count_query($conn, $sql)
@@ -151,17 +151,17 @@ function profile_photo_path($profile_photo)
 {
     if($profile_photo === NULL || $profile_photo === ""){
 
-        return "../assets/images/default-user.png";
+        return app_url("assets/images/default-user.png");
 
     }
 
     if(strpos($profile_photo, "uploads/") === 0){
 
-        return "../" . $profile_photo;
+        return app_url($profile_photo);
 
     }
 
-    return "../uploads/profiles/" . $profile_photo;
+    return app_url("uploads/profiles/" . $profile_photo);
 }
 
 function document_path($file_path)
@@ -174,17 +174,17 @@ function document_path($file_path)
 
     if(strpos($file_path, "uploads/") === 0){
 
-        return "../" . $file_path;
+        return app_url(ltrim($file_path, "/"));
 
     }
 
     if(strpos($file_path, "../") === 0){
 
-        return $file_path;
+        return app_url(ltrim(substr($file_path, 3), "/"));
 
     }
 
-    return "../" . $file_path;
+    return app_url(ltrim($file_path, "/"));
 }
 
 function availability_badge_class($status)
@@ -1034,7 +1034,7 @@ if(count($candidates) > 0){
 
     <title>Intervenants | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -1049,7 +1049,7 @@ if(count($candidates) > 0){
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -1278,7 +1278,7 @@ if(count($candidates) > 0){
 
         <div class="card">
             <div class="card-content">
-                <form action="intervenants.php" method="GET" class="intervenants-search">
+                <form action="<?php echo app_url_html("admin/intervenants"); ?>" method="GET" class="intervenants-search">
                     <div class="input-field">
                         <i class="material-icons prefix">search</i>
                         <input type="text"
@@ -1292,7 +1292,7 @@ if(count($candidates) > 0){
                     <button type="submit" class="btn blue darken-4">
                         Rechercher
                     </button>
-                    <a href="intervenants.php" class="btn-flat">
+                    <a href="<?php echo app_url_html("admin/intervenants"); ?>" class="btn-flat">
                         Reinitialiser
                     </a>
                 </form>
@@ -1382,7 +1382,7 @@ if(count($candidates) > 0){
                                         </a>
 
                                         <?php if(normalize_text($verification) != "verifie"){ ?>
-                                            <form action="intervenants.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/intervenants"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="verify_candidate">
                                                 <input type="hidden" name="candidate_id" value="<?php echo $candidate_id; ?>">
                                                 <button type="submit" class="btn-small orange">
@@ -1392,7 +1392,7 @@ if(count($candidates) > 0){
                                         <?php } ?>
 
                                         <?php if(normalize_text($verification) != "rejete"){ ?>
-                                            <form action="intervenants.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/intervenants"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="reject_candidate">
                                                 <input type="hidden" name="candidate_id" value="<?php echo $candidate_id; ?>">
                                                 <button type="submit" class="btn-small red">
@@ -1401,7 +1401,7 @@ if(count($candidates) > 0){
                                             </form>
                                         <?php } ?>
 
-                                        <form action="intervenants.php" method="POST">
+                                        <form action="<?php echo app_url_html("admin/intervenants"); ?>" method="POST">
                                             <input type="hidden" name="action" value="toggle_account">
                                             <input type="hidden" name="candidate_id" value="<?php echo $candidate_id; ?>">
                                             <input type="hidden" name="current_status" value="<?php echo safe_text($account_status); ?>">
@@ -1735,7 +1735,7 @@ if(count($candidates) > 0){
     </div>
 
     <div id="editCandidate<?php echo $candidate_id; ?>" class="modal modal-fixed-footer">
-        <form action="intervenants.php" method="POST">
+        <form action="<?php echo app_url_html("admin/intervenants"); ?>" method="POST">
             <input type="hidden" name="action" value="update_candidate">
             <input type="hidden" name="candidate_id" value="<?php echo $candidate_id; ?>">
 

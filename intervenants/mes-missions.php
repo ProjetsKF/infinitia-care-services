@@ -10,7 +10,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION['user_id']))
 {
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
@@ -21,7 +21,7 @@ function missions_pagination_url($page_number)
     $params = $_GET;
     $params["page"] = (int)$page_number;
 
-    return "mes-missions.php?" . http_build_query($params);
+    return app_url_with_query("intervenant/missions", $params);
 }
 
 /* =====================================
@@ -262,7 +262,7 @@ if($stmt)
 
     <link rel="icon"
           type="image/x-icon"
-          href="../assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -274,7 +274,7 @@ if($stmt)
           rel="stylesheet">
 
     <link rel="stylesheet"
-          href="../assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 

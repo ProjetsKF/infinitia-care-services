@@ -25,7 +25,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -92,7 +92,7 @@ mysqli_stmt_close($stmtClient);
 
 if($client_id <= 0){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -222,7 +222,7 @@ $result = mysqli_stmt_get_result($stmt);
 </title>
 
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -246,11 +246,11 @@ $result = mysqli_stmt_get_result($stmt);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <!-- ICON -->
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
 
 </head>
@@ -568,7 +568,7 @@ $result = mysqli_stmt_get_result($stmt);
 
                     <!-- Supprimer -->
 
-                    <a href="supprimer-demande.php?id=<?= $row['id']; ?>"
+                    <a href="<?php echo app_url_with_query_html("client/demande/supprimer", array("id" => (int)$row["id"])); ?>"
                        class="red-text"
                        title="Supprimer"
                        onclick="return confirm('Voulez-vous vraiment supprimer cette demande ?');">
@@ -787,7 +787,7 @@ while($modal = mysqli_fetch_assoc($result)):
 
     <div class="modal-footer">
 
-        <a href="modifier-demande.php?id=<?= $modal['id']; ?>"
+        <a href="<?php echo app_url_with_query_html("client/demande/modifier", array("id" => (int)$modal["id"])); ?>"
            class="btn blue">
 
             Modifier
@@ -810,7 +810,7 @@ while($modal = mysqli_fetch_assoc($result)):
 
 <div id="editModal<?= $modal['id']; ?>" class="modal modal-fixed-footer">
 
-    <form action="modifier-demande.php" method="POST">
+    <form action="<?php echo app_url_html("client/demande/modifier"); ?>" method="POST">
 
         <input type="hidden"
                name="id"
@@ -1028,7 +1028,7 @@ mysqli_stmt_close($stmt);
 
         <h4 class="page-title">Nouvelle demande de service</h4>
 
-        <form action="process-demande.php" method="POST">
+        <form action="<?php echo app_url_html("client/demande/enregistrer"); ?>" method="POST">
 
             <input
             type="hidden"

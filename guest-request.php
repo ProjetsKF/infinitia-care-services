@@ -1,7 +1,10 @@
+<?php require_once("config/app.php"); ?>
 <!DOCTYPE html>
 <html lang="fr">
 
 <head>
+
+    <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">
 
@@ -40,7 +43,7 @@
 
     <link rel="icon"
     type="image/x-icon"
-    href="assets/images/ico.ico">
+    href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <style>
 
@@ -710,7 +713,7 @@
 
     <!-- CANCEL -->
 
-    <a href="index.php"
+    <a href="<?php echo app_url_html(""); ?>"
     class="cancel-btn waves-effect">
 
         <i class="material-icons left">

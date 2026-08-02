@@ -70,7 +70,7 @@ $intervenant = $result->fetch_assoc();
 
     <link rel="icon"
           type="image/x-icon"
-          href="../assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -82,7 +82,7 @@ $intervenant = $result->fetch_assoc();
           rel="stylesheet">
 
     <link rel="stylesheet"
-          href="../assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -117,13 +117,13 @@ $intervenant = $result->fetch_assoc();
                 <?php if(!empty($intervenant['profile_photo'])): ?>
 
                     <img
-                        src="../<?php echo htmlspecialchars($intervenant['profile_photo']); ?>"
+                        src="<?php echo app_url_html($intervenant['profile_photo']); ?>"
                         alt="Photo de profil">
 
                 <?php else: ?>
 
                     <img
-                        src="../assets/images/default-user.png"
+                        src="<?php echo app_url_html("assets/images/default-user.png"); ?>"
                         alt="Photo de profil">
 
                 <?php endif; ?>
@@ -381,7 +381,7 @@ $intervenant = $result->fetch_assoc();
     <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
 
 
-        <form action="update-profile.php"
+        <form action="<?php echo app_url_html("intervenant/profil/mettre-a-jour"); ?>"
               method="POST"
               enctype="multipart/form-data">
 
@@ -517,7 +517,7 @@ $intervenant = $result->fetch_assoc();
     <div class="modal-content" style="font-size:17px;line-height:1.9;color:#555;text-align:justify;">
 
 
-        <form action="update-professional-profile.php"
+        <form action="<?php echo app_url_html("intervenant/profil-professionnel/mettre-a-jour"); ?>"
               method="POST">
 
             <div class="input-field">
@@ -622,7 +622,7 @@ $intervenant = $result->fetch_assoc();
         <h4>Sécurité du compte</h4>
 
         <form
-        action="update-password.php"
+        action="<?php echo app_url_html("intervenant/mot-de-passe/modifier"); ?>"
         method="POST">
 
             <div class="input-field">
@@ -774,8 +774,8 @@ function printProfile()
     <head>\
         <title>Profil intervenant</title>\
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">\
-        <link rel="stylesheet" href="../assets/css/materialize.min.css">\
-        <link rel="stylesheet" href="../assets/css/style.css">\
+        <link rel="stylesheet" href="<?php echo app_url_html("assets/css/materialize.min.css"); ?>">\
+        <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">\
         <style>\
             body{\
                 margin:30px;\

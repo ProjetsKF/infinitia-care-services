@@ -1,6 +1,8 @@
 <!-- NAVBAR -->
 <?php
 
+require_once(dirname(__DIR__) . "/config/app.php");
+
 $current_page = basename($_SERVER['PHP_SELF']);
 
 ?>
@@ -16,7 +18,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         <!-- LOGO -->
 
-        <a href="http://127.0.0.1:8080/www.infinitia-group.cd/index.php"
+        <a href="<?php echo app_url_html(""); ?>"
            class="brand-logo"
            style="
            position:relative;
@@ -25,7 +27,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
            margin-top:5px;">
 
             <img
-            src="assets/images/brand1.PNG"
+            src="<?php echo app_url_html("assets/images/brand1.PNG"); ?>"
             alt="Infinitia Logo"
             style="
             height:50px;
@@ -44,28 +46,28 @@ $current_page = basename($_SERVER['PHP_SELF']);
             margin:0;">
 
            <li>
-    <a href="index.php"
+    <a href="<?php echo app_url_html(""); ?>"
        class="<?= ($current_page == 'index.php') ? 'active-nav' : ''; ?>">
         Accueil
     </a>
 </li>
 
 <li>
-    <a href="services.php"
+    <a href="<?php echo app_url_html("services"); ?>"
        class="<?= ($current_page == 'services.php') ? 'active-nav' : ''; ?>">
         Services
     </a>
 </li>
 
 <li>
-    <a href="about.php"
+    <a href="<?php echo app_url_html("a-propos"); ?>"
        class="<?= ($current_page == 'about.php') ? 'active-nav' : ''; ?>">
         À propos
     </a>
 </li>
 
 <li>
-    <a href="contact.php"
+    <a href="<?php echo app_url_html("contact"); ?>"
        class="<?= ($current_page == 'contact.php') ? 'active-nav' : ''; ?>">
         Contact
     </a>
@@ -73,7 +75,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
             <li>
 
-                <a href="login.php"
+                <a href="<?php echo app_url_html("login"); ?>"
                    class="btn blue lighten-1"
                    style="
                    border-radius:40px;
@@ -91,7 +93,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
             <li>
 
-                <a href="register.php"
+                <a href="<?php echo app_url_html("inscription"); ?>"
                    class="btn pink accent-2"
                    style="
                    border-radius:40px;

@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -208,7 +208,7 @@ function training_status_badge_class($status)
 
 function redirect_formations()
 {
-    header("Location: formations.php");
+    header("Location: " . app_url("admin/formations"));
     exit();
 }
 
@@ -217,7 +217,7 @@ function formations_pagination_url($page_number)
     $params = $_GET;
     $params["page"] = (int)$page_number;
 
-    return "formations.php?" . http_build_query($params);
+    return app_url_with_query("admin/formations", $params);
 }
 
 function count_query($conn, $sql)
@@ -924,7 +924,7 @@ if($result){
 
     <title>Formations | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -935,7 +935,7 @@ if($result){
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
 
@@ -1178,7 +1178,7 @@ if($result){
         </div>
 
         <div class="training-search-box">
-            <form method="GET" action="formations.php" class="training-search-form">
+            <form method="GET" action="<?php echo app_url_html("admin/formations"); ?>" class="training-search-form">
                 <div class="input-field">
                     <i class="material-icons prefix">search</i>
                     <input type="text"
@@ -1192,7 +1192,7 @@ if($result){
                     Rechercher
                 </button>
                 <?php if($search != ""){ ?>
-                    <a href="formations.php" class="btn-flat">
+                    <a href="<?php echo app_url_html("admin/formations"); ?>" class="btn-flat">
                         Reinitialiser
                     </a>
                 <?php } ?>
@@ -1293,7 +1293,7 @@ if($result){
                                         <i class="material-icons">person_add</i>
                                     </a>
 
-                                    <form action="formations.php"
+                                    <form action="<?php echo app_url_html("admin/formations"); ?>"
                                           method="POST"
                                           style="display:inline;"
                                           onsubmit="return confirm('Voulez-vous supprimer cette formation ?');">
@@ -1318,7 +1318,7 @@ if($result){
                             <td colspan="9" class="center-align">
                                 <?php if($search != ""){ ?>
                                     Aucune formation ne correspond a votre recherche.
-                                    <a href="formations.php">Afficher toutes les formations</a>
+                                    <a href="<?php echo app_url_html("admin/formations"); ?>">Afficher toutes les formations</a>
                                 <?php }else{ ?>
                                     Aucune formation n'est encore enregistree.
                                 <?php } ?>
@@ -1385,7 +1385,7 @@ if($result){
 </div>
 
 <div id="modalAddTraining" class="modal modal-fixed-footer">
-    <form action="formations.php" method="POST">
+    <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
         <input type="hidden" name="action" value="add_training">
         <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
 
@@ -1546,7 +1546,7 @@ if($result){
                                 <td><?php echo safe_text(format_date_fr($assignment["created_at"])); ?></td>
                                 <td>
                                     <?php if($assignment_status == "en_attente" || $assignment_status == "en_cours"){ ?>
-                                        <form action="formations.php" method="POST">
+                                        <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
                                             <input type="hidden" name="action" value="deactivate_assignment">
                                             <input type="hidden" name="candidate_training_id" value="<?php echo (int)$assignment["id"]; ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
@@ -1582,7 +1582,7 @@ if($result){
     </div>
 
     <div id="editTraining<?php echo $training_id; ?>" class="modal modal-fixed-footer">
-        <form action="formations.php" method="POST">
+        <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
             <input type="hidden" name="action" value="update_training">
             <input type="hidden" name="training_id" value="<?php echo $training_id; ?>">
             <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
@@ -1652,7 +1652,7 @@ if($result){
     </div>
 
     <div id="assignTraining<?php echo $training_id; ?>" class="modal modal-fixed-footer">
-        <form action="formations.php" method="POST">
+        <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
             <input type="hidden" name="action" value="assign_training">
             <input type="hidden" name="training_id" value="<?php echo $training_id; ?>">
             <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">

@@ -6,14 +6,14 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
 
 if(!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -115,7 +115,7 @@ function evaluations_pagination_url($page)
     $params = $_GET;
     $params["page"] = (int)$page;
 
-    return "evaluations.php?" . http_build_query($params);
+    return app_url_with_query("client/evaluations", $params);
 }
 
 $sql = "
@@ -143,7 +143,7 @@ mysqli_stmt_close($stmt);
 
 if($client_id <= 0){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -183,7 +183,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     ){
 
         $_SESSION["error"] = "Veuillez renseigner des notes entre 1 et 5.";
-        header("Location: evaluations.php");
+        header("Location: " . app_url("client/evaluations"));
         exit();
 
     }
@@ -227,7 +227,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if($candidate_id <= 0){
 
         $_SESSION["error"] = "Mission introuvable ou non autorisee.";
-        header("Location: evaluations.php");
+        header("Location: " . app_url("client/evaluations"));
         exit();
 
     }
@@ -357,7 +357,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     }
 
-    header("Location: evaluations.php");
+    header("Location: " . app_url("client/evaluations"));
     exit();
 
 }
@@ -524,7 +524,7 @@ mysqli_stmt_close($stmt);
 
     </title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -548,7 +548,7 @@ mysqli_stmt_close($stmt);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -846,7 +846,7 @@ mysqli_stmt_close($stmt);
 
                             </div>
 
-                        <form action="evaluations.php" method="POST">
+                        <form action="<?php echo app_url_html("client/evaluations"); ?>" method="POST">
 
                             <input type="hidden"
                                    name="mission_id"

@@ -1,5 +1,7 @@
 <!-- FOOTER INFINITIA -->
 
+<?php require_once(dirname(__DIR__) . "/config/app.php"); ?>
+
 <footer class="footer-infinitia-pro">
 
     <div class="footer-container">
@@ -9,7 +11,7 @@
         <div class="footer-col footer-brand">
 
             <img
-                src="assets/images/LOGO-INFINITIA-PNG3.png"
+                src="<?php echo app_url_html("assets/images/LOGO-INFINITIA-PNG3.png"); ?>"
                 alt="INFINITIA GROUP SARLU"
                 class="footer-logo">
 
@@ -35,7 +37,7 @@
                 Politique de confidentialité
             </a>
 
-            <a href="offers.php">
+            <a href="<?php echo app_url_html("offres"); ?>">
                 Offres de services
             </a>
 
@@ -47,15 +49,15 @@
 
             <h5>Liens rapides</h5>
 
-            <a href="about.php">
+            <a href="<?php echo app_url_html("a-propos"); ?>">
                 À propos
             </a>
 
-            <a href="services.php">
+            <a href="<?php echo app_url_html("services"); ?>">
                 Services
             </a>
 
-            <a href="contact.php">
+            <a href="<?php echo app_url_html("contact"); ?>">
                 Contact
             </a>
 
@@ -67,15 +69,15 @@
 
             <h5>Ressources</h5>
 
-            <a href="tout_intervenants.php">
+            <a href="<?php echo app_url_html("intervenants/"); ?>">
                 Nos intervenants
             </a>
 
-            <a href="register.php">
+            <a href="<?php echo app_url_html("inscription"); ?>">
                 Créer un compte
             </a>
 
-            <a href="login.php">
+            <a href="<?php echo app_url_html("login"); ?>">
                 Connexion
             </a>
 

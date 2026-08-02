@@ -7,7 +7,7 @@ require_once("../config/database.php");
 function redirect_with_error($message)
 {
     $_SESSION["error"] = $message;
-    header("Location: ../register-candidate.php");
+    header("Location: " . app_url("inscription/intervenant"));
     exit();
 }
 
@@ -360,7 +360,7 @@ mysqli_autocommit($conn, true);
 $_SESSION["success"] =
     "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.";
 
-header("Location: ../login.php");
+header("Location: " . app_url("login"));
 exit();
 
 }

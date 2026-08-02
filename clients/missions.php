@@ -6,14 +6,14 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
 
 if(!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -152,7 +152,7 @@ function missions_pagination_url($page)
     $params = $_GET;
     $params["page"] = (int)$page;
 
-    return "missions.php?" . http_build_query($params);
+    return app_url_with_query("client/missions", $params);
 }
 
 $sql = "
@@ -180,7 +180,7 @@ mysqli_stmt_close($stmt);
 
 if($client_id <= 0){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -353,7 +353,7 @@ mysqli_stmt_close($stmt);
 
     </title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- MATERIALIZE -->
 
@@ -377,7 +377,7 @@ mysqli_stmt_close($stmt);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -799,7 +799,7 @@ mysqli_stmt_close($stmt);
 
                     <div class="card-action center">
 
-                        <a href="mes-demandes.php"
+                        <a href="<?php echo app_url_html("client/demandes"); ?>"
                           class="btn modal-trigger waves-effect waves-light new-request-btn">
 
                             Mes demandes

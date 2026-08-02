@@ -10,7 +10,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION['user_id']))
 {
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
@@ -34,7 +34,7 @@ if(!$stmt)
     $_SESSION['error'] =
     "Erreur lors de la récupération du profil.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -55,7 +55,7 @@ if(!$candidate)
     $_SESSION['error'] =
     "Profil candidat introuvable.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -67,7 +67,7 @@ $candidate_id = $candidate['id'];
 
 if($_SERVER['REQUEST_METHOD'] != 'POST')
 {
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -84,7 +84,7 @@ if(
     $_SESSION['error'] =
     "Veuillez sélectionner au moins une compétence.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -230,7 +230,7 @@ else
     "Aucune nouvelle compétence n'a été enregistrée.";
 }
 
-header("Location: mes-competences.php");
+header("Location: " . app_url("intervenant/competences"));
 exit();
 
 ?>

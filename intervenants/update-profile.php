@@ -13,13 +13,13 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]))
 {
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
 if($_SERVER["REQUEST_METHOD"] != "POST")
 {
-    header("Location: profil.php");
+    header("Location: " . app_url("intervenant/profil"));
     exit();
 }
 
@@ -230,7 +230,7 @@ $_SESSION["success"] =
    REDIRECTION
 ========================================= */
 
-header("Location: profil.php");
+header("Location: " . app_url("intervenant/profil"));
 exit();
 
 ?>

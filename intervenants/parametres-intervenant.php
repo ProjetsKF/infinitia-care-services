@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 function redirect_parameters()
 {
-    header("Location: parametres-intervenant.php");
+    header("Location: " . app_url("intervenant/parametres"));
     exit();
 }
 
@@ -31,7 +31,7 @@ function csrf_values_match($known, $submitted)
 }
 
 if(!isset($_SESSION["user_id"])){
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
@@ -209,7 +209,7 @@ $current_photo_consent_date = $candidate_exists ? $photo_consent_date_db : NULL;
 
     <link rel="icon"
           type="image/x-icon"
-          href="../assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -221,7 +221,7 @@ $current_photo_consent_date = $candidate_exists ? $photo_consent_date_db : NULL;
           rel="stylesheet">
 
     <link rel="stylesheet"
-          href="../assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 

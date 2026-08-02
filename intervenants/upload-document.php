@@ -13,7 +13,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION['user_id'])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -26,7 +26,7 @@ $user_id = (int)$_SESSION['user_id'];
 
 if($_SERVER['REQUEST_METHOD'] != 'POST'){
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -64,7 +64,7 @@ if(mysqli_num_rows($result) == 0){
     $_SESSION['error'] =
     "Profil candidat introuvable.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -86,7 +86,7 @@ if(empty($document_type)){
     $_SESSION['error'] =
     "Veuillez sélectionner un type de document.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -98,7 +98,7 @@ if(empty($document_type)){
 if(!isset($_FILES['document'])){
 
     $_SESSION['error'] = "Veuillez sélectionner un fichier.";
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -123,7 +123,7 @@ if($upload_error !== UPLOAD_ERR_OK){
         ? $upload_error_messages[$upload_error]
         : "Une erreur inconnue est survenue pendant le téléversement.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -133,7 +133,7 @@ $max_file_size = 10 * 1024 * 1024;
 if((int)$_FILES['document']['size'] > $max_file_size){
 
     $_SESSION['error'] = "Le fichier ne doit pas dépasser 10 Mo.";
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -179,7 +179,7 @@ if(
     $_SESSION['error'] =
     "Format non autorisé.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -200,7 +200,7 @@ $allowed_mime_types = array(
 if(!function_exists('finfo_open') || !is_uploaded_file($tmp_name)){
 
     $_SESSION['error'] = "Le fichier téléversé n’a pas pu être vérifié.";
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -217,7 +217,7 @@ if($mime_type === false
     || !in_array($mime_type, $allowed_mime_types[$extension], true)){
 
     $_SESSION['error'] = "Le contenu du fichier ne correspond pas au format autorisé.";
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -270,7 +270,7 @@ if(
     $_SESSION['error'] =
     "Erreur lors du téléversement.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -317,7 +317,7 @@ if(!$stmt){
     $_SESSION['error'] =
     mysqli_error($conn);
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -350,7 +350,7 @@ if(mysqli_stmt_execute($stmt)){
    REDIRECTION
 ===================================== */
 
-header("Location: mes-documents.php");
+header("Location: " . app_url("intervenant/documents"));
 exit();
 
 ?>

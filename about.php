@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once("config/app.php");
 ?>
 
 <!DOCTYPE html>
@@ -7,17 +8,19 @@ session_start();
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>À propos | INFINITIA CARE SERVICES</title>
 
-    <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <!-- Materialize CSS -->
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <!-- Google Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -52,7 +55,7 @@ session_start();
             <div class="col s12 m12 l6 about-image-container">
 
                 <img
-                src="assets/images/aboutimg.png"
+                src="<?php echo app_url_html("assets/images/aboutimg.png"); ?>"
                 alt="Assistante ménagère INFINITIA Care Services"
                 class="about-image z-depth-3">
 

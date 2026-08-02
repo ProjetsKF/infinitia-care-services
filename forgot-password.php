@@ -131,14 +131,16 @@ $csrf_token = infinitia_csrf_token("forgot_password_csrf");
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mot de passe oublie | Infinitia Care Services</title>
-    <link rel="icon" type="image/x-icon" href="assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -197,7 +199,7 @@ $csrf_token = infinitia_csrf_token("forgot_password_csrf");
                             Entrez l'adresse e-mail associee a votre compte.
                         </p>
 
-                        <form action="forgot-password.php" method="POST">
+                        <form action="<?php echo app_url_html("mot-de-passe-oublie"); ?>" method="POST">
 
                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
 
@@ -213,7 +215,7 @@ $csrf_token = infinitia_csrf_token("forgot_password_csrf");
                             </div>
 
                             <div class="login-actions">
-                                <a href="login.php" class="cancel-btn waves-effect">
+                                <a href="<?php echo app_url_html("login"); ?>" class="cancel-btn waves-effect">
                                     <i class="material-icons left">arrow_back</i>
                                     Connexion
                                 </a>

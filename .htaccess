@@ -1,0 +1,239 @@
+Options -Indexes -MultiViews
+
+DirectoryIndex index.php
+
+RewriteEngine On
+
+# Bloquer l'accès HTTP aux répertoires internes sans empêcher les inclusions PHP.
+RewriteRule ^(?:config|includes|vendor)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:\.git|\.agents|\.codex)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:test|test-mail|pageTest|generate_admin_hash|dashboard)\.php$ - [F,L,NC]
+
+<FilesMatch "(?:^\.|\.(?:sql|env|log|ini|bak|dist|sh|ps1|md))$">
+    Require all denied
+</FilesMatch>
+
+# Canonicaliser les anciennes pages PHP uniquement pour les lectures navigateur.
+# THE_REQUEST evite toute boucle avec les reecritures internes ci-dessous.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*index\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)index\.php$ [NC]
+RewriteRule ^index\.php$ %1 [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*login\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)login\.php$ [NC]
+RewriteRule ^login\.php$ %1login [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*register\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)register\.php$ [NC]
+RewriteRule ^register\.php$ %1inscription [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*register-client\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)register-client\.php$ [NC]
+RewriteRule ^register-client\.php$ %1inscription/client [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*register-candidate\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)register-candidate\.php$ [NC]
+RewriteRule ^register-candidate\.php$ %1inscription/intervenant [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*forgot-password\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)forgot-password\.php$ [NC]
+RewriteRule ^forgot-password\.php$ %1mot-de-passe-oublie [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*reset-password\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)reset-password\.php$ [NC]
+RewriteRule ^reset-password\.php$ %1reinitialiser-mot-de-passe [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*tout_intervenants\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)tout_intervenants\.php$ [NC]
+RewriteRule ^tout_intervenants\.php$ %1intervenants/ [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*about\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)about\.php$ [NC]
+RewriteRule ^about\.php$ %1a-propos [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*services\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)services\.php$ [NC]
+RewriteRule ^services\.php$ %1services [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*offers\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)offers\.php$ [NC]
+RewriteRule ^offers\.php$ %1offres [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*contact\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)contact\.php$ [NC]
+RewriteRule ^contact\.php$ %1contact [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*guest-request\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)guest-request\.php$ [NC]
+RewriteRule ^guest-request\.php$ %1demande-service [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*logout\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)logout\.php$ [NC]
+RewriteRule ^logout\.php$ %1deconnexion [R=301,L,NE]
+
+# Anciennes pages de l'espace Administrateur.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)admin/(demandes|affectations|intervenants|formations|missions|paiements|evaluations|utilisateurs)\.php$ [NC]
+RewriteRule ^admin/(demandes|affectations|intervenants|formations|missions|paiements|evaluations|utilisateurs)\.php$ %1admin/$1 [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*dashboard\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)admin/dashboard\.php$ [NC]
+RewriteRule ^admin/dashboard\.php$ %1admin/tableau-de-bord [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*categories-services\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)admin/categories-services\.php$ [NC]
+RewriteRule ^admin/categories-services\.php$ %1admin/categories [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*carte-clients\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)admin/carte-clients\.php$ [NC]
+RewriteRule ^admin/carte-clients\.php$ %1admin/localisation-clients [R=301,L,NE]
+
+# Anciennes pages de l'espace Client.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)clients/(missions|evaluations|paiements)\.php$ [NC]
+RewriteRule ^clients/(missions|evaluations|paiements)\.php$ %1client/$1 [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*clidashboard\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)clients/clidashboard\.php$ [NC]
+RewriteRule ^clients/clidashboard\.php$ %1client/tableau-de-bord [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*mes-demandes\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)clients/mes-demandes\.php$ [NC]
+RewriteRule ^clients/mes-demandes\.php$ %1client/demandes [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*cli_intervenants\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)clients/cli_intervenants\.php$ [NC]
+RewriteRule ^clients/cli_intervenants\.php$ %1client/intervenants [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*paiement\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)clients/paiement\.php$ [NC]
+RewriteRule ^clients/paiement\.php$ %1client/paiement [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*parametres\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)clients/parametres\.php$ [NC]
+RewriteRule ^clients/parametres\.php$ %1client/parametres [R=301,L,NE]
+
+# Anciennes pages de l'espace Intervenant.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)intervenants/(profil|formations)\.php$ [NC]
+RewriteRule ^intervenants/(profil|formations)\.php$ %1intervenant/$1 [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*candidashboard\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)intervenants/candidashboard\.php$ [NC]
+RewriteRule ^intervenants/candidashboard\.php$ %1intervenant/tableau-de-bord [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*mes-documents\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)intervenants/mes-documents\.php$ [NC]
+RewriteRule ^intervenants/mes-documents\.php$ %1intervenant/documents [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*mes-competences\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)intervenants/mes-competences\.php$ [NC]
+RewriteRule ^intervenants/mes-competences\.php$ %1intervenant/competences [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*mes-missions\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)intervenants/mes-missions\.php$ [NC]
+RewriteRule ^intervenants/mes-missions\.php$ %1intervenant/missions [R=301,L,NE]
+
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$ [NC]
+RewriteCond %{THE_REQUEST} \s/+[^?\ ]*parametres-intervenant\.php(?:[?\ ]) [NC]
+RewriteCond %{REQUEST_URI} ^(.*/)intervenants/parametres-intervenant\.php$ [NC]
+RewriteRule ^intervenants/parametres-intervenant\.php$ %1intervenant/parametres [R=301,L,NE]
+
+# Ne jamais réécrire les ressources et chemins physiques existants.
+# Cette route publique porte le meme nom qu'un dossier physique.
+RewriteRule ^intervenants/?$ tout_intervenants.php [L,QSA,NC]
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Routes publiques.
+RewriteRule ^$ index.php [L,QSA]
+RewriteRule ^login/?$ login.php [L,QSA,NC]
+RewriteRule ^inscription/?$ register.php [L,QSA,NC]
+RewriteRule ^inscription/client/?$ register-client.php [L,QSA,NC]
+RewriteRule ^inscription/intervenant/?$ register-candidate.php [L,QSA,NC]
+RewriteRule ^inscription/client/traiter/?$ clients/process-register-client.php [L,QSA,NC]
+RewriteRule ^inscription/intervenant/traiter/?$ intervenants/process-register-candidate.php [L,QSA,NC]
+RewriteRule ^mot-de-passe-oublie/?$ forgot-password.php [L,QSA,NC]
+RewriteRule ^reinitialiser-mot-de-passe/?$ reset-password.php [L,QSA,NC]
+RewriteRule ^a-propos/?$ about.php [L,QSA,NC]
+RewriteRule ^services/?$ services.php [L,QSA,NC]
+RewriteRule ^offres/?$ offers.php [L,QSA,NC]
+RewriteRule ^contact/?$ contact.php [L,QSA,NC]
+RewriteRule ^contact/envoyer/?$ send-contact-message.php [L,QSA,NC]
+RewriteRule ^demande-service/?$ guest-request.php [L,QSA,NC]
+RewriteRule ^deconnexion/?$ logout.php [L,QSA,NC]
+
+# Espace Client.
+RewriteRule ^client/tableau-de-bord/?$ clients/clidashboard.php [L,QSA,NC]
+RewriteRule ^client/demandes/?$ clients/mes-demandes.php [L,QSA,NC]
+RewriteRule ^client/nouvelle-demande/?$ clients/mes-demandes.php [L,QSA,NC]
+RewriteRule ^client/intervenants/?$ clients/cli_intervenants.php [L,QSA,NC]
+RewriteRule ^client/missions/?$ clients/missions.php [L,QSA,NC]
+RewriteRule ^client/evaluations/?$ clients/evaluations.php [L,QSA,NC]
+RewriteRule ^client/paiements/?$ clients/paiements.php [L,QSA,NC]
+RewriteRule ^client/paiement/?$ clients/paiement.php [L,QSA,NC]
+RewriteRule ^client/parametres/?$ clients/parametres.php [L,QSA,NC]
+RewriteRule ^client/demande/enregistrer/?$ clients/process-demande.php [L,QSA,NC]
+RewriteRule ^client/demande/modifier/?$ clients/modifier-demande.php [L,QSA,NC]
+RewriteRule ^client/demande/supprimer/?$ clients/supprimer-demande.php [L,QSA,NC]
+
+# Espace Intervenant.
+RewriteRule ^intervenant/tableau-de-bord/?$ intervenants/candidashboard.php [L,QSA,NC]
+RewriteRule ^intervenant/profil/?$ intervenants/profil.php [L,QSA,NC]
+RewriteRule ^intervenant/documents/?$ intervenants/mes-documents.php [L,QSA,NC]
+RewriteRule ^intervenant/competences/?$ intervenants/mes-competences.php [L,QSA,NC]
+RewriteRule ^intervenant/missions/?$ intervenants/mes-missions.php [L,QSA,NC]
+RewriteRule ^intervenant/formations/?$ intervenants/formations.php [L,QSA,NC]
+RewriteRule ^intervenant/parametres/?$ intervenants/parametres-intervenant.php [L,QSA,NC]
+RewriteRule ^intervenant/document/televerser/?$ intervenants/upload-document.php [L,QSA,NC]
+RewriteRule ^intervenant/document/supprimer/?$ intervenants/delete-document.php [L,QSA,NC]
+RewriteRule ^intervenant/competence/ajouter/?$ intervenants/add-skill.php [L,QSA,NC]
+RewriteRule ^intervenant/competence/modifier/?$ intervenants/update-skill.php [L,QSA,NC]
+RewriteRule ^intervenant/competence/supprimer/?$ intervenants/delete-skill.php [L,QSA,NC]
+RewriteRule ^intervenant/profil/mettre-a-jour/?$ intervenants/update-profile.php [L,QSA,NC]
+RewriteRule ^intervenant/profil-professionnel/mettre-a-jour/?$ intervenants/update-professional-profile.php [L,QSA,NC]
+RewriteRule ^intervenant/mot-de-passe/modifier/?$ intervenants/update-password.php [L,QSA,NC]
+
+# Espace Administrateur.
+RewriteRule ^admin/tableau-de-bord/?$ admin/dashboard.php [L,QSA,NC]
+RewriteRule ^admin/demandes/?$ admin/demandes.php [L,QSA,NC]
+RewriteRule ^admin/affectations/?$ admin/affectations.php [L,QSA,NC]
+RewriteRule ^admin/intervenants/?$ admin/intervenants.php [L,QSA,NC]
+RewriteRule ^admin/formations/?$ admin/formations.php [L,QSA,NC]
+RewriteRule ^admin/categories/?$ admin/categories-services.php [L,QSA,NC]
+RewriteRule ^admin/missions/?$ admin/missions.php [L,QSA,NC]
+RewriteRule ^admin/paiements/?$ admin/paiements.php [L,QSA,NC]
+RewriteRule ^admin/evaluations/?$ admin/evaluations.php [L,QSA,NC]
+RewriteRule ^admin/utilisateurs/?$ admin/utilisateurs.php [L,QSA,NC]
+RewriteRule ^admin/localisation-clients/?$ admin/carte-clients.php [L,QSA,NC]

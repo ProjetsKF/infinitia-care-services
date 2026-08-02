@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -54,7 +54,7 @@ function format_date_fr($value)
 
 function redirect_categories()
 {
-    header("Location: categories-services.php");
+    header("Location: " . app_url("admin/categories"));
     exit();
 }
 
@@ -360,7 +360,7 @@ if($result){
 
     <title>Categories de Services | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -371,7 +371,7 @@ if($result){
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -559,7 +559,7 @@ if($result){
                                         <i class="material-icons">edit</i>
                                     </a>
 
-                                    <form action="categories-services.php"
+                                    <form action="<?php echo app_url_html("admin/categories"); ?>"
                                           method="POST"
                                           style="display:inline;"
                                           onsubmit="return confirm('Voulez-vous supprimer cette categorie ?');">
@@ -594,7 +594,7 @@ if($result){
 </div>
 
 <div id="modalAddCategory" class="modal modal-fixed-footer">
-    <form action="categories-services.php" method="POST">
+    <form action="<?php echo app_url_html("admin/categories"); ?>" method="POST">
         <input type="hidden" name="action" value="add_category">
         <input type="hidden" name="icon" class="icon-hidden-field" value="">
 
@@ -655,7 +655,7 @@ if($result){
     </div>
 
     <div id="editCategory<?php echo $category_id; ?>" class="modal modal-fixed-footer">
-        <form action="categories-services.php" method="POST">
+        <form action="<?php echo app_url_html("admin/categories"); ?>" method="POST">
             <input type="hidden" name="action" value="update_category">
             <input type="hidden" name="category_id" value="<?php echo $category_id; ?>">
             <input type="hidden" name="icon" class="icon-hidden-field" value="<?php echo safe_text($icon); ?>">

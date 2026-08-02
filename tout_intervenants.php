@@ -14,19 +14,19 @@ function pagination_url($page_number, $search)
         $params["search"] = $search;
     }
 
-    return "tout_intervenants.php?" . http_build_query($params);
+    return app_url_with_query("intervenants/", $params);
 }
 
 function public_profile_photo_path($profile_photo)
 {
     if($profile_photo === NULL || trim($profile_photo) === ""){
-        return "assets/images/default-user.png";
+        return app_url("assets/images/default-user.png");
     }
 
     $profile_photo = str_replace("\\", "/", trim($profile_photo));
 
     if(strpos($profile_photo, ":") !== false){
-        return "assets/images/default-user.png";
+        return app_url("assets/images/default-user.png");
     }
 
     if(strpos($profile_photo, "../uploads/") === 0){
@@ -34,18 +34,18 @@ function public_profile_photo_path($profile_photo)
     }
 
     if(strpos($profile_photo, "..") !== false){
-        return "assets/images/default-user.png";
+        return app_url("assets/images/default-user.png");
     }
 
     if(strpos($profile_photo, "uploads/") === 0){
-        return $profile_photo;
+        return app_url($profile_photo);
     }
 
     if(strpos($profile_photo, "/") !== false){
-        return "assets/images/default-user.png";
+        return app_url("assets/images/default-user.png");
     }
 
-    return "uploads/profiles/" . $profile_photo;
+    return app_url("uploads/profiles/" . $profile_photo);
 }
 
 $limit = 20;
@@ -242,6 +242,8 @@ if($stmt)
 
 <head>
 
+    <base href="<?php echo app_url_html(""); ?>">
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -251,7 +253,7 @@ if($stmt)
 
     <link rel="icon"
           type="image/x-icon"
-          href="assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -262,7 +264,7 @@ if($stmt)
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet">
     
-          <link rel="stylesheet" href="assets/css/style.css">
+          <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <style>
@@ -464,7 +466,7 @@ if($stmt)
 
 <section class="page-hero">
 
-    <a href="index.php" class="back-home">
+    <a href="<?php echo app_url_html(""); ?>" class="back-home">
         <i class="material-icons left">arrow_back</i>
         Retour à l'accueil
     </a>
@@ -517,7 +519,7 @@ if($stmt)
 
 <div class="search-section">
 
-    <form action="tout_intervenants.php" method="GET" class="search-form">
+    <form action="<?php echo app_url_html("intervenants/"); ?>" method="GET" class="search-form">
 
         <div class="search-input-wrapper">
             <i class="material-icons">search</i>
@@ -536,7 +538,7 @@ if($stmt)
         </button>
 
         <?php if($search != ""){ ?>
-            <a href="tout_intervenants.php" class="btn-flat reset-button">
+            <a href="<?php echo app_url_html("intervenants/"); ?>" class="btn-flat reset-button">
                 Réinitialiser
             </a>
         <?php } ?>
@@ -575,7 +577,7 @@ if($stmt)
 
                         $photo_path = $can_show_real_photo
                             ? public_profile_photo_path($intervenant["profile_photo"])
-                            : "assets/images/default-user.png";
+                            : app_url("assets/images/default-user.png");
                         ?>
 
                         <img
@@ -681,7 +683,7 @@ if($stmt)
                     <?php if($search != ""){ ?>
                         Aucun intervenant ne correspond à votre recherche.
                         <br>
-                        <a href="tout_intervenants.php" class="show-all-link">
+                        <a href="<?php echo app_url_html("intervenants/"); ?>" class="show-all-link">
                             Afficher tous les intervenants
                         </a>
                     <?php }else{ ?>

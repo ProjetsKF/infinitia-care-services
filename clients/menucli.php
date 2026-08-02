@@ -14,7 +14,8 @@ if(session_status() === PHP_SESSION_NONE){
     session_start();
 }
 
-require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/config/app.php");
+require_once(dirname(__DIR__) . "/config/database.php");
 
 $user_id = $_SESSION["user_id"];
 
@@ -40,13 +41,29 @@ $client = $resultUser->fetch_assoc();
      SIDEBAR
 ========================================= -->
 
-<div class="sidebar">
+<div class="dashboard-mobile-header">
+
+    <button type="button"
+            class="dashboard-menu-toggle"
+            aria-label="Ouvrir le menu client"
+            aria-controls="client-sidebar"
+            aria-expanded="false">
+        <i class="material-icons" aria-hidden="true">menu</i>
+    </button>
+
+    <span>Menu client</span>
+
+</div>
+
+<div class="dashboard-sidebar-overlay" aria-hidden="true"></div>
+
+<div class="sidebar" id="client-sidebar">
 
     <!-- LOGO -->
 
     <div class="sidebar-logo">
 
-        <img src="../assets/images/brand1.png"
+        <img src="<?php echo app_url_html("assets/images/brand1.png"); ?>"
         alt="INFINITIA">
 
         <div class="sidebar-title"
@@ -76,7 +93,7 @@ $client = $resultUser->fetch_assoc();
 
         <!-- TABLEAU DE BORD -->
 
-        <a href="clidashboard.php"
+        <a href="<?php echo app_url_html("client/tableau-de-bord"); ?>"
         class="<?php echo ($current_page == 'dashboard') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -89,9 +106,13 @@ $client = $resultUser->fetch_assoc();
 
         </a>
 
+        <div class="menu-section-title">
+            Gestion des services
+        </div>
+
         <!-- MES DEMANDES -->
 
-        <a href="mes-demandes.php"
+        <a href="<?php echo app_url_html("client/demandes"); ?>"
         class="<?php echo ($current_page == 'demandes') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -106,7 +127,7 @@ $client = $resultUser->fetch_assoc();
 
         <!-- INTERVENANTS -->
 
-        <a href="cli_intervenants.php"
+        <a href="<?php echo app_url_html("client/intervenants"); ?>"
         class="<?php echo ($current_page == 'intervenants') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -121,7 +142,7 @@ $client = $resultUser->fetch_assoc();
 
         <!-- MISSIONS -->
 
-        <a href="missions.php"
+        <a href="<?php echo app_url_html("client/missions"); ?>"
         class="<?php echo ($current_page == 'missions') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -136,7 +157,7 @@ $client = $resultUser->fetch_assoc();
 
         <!-- EVALUATIONS -->
 
-        <a href="evaluations.php"
+        <a href="<?php echo app_url_html("client/evaluations"); ?>"
         class="<?php echo ($current_page == 'evaluations') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -151,7 +172,7 @@ $client = $resultUser->fetch_assoc();
 
         <!-- PAIEMENTS -->
 
-        <a href="paiements.php"
+        <a href="<?php echo app_url_html("client/paiements"); ?>"
         class="<?php echo ($current_page == 'paiements') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -164,9 +185,13 @@ $client = $resultUser->fetch_assoc();
 
         </a>
 
+        <div class="menu-section-title">
+            Mon compte
+        </div>
+
         <!-- PARAMETRES -->
 
-        <a href="parametres.php"
+        <a href="<?php echo app_url_html("client/parametres"); ?>"
         class="<?php echo ($current_page == 'parametres') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -181,7 +206,7 @@ $client = $resultUser->fetch_assoc();
 
         <!-- DECONNEXION -->
 
-        <a href="../logout.php">
+        <a href="<?php echo app_url_html("deconnexion"); ?>">
 
             <i class="material-icons">
 
@@ -196,3 +221,5 @@ $client = $resultUser->fetch_assoc();
     </div>
 
 </div>
+
+<script src="<?php echo app_url_html("assets/js/dashboard-menu.js"); ?>"></script>

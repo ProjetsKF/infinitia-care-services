@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -15,7 +15,7 @@ if(!isset($_GET['id'])){
 
     $_SESSION['error'] = "Demande introuvable.";
 
-    header("Location: mes-demandes.php");
+    header("Location: " . app_url("client/demandes"));
     exit();
 
 }
@@ -53,7 +53,7 @@ if(mysqli_num_rows($result) == 0){
     $_SESSION['error'] =
     "Vous n'êtes pas autorisé à supprimer cette demande.";
 
-    header("Location: mes-demandes.php");
+    header("Location: " . app_url("client/demandes"));
     exit();
 
 }
@@ -89,5 +89,5 @@ if(mysqli_stmt_execute($stmt)){
 
 }
 
-header("Location: mes-demandes.php");
+header("Location: " . app_url("client/demandes"));
 exit();

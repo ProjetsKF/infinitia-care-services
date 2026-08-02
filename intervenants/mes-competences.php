@@ -86,7 +86,7 @@ $competences = mysqli_stmt_get_result($stmt);
 
     <link rel="icon"
           type="image/x-icon"
-          href="../assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -98,7 +98,7 @@ $competences = mysqli_stmt_get_result($stmt);
           rel="stylesheet">
 
     <link rel="stylesheet"
-          href="../assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -312,7 +312,7 @@ $competences = mysqli_stmt_get_result($stmt);
                     </a>
 
                     <a
-                        href="delete-skill.php?id=<?php echo $skill['id']; ?>"
+                        href="<?php echo app_url_with_query_html("intervenant/competence/supprimer", array("id" => (int)$skill["id"])); ?>"
                         class="btn-small red"
                         title="Supprimer"
                         onclick="return confirm('Voulez-vous vraiment supprimer cette compétence ?');">
@@ -361,7 +361,7 @@ $competences = mysqli_stmt_get_result($stmt);
       
 
         <form
-            action="add-skill.php"
+            action="<?php echo app_url_html("intervenant/competence/ajouter"); ?>"
             method="POST">
 
             <h6 style="margin-bottom:20px;">
@@ -555,7 +555,7 @@ $competences = mysqli_stmt_get_result($stmt);
 
     
         <form
-            action="update-skill.php"
+            action="<?php echo app_url_html("intervenant/competence/modifier"); ?>"
             method="POST">
 
             <input

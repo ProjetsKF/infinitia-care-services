@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -84,7 +84,7 @@ function mission_reference($id)
 
 function redirect_missions()
 {
-    header("Location: missions.php");
+    header("Location: " . app_url("admin/missions"));
     exit();
 }
 
@@ -93,7 +93,7 @@ function missions_admin_pagination_url($page_number)
     $params = $_GET;
     $params["page"] = (int)$page_number;
 
-    return "missions.php?" . http_build_query($params);
+    return app_url_with_query("admin/missions", $params);
 }
 
 function count_query($conn, $sql)
@@ -853,7 +853,7 @@ if(count($missions) > 0){
 
     <title>Missions | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -866,7 +866,7 @@ if(count($missions) > 0){
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -1106,7 +1106,7 @@ if(count($missions) > 0){
                                         </a>
 
                                         <?php if($mission_status == "affectee"){ ?>
-                                            <form action="missions.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/missions"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="start_mission">
                                                 <input type="hidden" name="mission_id" value="<?php echo $mission_id; ?>">
                                                 <button type="submit" class="btn-small orange">Demarrer</button>
@@ -1114,7 +1114,7 @@ if(count($missions) > 0){
                                         <?php } ?>
 
                                         <?php if($mission_status == "en_cours"){ ?>
-                                            <form action="missions.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/missions"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="close_mission">
                                                 <input type="hidden" name="mission_id" value="<?php echo $mission_id; ?>">
                                                 <button type="submit" class="btn-small grey darken-1">Cloturer</button>
@@ -1325,7 +1325,7 @@ if(count($missions) > 0){
     </div>
 
     <div id="editMission<?php echo $mission_id; ?>" class="modal modal-fixed-footer">
-        <form action="missions.php" method="POST">
+        <form action="<?php echo app_url_html("admin/missions"); ?>" method="POST">
             <input type="hidden" name="action" value="update_mission">
             <input type="hidden" name="mission_id" value="<?php echo $mission_id; ?>">
 
@@ -1364,7 +1364,7 @@ if(count($missions) > 0){
     </div>
 
     <div id="cancelMission<?php echo $mission_id; ?>" class="modal">
-        <form action="missions.php" method="POST">
+        <form action="<?php echo app_url_html("admin/missions"); ?>" method="POST">
             <input type="hidden" name="action" value="cancel_mission">
             <input type="hidden" name="mission_id" value="<?php echo $mission_id; ?>">
 

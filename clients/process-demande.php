@@ -6,7 +6,7 @@ require_once(dirname(__FILE__) . "/../config/database.php");
 
 function redirect_demande()
 {
-    header("Location: mes-demandes.php");
+    header("Location: " . app_url("client/demandes"));
     exit();
 }
 
@@ -277,7 +277,7 @@ if($_SERVER["REQUEST_METHOD"] != "POST"){
 
 if(!isset($_SESSION["user_id"])){
     $_SESSION["error"] = "Veuillez vous connecter.";
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
@@ -477,7 +477,7 @@ if($email_envoye){
     $_SESSION["success"] = "Votre demande a ete enregistree avec succes. La confirmation par e-mail n'a toutefois pas pu etre envoyee.";
 }
 
-header("Location: mes-demandes.php");
+header("Location: " . app_url("client/demandes"));
 exit();
 
 ?>

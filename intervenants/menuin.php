@@ -27,7 +27,8 @@ if(session_status() === PHP_SESSION_NONE){
    CONNEXION BDD
 ========================================= */
 
-require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/config/app.php");
+require_once(dirname(__DIR__) . "/config/database.php");
 
 /* =========================================
    VERIFICATION CONNEXION
@@ -35,7 +36,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -93,14 +94,30 @@ if(!$userMenu){
      SIDEBAR INTERVENANT
 ========================================= -->
 
-<div class="sidebar">
+<div class="dashboard-mobile-header">
+
+    <button type="button"
+            class="dashboard-menu-toggle"
+            aria-label="Ouvrir le menu intervenant"
+            aria-controls="intervenant-sidebar"
+            aria-expanded="false">
+        <i class="material-icons" aria-hidden="true">menu</i>
+    </button>
+
+    <span>Menu intervenant</span>
+
+</div>
+
+<div class="dashboard-sidebar-overlay" aria-hidden="true"></div>
+
+<div class="sidebar" id="intervenant-sidebar">
 
     <!-- LOGO -->
 
     <div class="sidebar-logo">
 
         <img
-        src="../assets/images/brand1.png"
+        src="<?php echo app_url_html("assets/images/brand1.png"); ?>"
         alt="INFINITIA">
 
         <div class="sidebar-title"
@@ -140,7 +157,7 @@ if(!$userMenu){
 
         <!-- TABLEAU DE BORD -->
 
-        <a href="candidashboard.php"
+        <a href="<?php echo app_url_html("intervenant/tableau-de-bord"); ?>"
            class="<?= ($current_page == 'dashboard') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -151,9 +168,13 @@ if(!$userMenu){
 
         </a>
 
+        <div class="menu-section-title">
+            Profil professionnel
+        </div>
+
         <!-- PROFIL -->
 
-        <a href="profil.php"
+        <a href="<?php echo app_url_html("intervenant/profil"); ?>"
            class="<?= ($current_page == 'profil') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -166,7 +187,7 @@ if(!$userMenu){
 
         <!-- DOCUMENTS -->
 
-        <a href="mes-documents.php"
+        <a href="<?php echo app_url_html("intervenant/documents"); ?>"
            class="<?= ($current_page == 'documents') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -179,7 +200,7 @@ if(!$userMenu){
 
         <!-- COMPETENCES -->
 
-        <a href="mes-competences.php"
+        <a href="<?php echo app_url_html("intervenant/competences"); ?>"
            class="<?= ($current_page == 'competences') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -190,9 +211,13 @@ if(!$userMenu){
 
         </a>
 
+        <div class="menu-section-title">
+            Suivi des activités
+        </div>
+
         <!-- MISSIONS -->
 
-        <a href="mes-missions.php"
+        <a href="<?php echo app_url_html("intervenant/missions"); ?>"
            class="<?= ($current_page == 'missions') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -205,7 +230,7 @@ if(!$userMenu){
 
         <!-- FORMATIONS -->
 
-        <a href="formations.php"
+        <a href="<?php echo app_url_html("intervenant/formations"); ?>"
            class="<?= ($current_page == 'formations') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -216,9 +241,13 @@ if(!$userMenu){
 
         </a>
 
+        <div class="menu-section-title">
+            Mon compte
+        </div>
+
         <!-- PARAMETRES -->
 
-        <a href="parametres-intervenant.php"
+        <a href="<?php echo app_url_html("intervenant/parametres"); ?>"
            class="<?= ($current_page == 'parametres') ? 'active' : ''; ?>">
 
             <i class="material-icons">
@@ -231,7 +260,7 @@ if(!$userMenu){
 
         <!-- DECONNEXION -->
 
-        <a href="../logout.php">
+        <a href="<?php echo app_url_html("deconnexion"); ?>">
 
             <i class="material-icons">
                 logout
@@ -244,3 +273,5 @@ if(!$userMenu){
     </div>
 
 </div>
+
+<script src="<?php echo app_url_html("assets/js/dashboard-menu.js"); ?>"></script>

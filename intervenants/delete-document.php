@@ -6,14 +6,14 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION['user_id'])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
 
 if(!isset($_GET['id'])){
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -56,7 +56,7 @@ if(!$document){
     $_SESSION['error'] =
     "Document introuvable.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -66,7 +66,7 @@ if($document['user_id'] != $_SESSION['user_id']){
     $_SESSION['error'] =
     "Accès refusé.";
 
-    header("Location: mes-documents.php");
+    header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
@@ -107,7 +107,7 @@ if(mysqli_stmt_execute($stmt)){
 
 }
 
-header("Location: mes-documents.php");
+header("Location: " . app_url("intervenant/documents"));
 exit();
 
 ?>

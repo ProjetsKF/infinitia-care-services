@@ -5,6 +5,8 @@ ini_set('display_errors', 1);
 
 session_start();
 
+require_once(dirname(__FILE__) . "/config/app.php");
+
 require 'vendor/phpmailer/phpmailer/src/Exception.php';
 require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
 require 'vendor/phpmailer/phpmailer/src/SMTP.php';
@@ -16,7 +18,7 @@ $mail_config = require 'config/mail.php';
 
 if($_SERVER["REQUEST_METHOD"] != "POST")
 {
-    header("Location: contact.php");
+    header("Location: " . app_url("contact"));
     exit();
 }
 
@@ -29,14 +31,14 @@ $message = isset($_POST["message"]) ? trim($_POST["message"]) : "";
 if(empty($name) || empty($phone) || empty($email) || empty($subject) || empty($message))
 {
     $_SESSION["contact_error"] = "Veuillez remplir tous les champs.";
-    header("Location: contact.php");
+    header("Location: " . app_url("contact"));
     exit();
 }
 
 if(!filter_var($email, FILTER_VALIDATE_EMAIL))
 {
     $_SESSION["contact_error"] = "Adresse email invalide.";
-    header("Location: contact.php");
+    header("Location: " . app_url("contact"));
     exit();
 }
 
@@ -165,7 +167,7 @@ try
 
     $_SESSION["success"] = "Votre message a été envoyé avec succès.";
 
-    header("Location: contact.php");
+    header("Location: " . app_url("contact"));
     exit();
 }
 catch(Exception $e)
@@ -174,7 +176,7 @@ catch(Exception $e)
         "Erreur lors de l'envoi du message : " .
         $e->getMessage();
 
-    header("Location: contact.php");
+    header("Location: " . app_url("contact"));
     exit();
 }
 

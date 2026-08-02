@@ -6,14 +6,14 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
 
 if(!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -65,22 +65,22 @@ function profile_photo_path($profile_photo)
 {
     if($profile_photo === NULL || $profile_photo === ""){
 
-        return "../assets/images/default-user.png";
+        return app_url("assets/images/default-user.png");
 
     }
 
     if(strpos($profile_photo, "uploads/") === 0){
 
-        return "../" . $profile_photo;
+        return app_url($profile_photo);
 
     }
 
-    return "../uploads/profiles/" . $profile_photo;
+    return app_url("uploads/profiles/" . $profile_photo);
 }
 
 function redirect_settings()
 {
-    header("Location: parametres.php");
+    header("Location: " . app_url("client/parametres"));
     exit();
 }
 
@@ -542,7 +542,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
         Parametres | INFINITIA
     </title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -560,7 +560,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
 </head>
 
@@ -769,7 +769,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
 <div id="modalProfile" class="modal modal-fixed-footer">
 
-    <form action="parametres.php"
+    <form action="<?php echo app_url_html("client/parametres"); ?>"
           method="POST"
           enctype="multipart/form-data">
 
@@ -879,7 +879,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
 <div id="modalPassword" class="modal modal-fixed-footer">
 
-    <form action="parametres.php"
+    <form action="<?php echo app_url_html("client/parametres"); ?>"
           method="POST">
 
         <input type="hidden"

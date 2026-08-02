@@ -10,7 +10,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION['user_id']))
 {
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
@@ -28,7 +28,7 @@ if(
     $_SESSION['error'] =
     "Compétence invalide.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -57,7 +57,7 @@ if(!$stmt)
     $_SESSION['error'] =
     "Erreur de vérification.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -77,7 +77,7 @@ if(mysqli_num_rows($result) == 0)
     $_SESSION['error'] =
     "Compétence introuvable.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -99,7 +99,7 @@ if(!$stmt)
     $_SESSION['error'] =
     "Erreur de préparation SQL.";
 
-    header("Location: mes-competences.php");
+    header("Location: " . app_url("intervenant/competences"));
     exit();
 }
 
@@ -120,7 +120,7 @@ else
     "Erreur lors de la suppression.";
 }
 
-header("Location: mes-competences.php");
+header("Location: " . app_url("intervenant/competences"));
 exit();
 
 ?>

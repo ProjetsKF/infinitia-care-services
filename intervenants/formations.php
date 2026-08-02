@@ -9,7 +9,7 @@ if(
     !isset($_SESSION["role_id"]) ||
     $_SESSION["role_id"] != 3
 ){
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 }
 
@@ -60,12 +60,12 @@ function formations_pagination_url($page_number)
     $params = $_GET;
     $params["page"] = (int)$page_number;
 
-    return "formations.php?" . http_build_query($params);
+    return app_url_with_query("intervenant/formations", $params);
 }
 
 function redirect_formations()
 {
-    header("Location: formations.php");
+    header("Location: " . app_url("intervenant/formations"));
     exit();
 }
 
@@ -204,7 +204,7 @@ if($stmt){
 
 if($candidate_id <= 0){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -421,7 +421,7 @@ if($stmt){
 
     <link rel="icon"
           type="image/x-icon"
-          href="../assets/images/ico.ico">
+          href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -433,7 +433,7 @@ if($stmt){
           rel="stylesheet">
 
     <link rel="stylesheet"
-          href="../assets/css/style.css">
+          href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .training-status-badge{
@@ -643,7 +643,7 @@ if($stmt){
                             <td>
                                 <div class="training-actions">
                                     <?php if($status == "en_attente"){ ?>
-                                        <form action="formations.php" method="POST">
+                                        <form action="<?php echo app_url_html("intervenant/formations"); ?>" method="POST">
                                             <input type="hidden" name="action" value="start_training">
                                             <input type="hidden" name="candidate_training_id" value="<?php echo $candidate_training_id; ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
@@ -652,7 +652,7 @@ if($stmt){
                                             </button>
                                         </form>
                                     <?php }elseif($status == "en_cours"){ ?>
-                                        <form action="formations.php" method="POST">
+                                        <form action="<?php echo app_url_html("intervenant/formations"); ?>" method="POST">
                                             <input type="hidden" name="action" value="complete_training">
                                             <input type="hidden" name="candidate_training_id" value="<?php echo $candidate_training_id; ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">

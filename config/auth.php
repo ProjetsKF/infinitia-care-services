@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__ . "/app.php");
+
 /**
  * Generate a cryptographically secure hexadecimal token.
  *
@@ -304,35 +306,21 @@ function infinitia_create_password_reset_token($conn, $user_id)
 
 function infinitia_build_reset_url($selector, $validator)
 {
-    $base_url = "";
+    $https = isset($_SERVER["HTTPS"])
+        && $_SERVER["HTTPS"] !== ""
+        && $_SERVER["HTTPS"] !== "off";
+    $scheme = $https ? "https" : "http";
+    $host = isset($_SERVER["HTTP_HOST"])
+        ? $_SERVER["HTTP_HOST"]
+        : "localhost";
 
-    if(defined("APP_BASE_URL") && APP_BASE_URL != ""){
-
-        $base_url = rtrim(APP_BASE_URL, "/");
-
-    }else{
-
-        $https = isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "" && $_SERVER["HTTPS"] !== "off";
-        $scheme = $https ? "https" : "http";
-        $host = isset($_SERVER["HTTP_HOST"]) ? $_SERVER["HTTP_HOST"] : "localhost";
-        $script_name = isset($_SERVER["SCRIPT_NAME"]) ? $_SERVER["SCRIPT_NAME"] : "";
-        $base_path = str_replace("\\", "/", dirname($script_name));
-
-        if($base_path == "/" || $base_path == "."){
-
-            $base_path = "";
-
-        }
-
-        $base_url = $scheme . "://" . $host . $base_path;
-
-    }
-
-    return $base_url
-        . "/reset-password.php?selector="
-        . urlencode($selector)
-        . "&validator="
-        . urlencode($validator);
+    return $scheme . "://" . $host . app_url_with_query(
+        "reinitialiser-mot-de-passe",
+        array(
+            "selector" => $selector,
+            "validator" => $validator
+        )
+    );
 }
 
 function infinitia_send_password_reset_email($email, $name, $reset_link)
@@ -665,21 +653,21 @@ function infinitia_redirect_by_role($role_id)
 {
     if($role_id == 1){
 
-        header("Location: admin/dashboard.php");
+        header("Location: " . app_url("admin/tableau-de-bord"));
         exit();
 
     }
 
     if($role_id == 2){
 
-        header("Location: clients/clidashboard.php");
+        header("Location: " . app_url("client/tableau-de-bord"));
         exit();
 
     }
 
     if($role_id == 3){
 
-        header("Location: intervenants/candidashboard.php");
+        header("Location: " . app_url("intervenant/tableau-de-bord"));
         exit();
 
     }

@@ -6,7 +6,7 @@ require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
-    header("Location: ../login.php");
+    header("Location: " . app_url("login"));
     exit();
 
 }
@@ -64,7 +64,7 @@ function mission_reference($id)
 
 function redirect_paiements()
 {
-    header("Location: paiements.php");
+    header("Location: " . app_url("admin/paiements"));
     exit();
 }
 
@@ -219,7 +219,7 @@ function pagination_url($page, $search, $status, $periode)
 
     }
 
-    return "paiements.php?" . http_build_query($params);
+    return app_url_with_query("admin/paiements", $params);
 }
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -615,7 +615,7 @@ mysqli_stmt_close($stmt);
 
     <title>Paiements | INFINITIA</title>
 
-    <link rel="icon" type="image/x-icon" href="../assets/images/ico.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo app_url_html("assets/images/ico.ico"); ?>">
 
     <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -628,7 +628,7 @@ mysqli_stmt_close($stmt);
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
         .admin-summary-card{
@@ -807,7 +807,7 @@ mysqli_stmt_close($stmt);
         </div>
 
         <div class="search-card">
-            <form action="paiements.php" method="GET">
+            <form action="<?php echo app_url_html("admin/paiements"); ?>" method="GET">
                 <div class="row" style="margin-bottom:0;">
                     <div class="input-field col s12 l4">
                         <i class="material-icons prefix">search</i>
@@ -840,7 +840,7 @@ mysqli_stmt_close($stmt);
                         <button type="submit" class="btn waves-effect waves-light">
                             Filtrer
                         </button>
-                        <a href="paiements.php" class="btn-flat">Reset</a>
+                        <a href="<?php echo app_url_html("admin/paiements"); ?>" class="btn-flat">Reset</a>
                     </div>
                 </div>
             </form>
@@ -897,12 +897,12 @@ mysqli_stmt_close($stmt);
                                     <div class="actions-wrap">
                                         <a href="#viewPayment<?php echo $payment_id; ?>" class="btn-small green modal-trigger">Voir</a>
                                         <?php if($status == "en_attente" || $status == "en_traitement"){ ?>
-                                            <form action="paiements.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/paiements"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="validate_payment">
                                                 <input type="hidden" name="payment_id" value="<?php echo $payment_id; ?>">
                                                 <button type="submit" class="btn-small blue">Valider</button>
                                             </form>
-                                            <form action="paiements.php" method="POST">
+                                            <form action="<?php echo app_url_html("admin/paiements"); ?>" method="POST">
                                                 <input type="hidden" name="action" value="reject_payment">
                                                 <input type="hidden" name="payment_id" value="<?php echo $payment_id; ?>">
                                                 <button type="submit" class="btn-small red">Rejeter</button>
