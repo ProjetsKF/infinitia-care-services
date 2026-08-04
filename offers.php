@@ -42,6 +42,8 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"]))
 
 <head>
 
+    <?php require_once(__DIR__ . "/includes/pwa-head.php"); ?>
+
     <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">

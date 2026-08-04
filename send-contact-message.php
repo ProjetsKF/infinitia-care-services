@@ -7,14 +7,14 @@ session_start();
 
 require_once(dirname(__FILE__) . "/config/app.php");
 
-require 'vendor/phpmailer/phpmailer/src/Exception.php';
-require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
-require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+require dirname(__FILE__) . '/vendor/phpmailer/phpmailer/src/Exception.php';
+require dirname(__FILE__) . '/vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require dirname(__FILE__) . '/vendor/phpmailer/phpmailer/src/SMTP.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-$mail_config = require 'config/mail.php';
+$mail_config = require dirname(__FILE__) . '/config/mail.php';
 
 if($_SERVER["REQUEST_METHOD"] != "POST")
 {
@@ -121,8 +121,8 @@ try
     $mail->SMTPAuth = true;
     $mail->Username = $mail_config["username"];
     $mail->Password = $mail_config["password"];
-    $mail->SMTPSecure = "ssl";
-    $mail->Port = 465;
+    $mail->SMTPSecure = $mail_config["secure"];
+    $mail->Port = (int)$mail_config["port"];
 
     $mail->SMTPOptions = array(
         'ssl' => array(

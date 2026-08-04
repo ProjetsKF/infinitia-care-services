@@ -131,6 +131,8 @@ $csrf_token = infinitia_csrf_token("forgot_password_csrf");
 
 <head>
 
+    <?php require_once(__DIR__ . "/includes/pwa-head.php"); ?>
+
     <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">

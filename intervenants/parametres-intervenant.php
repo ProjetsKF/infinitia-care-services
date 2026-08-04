@@ -196,6 +196,8 @@ $current_photo_consent_date = $candidate_exists ? $photo_consent_date_db : NULL;
 
 <head>
 
+    <?php require_once(dirname(__DIR__) . "/includes/pwa-head.php"); ?>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"

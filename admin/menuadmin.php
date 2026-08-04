@@ -139,6 +139,7 @@ $stmtUser->close();
             <i class="material-icons">logout</i>
             Déconnexion
         </a>
+        <?php include(dirname(__DIR__) . "/includes/pwa-install-button.php"); ?>
     </div>
 </div>
 

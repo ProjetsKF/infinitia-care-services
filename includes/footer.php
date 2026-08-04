@@ -101,7 +101,7 @@
 
             <p>
                 <i class="material-icons">email</i>
-                infinitiagroupsarlu@gmail.com
+                info@infinitia-group.com
             </p>
 
         </div>

@@ -270,6 +270,7 @@ if(!$userMenu){
 
         </a>
 
+        <?php include(dirname(__DIR__) . "/includes/pwa-install-button.php"); ?>
     </div>
 
 </div>

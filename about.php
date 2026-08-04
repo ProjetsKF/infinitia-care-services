@@ -8,6 +8,8 @@ require_once("config/app.php");
 
 <head>
 
+    <?php require_once(__DIR__ . "/includes/pwa-head.php"); ?>
+
     <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">
@@ -55,7 +57,7 @@ require_once("config/app.php");
             <div class="col s12 m12 l6 about-image-container">
 
                 <img
-                src="<?php echo app_url_html("assets/images/aboutimg.png"); ?>"
+                src="<?php echo app_url_html("assets/images/aboutimg.PNG"); ?>"
                 alt="Assistante ménagère INFINITIA Care Services"
                 class="about-image z-depth-3">
 
@@ -229,10 +231,21 @@ require_once("config/app.php");
 
     <script>
 
-        document.addEventListener('DOMContentLoaded', function(){
+        document.addEventListener("DOMContentLoaded", function () {
+            var sidenavElements = document.querySelectorAll(".sidenav");
 
-            M.AutoInit();
-
+            if (
+                typeof M !== "undefined" &&
+                M.Sidenav &&
+                sidenavElements.length > 0
+            ) {
+                M.Sidenav.init(sidenavElements, {
+                    edge: "left",
+                    draggable: true,
+                    inDuration: 250,
+                    outDuration: 200
+                });
+            }
         });
 
     </script>

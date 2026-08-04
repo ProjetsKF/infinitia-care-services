@@ -2,6 +2,8 @@
 <html>
 <head>
 
+<?php require_once(__DIR__ . "/pwa-head.php"); ?>
+
 <meta charset="UTF-8">
 
 <link rel="stylesheet"

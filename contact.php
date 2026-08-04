@@ -8,6 +8,8 @@ require_once("config/app.php");
 
 <head>
 
+    <?php require_once(__DIR__ . "/includes/pwa-head.php"); ?>
+
     <base href="<?php echo app_url_html(""); ?>">
 
     <meta charset="UTF-8">
@@ -129,7 +131,7 @@ require_once("config/app.php");
 
                 <h6>Email</h6>
 
-                <p>infinitiagroupsarlu@gmail.com</p>
+                <p>info@infinitia-group.com</p>
 
             </div>
 
@@ -318,10 +320,21 @@ require_once("config/app.php");
 
     <script>
 
-        document.addEventListener('DOMContentLoaded', function(){
+        document.addEventListener("DOMContentLoaded", function () {
+            var sidenavElements = document.querySelectorAll(".sidenav");
 
-            M.AutoInit();
-
+            if (
+                typeof M !== "undefined" &&
+                M.Sidenav &&
+                sidenavElements.length > 0
+            ) {
+                M.Sidenav.init(sidenavElements, {
+                    edge: "left",
+                    draggable: true,
+                    inDuration: 250,
+                    outDuration: 200
+                });
+            }
         });
 
     </script>

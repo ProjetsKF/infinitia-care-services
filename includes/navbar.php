@@ -27,7 +27,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
            margin-top:5px;">
 
             <img
-            src="<?php echo app_url_html("assets/images/brand1.PNG"); ?>"
+            src="<?php echo app_url_html("assets/images/brand1.png"); ?>"
             alt="Infinitia Logo"
             style="
             height:50px;
@@ -45,36 +45,35 @@ $current_page = basename($_SERVER['PHP_SELF']);
             gap:15px;
             margin:0;">
 
-           <li>
-    <a href="<?php echo app_url_html(""); ?>"
-       class="<?= ($current_page == 'index.php') ? 'active-nav' : ''; ?>">
-        Accueil
-    </a>
-</li>
-
-<li>
-    <a href="<?php echo app_url_html("services"); ?>"
-       class="<?= ($current_page == 'services.php') ? 'active-nav' : ''; ?>">
-        Services
-    </a>
-</li>
-
-<li>
-    <a href="<?php echo app_url_html("a-propos"); ?>"
-       class="<?= ($current_page == 'about.php') ? 'active-nav' : ''; ?>">
-        À propos
-    </a>
-</li>
-
-<li>
-    <a href="<?php echo app_url_html("contact"); ?>"
-       class="<?= ($current_page == 'contact.php') ? 'active-nav' : ''; ?>">
-        Contact
-    </a>
-</li>
+            <li>
+                <a href="<?php echo app_url_html(""); ?>"
+                   class="<?= ($current_page == 'index.php') ? 'active-nav' : ''; ?>">
+                    Accueil
+                </a>
+            </li>
 
             <li>
+                <a href="<?php echo app_url_html("services"); ?>"
+                   class="<?= ($current_page == 'services.php') ? 'active-nav' : ''; ?>">
+                    Services
+                </a>
+            </li>
 
+            <li>
+                <a href="<?php echo app_url_html("a-propos"); ?>"
+                   class="<?= ($current_page == 'about.php') ? 'active-nav' : ''; ?>">
+                    À propos
+                </a>
+            </li>
+
+            <li>
+                <a href="<?php echo app_url_html("contact"); ?>"
+                   class="<?= ($current_page == 'contact.php') ? 'active-nav' : ''; ?>">
+                    Contact
+                </a>
+            </li>
+
+            <li>
                 <a href="<?php echo app_url_html("login"); ?>"
                    class="btn blue lighten-1"
                    style="
@@ -88,11 +87,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     Connexion
 
                 </a>
-
             </li>
 
             <li>
-
                 <a href="<?php echo app_url_html("inscription"); ?>"
                    class="btn pink accent-2"
                    style="
@@ -106,12 +103,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     S'inscrire
 
                 </a>
-
             </li>
 
         </ul>
 
-        <!-- MENU MOBILE -->
+        <!-- BOUTON MENU MOBILE -->
 
         <a href="#"
            data-target="mobile-menu"
@@ -126,3 +122,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </div>
 
 </nav>
+
+<!-- MENU MOBILE -->
+
+<ul id="mobile-menu" class="sidenav">
+    <li><a href="<?php echo app_url_html(""); ?>">Accueil</a></li>
+    <li><a href="<?php echo app_url_html("services"); ?>">Services</a></li>
+    <li><a href="<?php echo app_url_html("a-propos"); ?>">À propos</a></li>
+    <li><a href="<?php echo app_url_html("contact"); ?>">Contact</a></li>
+    <li><a href="<?php echo app_url_html("login"); ?>">Connexion</a></li>
+    <li><a href="<?php echo app_url_html("inscription"); ?>">S'inscrire</a></li>
+</ul>
