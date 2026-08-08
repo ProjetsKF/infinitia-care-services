@@ -433,7 +433,7 @@ mysqli_stmt_close($stmt);
 
             <?php if(count($intervenants) > 0){ ?>
 
-                <div class="row">
+                <div class="row client-card-grid">
 
                     <?php foreach($intervenants as $intervenant){ ?>
 
@@ -477,11 +477,11 @@ mysqli_stmt_close($stmt);
 
                         <div class="col s12 m6 l4">
 
-                            <div class="card hoverable">
+                            <div class="card hoverable client-intervenant-card">
 
                                 <div class="card-content">
 
-                                    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+                                    <div class="client-intervenant-heading" style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
 
                                         <img src="<?php echo safe_text($photo_path); ?>"
                                              alt="Photo intervenant"
@@ -567,7 +567,7 @@ mysqli_stmt_close($stmt);
 
                                 </div>
 
-                                <div class="card-action">
+                                <div class="card-action client-actions">
 
                                     <a href="#profil<?php echo $candidate_id_value; ?>_<?php echo $mission_id_value; ?>"
                                        class="modal-trigger blue-text">
@@ -590,7 +590,7 @@ mysqli_stmt_close($stmt);
                         </div>
 
                         <div id="profil<?php echo $candidate_id_value; ?>_<?php echo $mission_id_value; ?>"
-                             class="modal">
+                             class="modal client-modal">
 
                              <div style="
         background:linear-gradient(90deg,#1b2d8f,#e63b88);
@@ -651,7 +651,7 @@ mysqli_stmt_close($stmt);
                         </div>
 
                         <div id="mission<?php echo $mission_id_value; ?>"
-                             class="modal">
+                             class="modal client-modal">
 
                              <div style="
                                 background:linear-gradient(90deg,#1b2d8f,#e63b88);

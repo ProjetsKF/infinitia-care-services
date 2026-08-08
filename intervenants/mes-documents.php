@@ -65,6 +65,7 @@ mysqli_stmt_bind_param($stmt, "i", $candidate_id);
 mysqli_stmt_execute($stmt);
 
 $documents = mysqli_stmt_get_result($stmt);
+$document_count = mysqli_num_rows($documents);
 
 ?>
 
@@ -186,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 
-        <div class="row">
+        <div class="row intervenant-stat-grid">
 
     <div class="col s12 m4">
 
@@ -234,12 +235,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <div class="table-card">
 
-    <div class="table-title">
+    <div class="table-title table-title-with-action">
 
         Liste des documents
 
         <a href="#modalDocument"
-           class="btn right modal-trigger">
+           class="btn modal-trigger">
 
             <i class="material-icons left">
                 add
@@ -251,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     </div>
 
-    <table class="highlight responsive-table">
+    <table class="highlight responsive-table intervenant-table mobile-card-table">
 
         <thead>
 
@@ -271,17 +272,19 @@ document.addEventListener('DOMContentLoaded', function(){
 
         <tbody>
 
+        <?php if($document_count > 0): ?>
+
         <?php while($doc = mysqli_fetch_assoc($documents)): ?>
 
-            <tr>
+            <tr class="mobile-card-row">
 
-                <td>
+                <td data-label="Type">
 
                     <?php echo htmlspecialchars($doc['document_type']); ?>
 
                 </td>
 
-                <td>
+                <td data-label="Date d'ajout">
 
                     <?php echo date(
                         "d/m/Y",
@@ -290,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 </td>
 
-                <td>
+                <td data-label="Statut">
 
                     <?php if($doc['verified'] == 1): ?>
 
@@ -306,7 +309,9 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 </td>
 
-            <td>
+            <td data-label="Actions">
+
+    <div class="document-actions intervenant-row-actions">
 
     <a href="../<?php echo htmlspecialchars($doc['file_path']); ?>"
        target="_blank"
@@ -328,11 +333,24 @@ document.addEventListener('DOMContentLoaded', function(){
 
     </a>
 
+    </div>
+
 </td>
 
             </tr>
 
         <?php endwhile; ?>
+
+        <?php else: ?>
+
+            <tr class="intervenant-empty-row">
+                <td colspan="4" class="center-align intervenant-empty-state-cell">
+                    <i class="material-icons" aria-hidden="true">description</i>
+                    <span>Aucun document téléversé pour le moment.</span>
+                </td>
+            </tr>
+
+        <?php endif; ?>
 
         </tbody>
 

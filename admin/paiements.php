@@ -732,7 +732,7 @@ mysqli_stmt_close($stmt);
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -769,7 +769,7 @@ mysqli_stmt_close($stmt);
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l4">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">payments</i></div>
@@ -857,10 +857,11 @@ mysqli_stmt_close($stmt);
                     </span>
                 </div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Reference</th>
+                            <th>Mission</th>
                             <th>Client</th>
                             <th>Intervenant</th>
                             <th>Service</th>
@@ -879,24 +880,25 @@ mysqli_stmt_close($stmt);
                             $client_name = trim($payment["client_first_name"] . " " . $payment["client_last_name"]);
                             $candidate_name = trim($payment["candidate_first_name"] . " " . $payment["candidate_last_name"]);
                             ?>
-                            <tr>
-                                <td><?php echo safe_text(payment_reference($payment_id)); ?></td>
-                                <td><?php echo safe_text(display_value($client_name)); ?></td>
-                                <td><?php echo safe_text(display_value($candidate_name)); ?></td>
-                                <td><?php echo safe_text(display_value($payment["title"])); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Référence"><?php echo safe_text(payment_reference($payment_id)); ?></td>
+                                <td data-label="Mission"><?php echo safe_text(mission_reference((int)$payment["mission_id"])); ?></td>
+                                <td data-label="Client"><?php echo safe_text(display_value($client_name)); ?></td>
+                                <td data-label="Intervenant"><?php echo safe_text(display_value($candidate_name)); ?></td>
+                                <td data-label="Mission"><?php echo safe_text(display_value($payment["title"])); ?></td>
+                                <td data-label="Montant">
                                     <?php echo safe_text(number_format((float)$payment["amount"], 2)); ?>
                                     <?php echo safe_text(display_value($payment["currency"])); ?>
                                 </td>
-                                <td><?php echo safe_text(display_value($payment["payment_method"])); ?></td>
-                                <td>
+                                <td data-label="Mode"><?php echo safe_text(display_value($payment["payment_method"])); ?></td>
+                                <td data-label="Statut">
                                     <span class="new badge <?php echo safe_text(payment_badge_class($status)); ?>" data-badge-caption="">
                                         <?php echo safe_text(status_label($status)); ?>
                                     </span>
                                 </td>
-                                <td><?php echo safe_text(format_date_fr($payment["paid_at"])); ?></td>
-                                <td>
-                                    <div class="actions-wrap">
+                                <td data-label="Date"><?php echo safe_text(format_date_fr($payment["paid_at"])); ?></td>
+                                <td data-label="Actions">
+                                    <div class="actions-wrap admin-actions">
                                         <a href="#viewPayment<?php echo $payment_id; ?>" class="btn-small green modal-trigger">Voir</a>
                                         <?php if($status == "en_attente" || $status == "en_traitement"){ ?>
                                             <form action="<?php echo app_url_html("admin/paiements"); ?>" method="POST">

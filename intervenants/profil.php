@@ -256,7 +256,7 @@ $intervenant = $result->fetch_assoc();
 
     </div>
 
-    <table class="highlight">
+    <table class="highlight intervenant-detail-table">
 
         <tr>
             <th>Date de naissance</th>
@@ -307,7 +307,7 @@ $intervenant = $result->fetch_assoc();
 
     </div>
 
-    <table class="highlight">
+    <table class="highlight intervenant-detail-table">
 
         <tr>
             <th>Niveau d'étude</th>

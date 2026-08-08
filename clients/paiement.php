@@ -128,7 +128,7 @@
 
 </div>
 
-    <table class="highlight responsive-table">
+    <table class="highlight responsive-table intervenant-table mobile-card-table client-responsive-table">
 
         <thead>
 
@@ -149,21 +149,21 @@
 
         <tbody>
 
-            <tr>
+            <tr class="mobile-card-row">
 
-                <td>PAY-001</td>
+                <td data-label="Référence">PAY-001</td>
 
-                <td>Nettoyage jardin</td>
+                <td data-label="Mission">Nettoyage jardin</td>
 
-                <td>300.00 USD</td>
+                <td data-label="Montant">300.00 USD</td>
 
-                <td>M-Pesa</td>
+                <td data-label="Mode">M-Pesa</td>
 
-                <td>243991234567</td>
+                <td data-label="Numéro">243991234567</td>
 
-                <td>28/05/2026</td>
+                <td data-label="Date">28/05/2026</td>
 
-                <td>
+                <td data-label="Statut">
 
                     <span class="status completed">
 
@@ -173,7 +173,7 @@
 
                 </td>
 
-                <td>
+                <td data-label="Action">
 
                     <a href="#"
                        class="green-text"
@@ -189,21 +189,21 @@
 
             </tr>
 
-            <tr>
+            <tr class="mobile-card-row">
 
-                <td>PAY-002</td>
+                <td data-label="Référence">PAY-002</td>
 
-                <td>Nettoyage maison</td>
+                <td data-label="Mission">Nettoyage maison</td>
 
-                <td>150.00 USD</td>
+                <td data-label="Montant">150.00 USD</td>
 
-                <td>Airtel Money</td>
+                <td data-label="Mode">Airtel Money</td>
 
-                <td>243975551234</td>
+                <td data-label="Numéro">243975551234</td>
 
-                <td>04/06/2026</td>
+                <td data-label="Date">04/06/2026</td>
 
-                <td>
+                <td data-label="Statut">
 
                     <span class="status progress">
 
@@ -213,7 +213,7 @@
 
                 </td>
 
-                <td>
+                <td data-label="Action">
 
                     <a href="#"
                        class="green-text"
@@ -229,21 +229,21 @@
 
             </tr>
 
-            <tr>
+            <tr class="mobile-card-row">
 
-                <td>PAY-003</td>
+                <td data-label="Référence">PAY-003</td>
 
-                <td>Repassage</td>
+                <td data-label="Mission">Repassage</td>
 
-                <td>75.00 USD</td>
+                <td data-label="Montant">75.00 USD</td>
 
-                <td>Maxicash</td>
+                <td data-label="Mode">Maxicash</td>
 
-                <td>243820000000</td>
+                <td data-label="Numéro">243820000000</td>
 
-                <td>10/06/2026</td>
+                <td data-label="Date">10/06/2026</td>
 
-                <td>
+                <td data-label="Statut">
 
                     <span class="status pending">
 
@@ -253,7 +253,7 @@
 
                 </td>
 
-                <td>
+                <td data-label="Action">
 
                     <a href="#"
                        class="green-text"
@@ -283,7 +283,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 
-<div id="paymentDetails" class="modal">
+<div id="paymentDetails" class="modal client-modal">
 
     <div class="modal-content">
 

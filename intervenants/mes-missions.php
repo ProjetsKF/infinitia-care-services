@@ -302,7 +302,7 @@ if($stmt)
 
     </div>
 
-    <div class="row">
+    <div class="row intervenant-stat-grid">
 
         <div class="col s12 m6">
 
@@ -352,7 +352,7 @@ if($stmt)
             Liste de mes missions
         </div>
 
-        <table class="highlight responsive-table">
+        <table class="highlight responsive-table intervenant-table mobile-card-table">
 
             <thead>
 
@@ -376,21 +376,21 @@ if($stmt)
 
                 <?php foreach($missions as $mission){ ?>
 
-                    <tr>
+                    <tr class="mobile-card-row">
 
-                        <td>
+                        <td data-label="Référence">
                             #<?php echo $mission['id']; ?>
                         </td>
 
-                        <td>
+                        <td data-label="Mission">
                             <?php echo htmlspecialchars($mission['title']); ?>
                         </td>
 
-                        <td>
+                        <td data-label="Lieu">
                             <?php echo htmlspecialchars($mission['location']); ?>
                         </td>
 
-                        <td>
+                        <td data-label="Date du service">
 
                             <?php
 
@@ -406,7 +406,7 @@ if($stmt)
 
                         </td>
 
-                        <td>
+                        <td data-label="Durée">
 
                             <?php
 
@@ -419,7 +419,7 @@ if($stmt)
 
                         </td>
 
-                        <td>
+                        <td data-label="Statut">
 
                             <?php
 
@@ -444,7 +444,7 @@ if($stmt)
 
                         </td>
 
-                        <td>
+                        <td data-label="Action">
 
                             <a
                             href="#modalMission<?php echo $mission['id']; ?>"
@@ -464,11 +464,11 @@ if($stmt)
 
             <?php }else{ ?>
 
-                <tr>
+                <tr class="intervenant-empty-row">
 
-                    <td colspan="7" class="center-align">
-
-                        Aucune mission trouvée.
+                    <td colspan="7" class="center-align intervenant-empty-state-cell">
+                        <i class="material-icons" aria-hidden="true">assignment</i>
+                        <span>Aucune mission ne vous a encore été attribuée.</span>
 
                     </td>
 

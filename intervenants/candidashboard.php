@@ -308,7 +308,7 @@ if($stmt)
 
     <!-- STATISTIQUES -->
 
-    <div class="row">
+    <div class="row intervenant-stat-grid">
 
         <!-- MISSIONS RECUES -->
 
@@ -424,7 +424,7 @@ if($stmt)
 
         </div>
 
-        <table class="highlight responsive-table">
+        <table class="highlight intervenant-detail-table">
 
             <tbody>
 

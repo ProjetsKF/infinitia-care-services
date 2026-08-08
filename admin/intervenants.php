@@ -3,6 +3,7 @@
 session_start();
 
 require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/includes/admin-delete-security.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
@@ -10,6 +11,8 @@ if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["ro
     exit();
 
 }
+
+$admin_delete_csrf = admin_delete_csrf_token();
 
 function safe_text($value)
 {
@@ -1186,7 +1189,7 @@ if(count($candidates) > 0){
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -1210,20 +1213,26 @@ if(count($candidates) > 0){
         </div>
 
         <?php if(isset($_SESSION["success"])){ ?>
-            <div class="card-panel green white-text">
-                <?php echo safe_text($_SESSION["success"]); ?>
+            <div class="card-panel green white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["success"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["success"]); ?>
         <?php } ?>
 
         <?php if(isset($_SESSION["error"])){ ?>
-            <div class="card-panel red white-text">
-                <?php echo safe_text($_SESSION["error"]); ?>
+            <div class="card-panel red white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["error"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">groups</i></div>
@@ -1268,7 +1277,7 @@ if(count($candidates) > 0){
             </div>
         </div>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">person</i></div>
@@ -1306,7 +1315,7 @@ if(count($candidates) > 0){
             <div class="table-card">
                 <div class="table-title">Liste des intervenants</div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Photo</th>
@@ -1339,41 +1348,41 @@ if(count($candidates) > 0){
 
                             }
                             ?>
-                            <tr>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Photo">
                                     <img src="<?php echo safe_text(profile_photo_path($candidate["profile_photo"])); ?>"
                                          class="candidate-avatar"
                                          alt="Photo">
                                 </td>
-                                <td><?php echo safe_text(display_value($full_name)); ?></td>
-                                <td><?php echo safe_text(display_value($candidate["city"])); ?></td>
-                                <td>
+                                <td data-label="Nom complet"><?php echo safe_text(display_value($full_name)); ?></td>
+                                <td data-label="Ville"><?php echo safe_text(display_value($candidate["city"])); ?></td>
+                                <td data-label="Disponibilité">
                                     <span class="new badge <?php echo safe_text(availability_badge_class($availability)); ?>" data-badge-caption="">
                                         <?php echo safe_text(display_value($availability)); ?>
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Vérification">
                                     <span class="new badge <?php echo safe_text(verification_badge_class($verification)); ?>" data-badge-caption="">
                                         <?php echo safe_text(display_value($verification)); ?>
                                     </span>
                                 </td>
-                                <td><?php echo safe_text(display_value($candidate["experience_years"])); ?> an(s)</td>
-                                <td>
+                                <td data-label="Expérience"><?php echo safe_text(display_value($candidate["experience_years"])); ?> an(s)</td>
+                                <td data-label="Score IA">
                                     <strong><?php echo (int)$score; ?>%</strong>
                                     <div class="score-bar">
                                         <div class="score-fill" style="width:<?php echo (int)$score; ?>%;"></div>
                                     </div>
                                     <small><?php echo safe_text($candidate["score_level"]); ?></small>
                                 </td>
-                                <td><?php echo safe_text($average_rating); ?></td>
-                                <td><?php echo (int)$candidate["mission_total"]; ?></td>
-                                <td>
+                                <td data-label="Note moyenne"><?php echo safe_text($average_rating); ?></td>
+                                <td data-label="Missions"><?php echo (int)$candidate["mission_total"]; ?></td>
+                                <td data-label="Compte">
                                     <span class="new badge <?php echo safe_text(account_badge_class($account_status)); ?>" data-badge-caption="">
                                         <?php echo safe_text(display_value($account_status)); ?>
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="actions-wrap">
+                                <td data-label="Actions">
+                                    <div class="actions-wrap admin-actions">
                                         <a href="#viewCandidate<?php echo $candidate_id; ?>"
                                            class="btn-small green modal-trigger">
                                             Voir
@@ -1415,6 +1424,12 @@ if(count($candidates) > 0){
                                                 <?php } ?>
                                             </button>
                                         </form>
+
+                                        <a href="#deleteCandidate<?php echo $candidate_id; ?>"
+                                           class="btn-small red darken-2 modal-trigger admin-delete-trigger">
+                                            <i class="material-icons" aria-hidden="true">delete</i>
+                                            Supprimer
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -1497,6 +1512,11 @@ if(count($candidates) > 0){
     $candidate_trainings = isset($trainings_by_candidate[$candidate_id]) ? $trainings_by_candidate[$candidate_id] : array();
     $candidate_missions = isset($missions_by_candidate[$candidate_id]) ? $missions_by_candidate[$candidate_id] : array();
     $candidate_reviews = isset($reviews_by_candidate[$candidate_id]) ? $reviews_by_candidate[$candidate_id] : array();
+    $delete_mission_total = count($candidate_missions);
+    $delete_training_total = count($candidate_trainings);
+    $delete_review_total = count($candidate_reviews);
+    $candidate_delete_blocked = $delete_mission_total > 0 || $delete_training_total > 0 || $delete_review_total > 0;
+    $can_delete_candidate = !$candidate_delete_blocked;
     ?>
 
     <div id="viewCandidate<?php echo $candidate_id; ?>" class="modal modal-fixed-footer modal-wide">
@@ -1566,7 +1586,7 @@ if(count($candidates) > 0){
             <div class="profile-section">
                 <h5 class="profile-section-title"><i class="material-icons">psychology</i>Competences</h5>
                 <?php if(count($candidate_skills) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Competence</th>
@@ -1578,12 +1598,12 @@ if(count($candidates) > 0){
                         </thead>
                         <tbody>
                             <?php foreach($candidate_skills as $skill){ ?>
-                                <tr>
-                                    <td><?php echo safe_text(display_value($skill["skill_name"])); ?></td>
-                                    <td><?php echo safe_text(display_value($skill["level"])); ?></td>
-                                    <td><?php echo safe_text(display_value($skill["description"])); ?></td>
-                                    <td><?php echo safe_text(display_value($skill["years_experience"])); ?></td>
-                                    <td><?php echo ((int)$skill["is_active"] == 1) ? "Oui" : "Non"; ?></td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Compétence"><?php echo safe_text(display_value($skill["skill_name"])); ?></td>
+                                        <td data-label="Niveau"><?php echo safe_text(display_value($skill["level"])); ?></td>
+                                        <td data-label="Description"><?php echo safe_text(display_value($skill["description"])); ?></td>
+                                        <td data-label="Années"><?php echo safe_text(display_value($skill["years_experience"])); ?></td>
+                                        <td data-label="Active"><?php echo ((int)$skill["is_active"] == 1) ? "Oui" : "Non"; ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
@@ -1596,7 +1616,7 @@ if(count($candidates) > 0){
             <div class="profile-section">
                 <h5 class="profile-section-title"><i class="material-icons">folder</i>Documents</h5>
                 <?php if(count($candidate_documents) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Type</th>
@@ -1609,12 +1629,12 @@ if(count($candidates) > 0){
                         <tbody>
                             <?php foreach($candidate_documents as $document){ ?>
                                 <?php $file_path = isset($document["file_path"]) ? $document["file_path"] : ""; ?>
-                                <tr>
-                                    <td><?php echo safe_text(display_value($document["document_type"])); ?></td>
-                                    <td><?php echo safe_text(display_value($file_path)); ?></td>
-                                    <td><?php echo ((int)$document["verified"] == 1) ? "Oui" : "Non"; ?></td>
-                                    <td><?php echo safe_text(format_date_fr($document["uploaded_at"], true)); ?></td>
-                                    <td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Type"><?php echo safe_text(display_value($document["document_type"])); ?></td>
+                                        <td data-label="Fichier"><?php echo safe_text(display_value($file_path)); ?></td>
+                                        <td data-label="Vérifié"><?php echo ((int)$document["verified"] == 1) ? "Oui" : "Non"; ?></td>
+                                        <td data-label="Date"><?php echo safe_text(format_date_fr($document["uploaded_at"], true)); ?></td>
+                                        <td data-label="Action">
                                         <?php if($file_path != ""){ ?>
                                             <a href="<?php echo safe_text(document_path($file_path)); ?>"
                                                target="_blank"
@@ -1637,7 +1657,7 @@ if(count($candidates) > 0){
             <div class="profile-section">
                 <h5 class="profile-section-title"><i class="material-icons">school</i>Formations</h5>
                 <?php if(count($candidate_trainings) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Titre</th>
@@ -1648,17 +1668,17 @@ if(count($candidates) > 0){
                         </thead>
                         <tbody>
                             <?php foreach($candidate_trainings as $training){ ?>
-                                <tr>
-                                    <td><?php echo safe_text(display_value($training["title"])); ?></td>
-                                    <td><?php echo safe_text(display_value($training["duration"])); ?></td>
-                                    <td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Titre"><?php echo safe_text(display_value($training["title"])); ?></td>
+                                        <td data-label="Durée"><?php echo safe_text(display_value($training["duration"])); ?></td>
+                                        <td data-label="Lien">
                                         <?php if(isset($training["youtube_url"]) && $training["youtube_url"] != ""){ ?>
                                             <a href="<?php echo safe_text($training["youtube_url"]); ?>" target="_blank">Ouvrir</a>
                                         <?php }else{ ?>
                                             -
                                         <?php } ?>
                                     </td>
-                                    <td><?php echo safe_text(display_value($training["status"])); ?></td>
+                                        <td data-label="Statut"><?php echo safe_text(display_value($training["status"])); ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
@@ -1671,7 +1691,7 @@ if(count($candidates) > 0){
             <div class="profile-section">
                 <h5 class="profile-section-title"><i class="material-icons">assignment</i>Missions</h5>
                 <?php if(count($candidate_missions) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Reference</th>
@@ -1683,12 +1703,12 @@ if(count($candidates) > 0){
                         </thead>
                         <tbody>
                             <?php foreach($candidate_missions as $mission){ ?>
-                                <tr>
-                                    <td>MISS-<?php echo str_pad((int)$mission["id"], 5, "0", STR_PAD_LEFT); ?></td>
-                                    <td><?php echo safe_text(display_value($mission["title"])); ?></td>
-                                    <td><?php echo safe_text(display_value($mission["mission_status"])); ?></td>
-                                    <td><?php echo safe_text(format_date_fr($mission["start_time"], true)); ?></td>
-                                    <td><?php echo safe_text(format_date_fr($mission["end_time"], true)); ?></td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Référence">MISS-<?php echo str_pad((int)$mission["id"], 5, "0", STR_PAD_LEFT); ?></td>
+                                        <td data-label="Service"><?php echo safe_text(display_value($mission["title"])); ?></td>
+                                        <td data-label="Statut"><?php echo safe_text(display_value($mission["mission_status"])); ?></td>
+                                        <td data-label="Date début"><?php echo safe_text(format_date_fr($mission["start_time"], true)); ?></td>
+                                        <td data-label="Date fin"><?php echo safe_text(format_date_fr($mission["end_time"], true)); ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
@@ -1701,7 +1721,7 @@ if(count($candidates) > 0){
             <div class="profile-section">
                 <h5 class="profile-section-title"><i class="material-icons">star</i>Evaluations</h5>
                 <?php if(count($candidate_reviews) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Generale</th>
@@ -1714,13 +1734,13 @@ if(count($candidates) > 0){
                         </thead>
                         <tbody>
                             <?php foreach($candidate_reviews as $review){ ?>
-                                <tr>
-                                    <td><?php echo (int)$review["note_generale"]; ?>/5</td>
-                                    <td><?php echo (int)$review["note_ponctualite"]; ?>/5</td>
-                                    <td><?php echo (int)$review["note_professionnalisme"]; ?>/5</td>
-                                    <td><?php echo (int)$review["note_qualite_service"]; ?>/5</td>
-                                    <td><?php echo safe_text(display_value($review["commentaire"])); ?></td>
-                                    <td><?php echo safe_text(format_date_fr($review["created_at"], true)); ?></td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Générale"><?php echo (int)$review["note_generale"]; ?>/5</td>
+                                        <td data-label="Ponctualité"><?php echo (int)$review["note_ponctualite"]; ?>/5</td>
+                                        <td data-label="Professionnalisme"><?php echo (int)$review["note_professionnalisme"]; ?>/5</td>
+                                        <td data-label="Qualité"><?php echo (int)$review["note_qualite_service"]; ?>/5</td>
+                                        <td data-label="Commentaire"><?php echo safe_text(display_value($review["commentaire"])); ?></td>
+                                        <td data-label="Date"><?php echo safe_text(format_date_fr($review["created_at"], true)); ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
@@ -1814,9 +1834,59 @@ if(count($candidates) > 0){
             </div>
         </form>
     </div>
+
+    <div id="deleteCandidate<?php echo $candidate_id; ?>" class="modal admin-delete-modal">
+        <?php if($can_delete_candidate){ ?>
+            <form action="<?php echo app_url_html("admin/supprimer-intervenant.php"); ?>"
+                  method="POST"
+                  class="admin-delete-form">
+                <input type="hidden" name="csrf_token" value="<?php echo safe_text($admin_delete_csrf); ?>">
+                <input type="hidden" name="candidate_id" value="<?php echo $candidate_id; ?>">
+        <?php } ?>
+
+        <div class="modal-content">
+            <h4>Confirmer la suppression</h4>
+            <p>
+                Cette suppression concerne le profil de
+                <strong><?php echo safe_text(display_value($full_name)); ?></strong>
+                et ses informations de profil directement liées.
+            </p>
+
+            <?php if(!$can_delete_candidate){ ?>
+                <p class="red-text text-darken-2">
+                    La suppression définitive est bloquée car cet intervenant possède un historique métier :
+                </p>
+                <ul class="browser-default admin-dependency-list">
+                    <?php if($delete_mission_total > 0){ ?><li><?php echo $delete_mission_total; ?> mission(s)</li><?php } ?>
+                    <?php if($delete_training_total > 0){ ?><li><?php echo $delete_training_total; ?> formation(s)</li><?php } ?>
+                    <?php if($delete_review_total > 0){ ?><li><?php echo $delete_review_total; ?> évaluation(s)</li><?php } ?>
+                </ul>
+                <p>Utilisez plutôt les actions Rejeter ou Désactiver.</p>
+            <?php }else{ ?>
+                <p class="red-text text-darken-2">
+                    Cette action est irréversible. Les compétences et documents enregistrés dans la base seront également supprimés.
+                </p>
+            <?php } ?>
+        </div>
+
+        <div class="modal-footer">
+            <a href="#!" class="modal-close btn-flat"><?php echo $can_delete_candidate ? "Annuler" : "Fermer"; ?></a>
+            <?php if($can_delete_candidate){ ?>
+                <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                    <i class="material-icons left" aria-hidden="true">delete</i>
+                    Supprimer définitivement
+                </button>
+            <?php } ?>
+        </div>
+
+        <?php if($can_delete_candidate){ ?>
+            </form>
+        <?php } ?>
+    </div>
 <?php } ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="<?php echo app_url_html("assets/js/admin-delete-ui.js"); ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -648,7 +648,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
                             <div class="col s12 m8">
 
-                                <table class="striped">
+                                <table class="striped intervenant-detail-table client-detail-table">
 
                                     <tbody>
 
@@ -682,7 +682,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
                     </div>
 
-                    <div class="card-action">
+                    <div class="card-action client-profile-actions">
 
                         <a href="#modalProfile"
                            class="btn waves-effect waves-light modal-trigger">
@@ -713,7 +713,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
                     </div>
 
-                    <div class="card-action">
+                    <div class="card-action client-profile-actions">
 
                         <a href="#modalPassword"
                            class="btn waves-effect waves-light modal-trigger">
@@ -734,7 +734,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
                             Informations du compte
                         </span>
 
-                        <table class="striped">
+                        <table class="striped intervenant-detail-table client-detail-table">
 
                             <tbody>
 
@@ -769,7 +769,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
 </div>
 
-<div id="modalProfile" class="modal modal-fixed-footer">
+<div id="modalProfile" class="modal modal-fixed-footer client-modal">
 
     <form action="<?php echo app_url_html("client/parametres"); ?>"
           method="POST"
@@ -879,7 +879,7 @@ $photo_path = profile_photo_path($user["profile_photo"]);
 
 </div>
 
-<div id="modalPassword" class="modal modal-fixed-footer">
+<div id="modalPassword" class="modal modal-fixed-footer client-modal">
 
     <form action="<?php echo app_url_html("client/parametres"); ?>"
           method="POST">

@@ -1,7 +1,7 @@
 <?php require_once(dirname(__DIR__) . "/config/app.php"); ?>
 
 <link rel="manifest" href="<?php echo app_url_html("manifest.php"); ?>">
-<meta name="theme-color" content="#D84B8A">
+<meta name="theme-color" content="#e83e8c">
 <meta name="application-name" content="INFINITIA Care Services">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">

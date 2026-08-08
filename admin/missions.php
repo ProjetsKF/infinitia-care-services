@@ -956,7 +956,7 @@ if(count($missions) > 0){
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -993,7 +993,7 @@ if(count($missions) > 0){
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">assignment</i></div>
@@ -1043,7 +1043,7 @@ if(count($missions) > 0){
             <div class="table-card">
                 <div class="table-title">Liste des missions</div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Reference</th>
@@ -1069,25 +1069,25 @@ if(count($missions) > 0){
                             $payment_status = isset($mission["payment_status"]) ? $mission["payment_status"] : "";
                             $average_review = isset($mission["average_review"]) ? $mission["average_review"] : NULL;
                             ?>
-                            <tr>
-                                <td><?php echo safe_text(mission_reference($mission_id)); ?></td>
-                                <td><?php echo safe_text(display_value($client_name)); ?></td>
-                                <td><?php echo safe_text(display_value($candidate_name)); ?></td>
-                                <td><?php echo safe_text(display_value($mission["title"])); ?></td>
-                                <td><?php echo safe_text(format_date_fr($mission["service_date"], false)); ?></td>
-                                <td><?php echo safe_text(format_date_fr($mission["start_time"], true)); ?></td>
-                                <td><?php echo safe_text(format_date_fr($mission["end_time"], true)); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Référence"><?php echo safe_text(mission_reference($mission_id)); ?></td>
+                                <td data-label="Client"><?php echo safe_text(display_value($client_name)); ?></td>
+                                <td data-label="Intervenant"><?php echo safe_text(display_value($candidate_name)); ?></td>
+                                <td data-label="Demande"><?php echo safe_text(display_value($mission["title"])); ?></td>
+                                <td data-label="Date prévue"><?php echo safe_text(format_date_fr($mission["service_date"], false)); ?></td>
+                                <td data-label="Date début"><?php echo safe_text(format_date_fr($mission["start_time"], true)); ?></td>
+                                <td data-label="Date fin"><?php echo safe_text(format_date_fr($mission["end_time"], true)); ?></td>
+                                <td data-label="Statut mission">
                                     <span class="new badge <?php echo safe_text(mission_badge_class($mission_status)); ?>" data-badge-caption="">
                                         <?php echo safe_text(status_label($mission_status)); ?>
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Statut paiement">
                                     <span class="new badge <?php echo safe_text(payment_badge_class($payment_status)); ?>" data-badge-caption="">
                                         <?php echo safe_text($payment_status == "" ? "Non genere" : status_label($payment_status)); ?>
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Évaluation">
                                     <?php if($average_review !== NULL){ ?>
                                         <span class="new badge green" data-badge-caption="">
                                             <?php echo safe_text(number_format((float)$average_review, 1)); ?>/5
@@ -1096,8 +1096,8 @@ if(count($missions) > 0){
                                         <span class="new badge grey" data-badge-caption="">Non evaluee</span>
                                     <?php } ?>
                                 </td>
-                                <td>
-                                    <div class="actions-wrap">
+                                <td data-label="Actions">
+                                    <div class="actions-wrap admin-actions">
                                         <a href="#viewMission<?php echo $mission_id; ?>"
                                            class="btn-small green modal-trigger">
                                             Voir
@@ -1259,7 +1259,7 @@ if(count($missions) > 0){
             <div class="mission-section">
                 <h5 class="mission-section-title"><i class="material-icons">payments</i>Paiement lie</h5>
                 <?php if(count($mission_payments) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Montant</th>
@@ -1272,13 +1272,13 @@ if(count($missions) > 0){
                         </thead>
                         <tbody>
                             <?php foreach($mission_payments as $payment){ ?>
-                                <tr>
-                                    <td><?php echo safe_text(number_format((float)$payment["amount"], 2)); ?></td>
-                                    <td><?php echo safe_text(display_value($payment["currency"])); ?></td>
-                                    <td><?php echo safe_text(display_value($payment["payment_method"])); ?></td>
-                                    <td><?php echo safe_text(status_label($payment["status"])); ?></td>
-                                    <td><?php echo safe_text(display_value($payment["transaction_reference"])); ?></td>
-                                    <td><?php echo safe_text(format_date_fr($payment["paid_at"], true)); ?></td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Montant"><?php echo safe_text(number_format((float)$payment["amount"], 2)); ?></td>
+                                        <td data-label="Devise"><?php echo safe_text(display_value($payment["currency"])); ?></td>
+                                        <td data-label="Mode"><?php echo safe_text(display_value($payment["payment_method"])); ?></td>
+                                        <td data-label="Statut"><?php echo safe_text(status_label($payment["status"])); ?></td>
+                                        <td data-label="Référence"><?php echo safe_text(display_value($payment["transaction_reference"])); ?></td>
+                                        <td data-label="Date paiement"><?php echo safe_text(format_date_fr($payment["paid_at"], true)); ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>
@@ -1291,7 +1291,7 @@ if(count($missions) > 0){
             <div class="mission-section">
                 <h5 class="mission-section-title"><i class="material-icons">star</i>Evaluation liee</h5>
                 <?php if(count($mission_reviews) > 0){ ?>
-                    <table class="highlight responsive-table">
+                            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Generale</th>
@@ -1304,13 +1304,13 @@ if(count($missions) > 0){
                         </thead>
                         <tbody>
                             <?php foreach($mission_reviews as $review){ ?>
-                                <tr>
-                                    <td><?php echo (int)$review["note_generale"]; ?>/5</td>
-                                    <td><?php echo (int)$review["note_ponctualite"]; ?>/5</td>
-                                    <td><?php echo (int)$review["note_professionnalisme"]; ?>/5</td>
-                                    <td><?php echo (int)$review["note_qualite_service"]; ?>/5</td>
-                                    <td><?php echo safe_text(display_value($review["commentaire"])); ?></td>
-                                    <td><?php echo safe_text(format_date_fr($review["created_at"], true)); ?></td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Générale"><?php echo (int)$review["note_generale"]; ?>/5</td>
+                                        <td data-label="Ponctualité"><?php echo (int)$review["note_ponctualite"]; ?>/5</td>
+                                        <td data-label="Professionnalisme"><?php echo (int)$review["note_professionnalisme"]; ?>/5</td>
+                                        <td data-label="Qualité"><?php echo (int)$review["note_qualite_service"]; ?>/5</td>
+                                        <td data-label="Commentaire"><?php echo safe_text(display_value($review["commentaire"])); ?></td>
+                                        <td data-label="Date"><?php echo safe_text(format_date_fr($review["created_at"], true)); ?></td>
                                 </tr>
                             <?php } ?>
                         </tbody>

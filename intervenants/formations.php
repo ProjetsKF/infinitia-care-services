@@ -499,7 +499,7 @@ if($stmt){
         <?php unset($_SESSION["error"]); ?>
     <?php } ?>
 
-    <div class="row">
+    <div class="row intervenant-stat-grid">
 
         <div class="col s12 m6 l3">
             <div class="card blue darken-3 white-text">
@@ -561,7 +561,7 @@ if($stmt){
             Mes formations
         </div>
 
-        <table class="highlight responsive-table">
+        <table class="highlight responsive-table intervenant-table mobile-card-table">
 
             <thead>
 
@@ -594,27 +594,27 @@ if($stmt){
                         $status = isset($formation["status"]) ? $formation["status"] : "";
                         ?>
 
-                        <tr>
+                        <tr class="mobile-card-row">
 
-                            <td>
+                            <td data-label="Formation">
                                 <?php echo safe_text($title); ?>
                             </td>
 
-                            <td>
+                            <td data-label="Description">
                                 <?php echo safe_text($description); ?>
                             </td>
 
-                            <td>
+                            <td data-label="Durée">
                                 <?php echo safe_text($duration); ?>
                             </td>
 
-                            <td>
+                            <td data-label="Statut">
                                 <span class="training-status-badge <?php echo safe_text(training_status_badge_class($status)); ?>">
                                     <?php echo safe_text(training_status_label($status)); ?>
                                 </span>
                             </td>
 
-                            <td>
+                            <td data-label="Vidéo">
                                 <?php if($status == "inactive"){ ?>
 
                                     <span class="grey-text">Video indisponible</span>
@@ -642,7 +642,7 @@ if($stmt){
 
                             </td>
 
-                            <td>
+                            <td data-label="Action">
                                 <div class="training-actions">
                                     <?php if($status == "en_attente"){ ?>
                                         <form action="<?php echo app_url_html("intervenant/formations"); ?>" method="POST">
@@ -676,10 +676,11 @@ if($stmt){
 
                 <?php }else{ ?>
 
-                    <tr>
+                    <tr class="intervenant-empty-row">
 
-                        <td colspan="6" class="center-align">
-                            Aucune formation disponible.
+                        <td colspan="6" class="center-align intervenant-empty-state-cell">
+                            <i class="material-icons" aria-hidden="true">school</i>
+                            <span>Aucune formation disponible pour le moment.</span>
                         </td>
 
                     </tr>

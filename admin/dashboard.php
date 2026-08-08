@@ -512,7 +512,7 @@ $today_label = date("d/m/Y");
 
 </head>
 
-<body>
+<body class="admin-module">
 
     <div class="dashboard">
 
@@ -554,7 +554,7 @@ $today_label = date("d/m/Y");
 
             <!-- STATS -->
 
-            <div class="row">
+            <div class="row intervenant-stat-grid admin-stat-grid">
 
                 <div class="col s12 m6 l3">
 
@@ -654,7 +654,7 @@ $today_label = date("d/m/Y");
 
             </div>
 
-            <div class="row">
+            <div class="row intervenant-stat-grid admin-stat-grid">
 
                 <div class="col s12 m6 l4">
 

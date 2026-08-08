@@ -994,7 +994,7 @@ function sort_recommendations($a, $b)
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -1034,7 +1034,7 @@ function sort_recommendations($a, $b)
         <div class="table-card">
             <div class="table-title">Demandes clients non affectees</div>
 
-            <table class="highlight responsive-table">
+            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                 <thead>
                     <tr>
                         <th>Reference</th>
@@ -1056,23 +1056,23 @@ function sort_recommendations($a, $b)
                             $request_id = (int)$request["id"];
                             $client_name = trim($request["first_name"] . " " . $request["last_name"]);
                             ?>
-                            <tr>
-                                <td>#<?php echo str_pad($request_id, 3, "0", STR_PAD_LEFT); ?></td>
-                                <td><?php echo safe_text(display_value($client_name)); ?></td>
-                                <td><?php echo safe_text(display_value($request["title"])); ?></td>
-                                <td><?php echo safe_text(display_value($request["description"])); ?></td>
-                                <td><?php echo safe_text(display_value($request["location"])); ?></td>
-                                <td><?php echo safe_text(format_date_fr($request["service_date"])); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Demande">#<?php echo str_pad($request_id, 3, "0", STR_PAD_LEFT); ?></td>
+                                <td data-label="Client"><?php echo safe_text(display_value($client_name)); ?></td>
+                                <td data-label="Service"><?php echo safe_text(display_value($request["title"])); ?></td>
+                                <td data-label="Description"><?php echo safe_text(display_value($request["description"])); ?></td>
+                                <td data-label="Lieu"><?php echo safe_text(display_value($request["location"])); ?></td>
+                                <td data-label="Date prévue"><?php echo safe_text(format_date_fr($request["service_date"])); ?></td>
+                                <td data-label="Budget">
                                     <?php echo safe_text(number_format((float)$request["budget"], 2)); ?>
                                 </td>
-                                <td><?php echo safe_text(display_value($request["urgency_level"])); ?></td>
-                                <td>
+                                <td data-label="Urgence"><?php echo safe_text(display_value($request["urgency_level"])); ?></td>
+                                <td data-label="Statut">
                                     <span class="status pending">
                                         <?php echo safe_text(status_label($request["status"])); ?>
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Action">
                                     <a href="<?php echo app_url_with_query_html("admin/affectations", array("request_id" => $request_id)); ?>"
                                        class="btn-small waves-effect waves-light">
                                         Recommander / Affecter
@@ -1081,9 +1081,10 @@ function sort_recommendations($a, $b)
                             </tr>
                         <?php } ?>
                     <?php }else{ ?>
-                        <tr>
-                            <td colspan="10" class="center-align">
-                                Aucune demande en attente d'affectation.
+                        <tr class="intervenant-empty-row admin-empty-row">
+                            <td colspan="10" class="center-align intervenant-empty-state-cell admin-empty-state">
+                                <i class="material-icons" aria-hidden="true">person_add</i>
+                                <span>Aucune demande en attente d'affectation.</span>
                             </td>
                         </tr>
                     <?php } ?>

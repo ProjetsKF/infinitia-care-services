@@ -551,7 +551,7 @@ mysqli_stmt_close($stmt);
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -574,7 +574,7 @@ mysqli_stmt_close($stmt);
             </div>
         </div>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l4">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">reviews</i></div>
@@ -659,7 +659,7 @@ mysqli_stmt_close($stmt);
                     </span>
                 </div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Reference</th>
@@ -670,6 +670,7 @@ mysqli_stmt_close($stmt);
                             <th>Ponctualite</th>
                             <th>Professionnalisme</th>
                             <th>Qualite</th>
+                            <th>Commentaire</th>
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
@@ -681,17 +682,18 @@ mysqli_stmt_close($stmt);
                             $client_name = trim($review["client_first_name"] . " " . $review["client_last_name"]);
                             $candidate_name = trim($review["candidate_first_name"] . " " . $review["candidate_last_name"]);
                             ?>
-                            <tr>
-                                <td><?php echo safe_text(review_reference($review_id)); ?></td>
-                                <td><?php echo safe_text(display_value($client_name)); ?></td>
-                                <td><?php echo safe_text(display_value($candidate_name)); ?></td>
-                                <td><?php echo safe_text(display_value($review["title"])); ?></td>
-                                <td><span class="new badge <?php echo safe_text(note_badge_class($review["note_generale"])); ?>" data-badge-caption=""><?php echo (int)$review["note_generale"]; ?>/5 <?php echo safe_text(note_label($review["note_generale"])); ?></span></td>
-                                <td><?php echo (int)$review["note_ponctualite"]; ?>/5</td>
-                                <td><?php echo (int)$review["note_professionnalisme"]; ?>/5</td>
-                                <td><?php echo (int)$review["note_qualite_service"]; ?>/5</td>
-                                <td><?php echo safe_text(format_date_fr($review["created_at"])); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Référence"><?php echo safe_text(review_reference($review_id)); ?></td>
+                                <td data-label="Client"><?php echo safe_text(display_value($client_name)); ?></td>
+                                <td data-label="Intervenant"><?php echo safe_text(display_value($candidate_name)); ?></td>
+                                <td data-label="Mission"><?php echo safe_text(display_value($review["title"])); ?></td>
+                                <td data-label="Note"><span class="new badge <?php echo safe_text(note_badge_class($review["note_generale"])); ?>" data-badge-caption=""><?php echo (int)$review["note_generale"]; ?>/5 <?php echo safe_text(note_label($review["note_generale"])); ?></span></td>
+                                <td data-label="Ponctualité"><?php echo (int)$review["note_ponctualite"]; ?>/5</td>
+                                <td data-label="Professionnalisme"><?php echo (int)$review["note_professionnalisme"]; ?>/5</td>
+                                <td data-label="Qualité"><?php echo (int)$review["note_qualite_service"]; ?>/5</td>
+                                <td data-label="Commentaire"><?php echo safe_text(display_value($review["commentaire"])); ?></td>
+                                <td data-label="Date"><?php echo safe_text(format_date_fr($review["created_at"])); ?></td>
+                                <td data-label="Actions">
                                     <a href="#viewReview<?php echo $review_id; ?>" class="btn-small green modal-trigger">Voir</a>
                                 </td>
                             </tr>

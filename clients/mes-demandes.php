@@ -301,7 +301,7 @@ $result = mysqli_stmt_get_result($stmt);
              MAIN CONTENT
       
 
-<div class="row">
+<div class="row intervenant-stat-grid client-stat-grid">
 
     <div class="col s12 m6 l3">
 
@@ -390,7 +390,7 @@ $result = mysqli_stmt_get_result($stmt);
 
            <div class="table-card">
 
-    <div class="table-header">
+    <div class="table-header client-page-header">
 
         <div class="table-title">
             Mes demandes de services
@@ -479,7 +479,7 @@ $result = mysqli_stmt_get_result($stmt);
 
 </div>
 
-    <table class="highlight responsive-table">
+    <table class="highlight responsive-table intervenant-table mobile-card-table client-responsive-table">
 
         <thead>
             <tr>
@@ -502,25 +502,25 @@ $result = mysqli_stmt_get_result($stmt);
 
             <?php while($row = mysqli_fetch_assoc($result)): ?>
 
-            <tr>
+            <tr class="mobile-card-row">
 
-                <td><?= str_pad($row['id'], 2, '0', STR_PAD_LEFT); ?></td>
+                <td data-label="Référence"><?= str_pad($row['id'], 2, '0', STR_PAD_LEFT); ?></td>
 
-                <td><?= htmlspecialchars($row['title']); ?></td>
+                <td data-label="Service"><?= htmlspecialchars($row['title']); ?></td>
 
-                <td><?= htmlspecialchars($row['description']); ?></td>
+                <td data-label="Description"><?= htmlspecialchars($row['description']); ?></td>
 
-                <td><?= htmlspecialchars($row['location']); ?></td>
+                <td data-label="Lieu"><?= htmlspecialchars($row['location']); ?></td>
 
-                <td><?= $row['duration']; ?> h</td>
+                <td data-label="Durée"><?= $row['duration']; ?> h</td>
 
-                <td><?= date('d/m/Y', strtotime($row['service_date'])); ?></td>
+                <td data-label="Date prévue"><?= date('d/m/Y', strtotime($row['service_date'])); ?></td>
 
-                <td><?= number_format($row['budget'], 2); ?> USD</td>
+                <td data-label="Budget"><?= number_format($row['budget'], 2); ?> USD</td>
 
-                <td><?= ucfirst($row['urgency_level']); ?></td>
+                <td data-label="Urgence"><?= ucfirst($row['urgency_level']); ?></td>
 
-                <td>
+                <td data-label="Statut">
 
                     <?php
 
@@ -542,7 +542,9 @@ $result = mysqli_stmt_get_result($stmt);
 
                 </td>
 
-                <td>
+                <td data-label="Actions">
+
+                    <div class="client-actions intervenant-row-actions">
 
                     <!-- Voir -->
 
@@ -554,8 +556,6 @@ $result = mysqli_stmt_get_result($stmt);
 
                     </a>
 
-                    &nbsp;&nbsp;
-
                     <!-- Modifier -->
 
                     <a href="#editModal<?= $row['id']; ?>"
@@ -565,8 +565,6 @@ $result = mysqli_stmt_get_result($stmt);
                         <i class="material-icons">edit</i>
 
                     </a>
-
-                    &nbsp;&nbsp;
 
                     <!-- Supprimer -->
 
@@ -579,6 +577,8 @@ $result = mysqli_stmt_get_result($stmt);
 
                     </a>
 
+                    </div>
+
                 </td>
 
             </tr>
@@ -587,11 +587,12 @@ $result = mysqli_stmt_get_result($stmt);
 
         <?php else: ?>
 
-            <tr>
+            <tr class="intervenant-empty-row client-empty-row">
 
-                <td colspan="10" style="text-align:center;">
+                <td colspan="10" class="center-align intervenant-empty-state-cell client-empty-state">
 
-                    Aucune demande trouvée.
+                    <i class="material-icons" aria-hidden="true">assignment</i>
+                    <span>Aucune demande de service pour le moment.</span>
 
                 </td>
 
@@ -661,7 +662,7 @@ while($modal = mysqli_fetch_assoc($result)):
 
 <!-- MODAL D'AFFICHAGE -->
 
-<div id="details<?= $modal['id']; ?>" class="modal modal-fixed-footer">
+<div id="details<?= $modal['id']; ?>" class="modal modal-fixed-footer client-modal">
 
     <div class="modal-content">
 
@@ -810,7 +811,7 @@ while($modal = mysqli_fetch_assoc($result)):
 
 <!-- MODAL DE MODIFICATION -->
 
-<div id="editModal<?= $modal['id']; ?>" class="modal modal-fixed-footer">
+<div id="editModal<?= $modal['id']; ?>" class="modal modal-fixed-footer client-modal">
 
     <form action="<?php echo app_url_html("client/demande/modifier"); ?>" method="POST">
 
@@ -1024,7 +1025,7 @@ mysqli_stmt_close($stmt);
 
 <!-- MODAL D'AJOUT DE LA REQUETTE -->
 
-    <div id="modalDemande" class="modal">
+    <div id="modalDemande" class="modal client-modal">
 
     <div class="modal-content">
 
@@ -1232,7 +1233,7 @@ mysqli_stmt_close($stmt);
 
 <?php if(!empty($success_message)): ?>
 
-<div id="successModal" class="modal">
+<div id="successModal" class="modal client-modal">
 
     <div class="modal-content center">
 
@@ -1270,7 +1271,7 @@ mysqli_stmt_close($stmt);
 
 <?php if(!empty($error_message)): ?>
 
-<div id="errorModal" class="modal">
+<div id="errorModal" class="modal client-modal">
 
     <div class="modal-content center">
 

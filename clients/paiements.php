@@ -619,7 +619,7 @@ mysqli_stmt_close($stmt);
 
             <!-- STATISTIQUES -->
 
-            <div class="row">
+            <div class="row intervenant-stat-grid client-stat-grid">
 
                 <div class="col s12 m6 l3">
 
@@ -725,13 +725,14 @@ mysqli_stmt_close($stmt);
 
                     </div>
 
-                    <table class="highlight responsive-table">
+                    <table class="highlight responsive-table intervenant-table mobile-card-table client-responsive-table">
 
                         <thead>
 
                             <tr>
 
                                 <th>Service</th>
+                                <th>Mission</th>
                                 <th>Intervenant</th>
                                 <th>Montant</th>
                                 <th>Methode</th>
@@ -775,33 +776,37 @@ mysqli_stmt_close($stmt);
 
                                 ?>
 
-                                <tr>
+                                <tr class="mobile-card-row">
 
-                                    <td>
+                                    <td data-label="Service">
                                         <?php echo safe_text(display_value($title_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Mission">
+                                        MIS-<?php echo str_pad($mission_id_value, 3, "0", STR_PAD_LEFT); ?>
+                                    </td>
+
+                                    <td data-label="Intervenant">
                                         <?php echo safe_text($full_name_value); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Montant">
                                         <?php echo safe_text(money_label($amount_value, $currency_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Mode">
                                         <?php echo safe_text(method_label($method_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Numéro">
                                         <?php echo safe_text(display_value($phone_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Référence">
                                         <?php echo safe_text(display_value($reference_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Statut">
 
                                         <span class="new badge <?php echo status_badge_class($status_value); ?>"
                                               data-badge-caption="">
@@ -810,15 +815,15 @@ mysqli_stmt_close($stmt);
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Date du paiement">
                                         <?php echo safe_text(format_date_fr($paid_at_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Date de création">
                                         <?php echo safe_text(format_date_fr($created_at_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Action">
 
                                         <?php if($status_value == "en_attente" || $status_value == "echoue"){ ?>
 
@@ -881,7 +886,7 @@ mysqli_stmt_close($stmt);
                     ?>
 
                     <div id="payment<?php echo $payment_id_value; ?>"
-                         class="modal modal-fixed-footer">
+                         class="modal modal-fixed-footer client-modal">
 
                         <form action="<?php echo app_url_html("client/paiements"); ?>" method="POST">
 

@@ -1059,7 +1059,7 @@ if($result){
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -1115,7 +1115,7 @@ if($result){
 
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
 
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
@@ -1220,7 +1220,7 @@ if($result){
                 <?php } ?>
             </p>
 
-            <table class="highlight responsive-table">
+            <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
 
                 <thead>
 
@@ -1259,10 +1259,10 @@ if($result){
 
                             ?>
 
-                            <tr>
-                                <td><?php echo safe_text(display_value($title)); ?></td>
-                                <td><?php echo safe_text(display_value($duration)); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Titre"><?php echo safe_text(display_value($title)); ?></td>
+                                <td data-label="Durée"><?php echo safe_text(display_value($duration)); ?></td>
+                                <td data-label="Lien YouTube">
                                     <?php if($youtube_url != ""){ ?>
                                         <a href="<?php echo safe_text($youtube_url); ?>" target="_blank">
                                             Ouvrir
@@ -1271,12 +1271,13 @@ if($result){
                                         <?php echo safe_text("Non renseigne"); ?>
                                     <?php } ?>
                                 </td>
-                                <td><?php echo (int)$assigned_total; ?></td>
-                                <td><?php echo (int)$pending_total; ?></td>
-                                <td><?php echo (int)$in_progress_total; ?></td>
-                                <td><?php echo (int)$completed_total; ?></td>
-                                <td><?php echo safe_text(format_date_fr($created_at)); ?></td>
-                                <td>
+                                <td data-label="Participants"><?php echo (int)$assigned_total; ?></td>
+                                <td data-label="En attente"><?php echo (int)$pending_total; ?></td>
+                                <td data-label="En cours"><?php echo (int)$in_progress_total; ?></td>
+                                <td data-label="Terminées"><?php echo (int)$completed_total; ?></td>
+                                <td data-label="Date de création"><?php echo safe_text(format_date_fr($created_at)); ?></td>
+                                <td data-label="Actions">
+                                    <div class="admin-actions">
                                     <a href="#viewTraining<?php echo $training_id; ?>"
                                        class="modal-trigger green-text"
                                        title="Voir">
@@ -1309,6 +1310,7 @@ if($result){
                                             <i class="material-icons">delete</i>
                                         </button>
                                     </form>
+                                    </div>
                                 </td>
                             </tr>
 
@@ -1316,8 +1318,9 @@ if($result){
 
                     <?php }else{ ?>
 
-                        <tr>
-                            <td colspan="9" class="center-align">
+                        <tr class="intervenant-empty-row admin-empty-row">
+                            <td colspan="9" class="center-align intervenant-empty-state-cell admin-empty-state">
+                                <i class="material-icons" aria-hidden="true">school</i>
                                 <?php if($search != ""){ ?>
                                     Aucune formation ne correspond a votre recherche.
                                     <a href="<?php echo app_url_html("admin/formations"); ?>">Afficher toutes les formations</a>
@@ -1517,7 +1520,7 @@ if($result){
             </p>
 
             <?php if(count($current_assignments) > 0){ ?>
-                <table class="highlight responsive-table">
+                        <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Intervenant</th>
@@ -1537,16 +1540,16 @@ if($result){
                                 (isset($assignment["last_name"]) ? $assignment["last_name"] : "")
                             );
                             ?>
-                            <tr>
-                                <td><?php echo safe_text(display_value($assignment_name)); ?></td>
-                                <td><?php echo safe_text(display_value($assignment["email"])); ?></td>
-                                <td>
+                                    <tr class="mobile-card-row">
+                                        <td data-label="Intervenant"><?php echo safe_text(display_value($assignment_name)); ?></td>
+                                        <td data-label="Email"><?php echo safe_text(display_value($assignment["email"])); ?></td>
+                                        <td data-label="Statut">
                                     <span class="training-status-badge <?php echo safe_text(training_status_badge_class($assignment_status)); ?>">
                                         <?php echo safe_text(training_status_label($assignment_status)); ?>
                                     </span>
                                 </td>
-                                <td><?php echo safe_text(format_date_fr($assignment["created_at"])); ?></td>
-                                <td>
+                                        <td data-label="Date d'attribution"><?php echo safe_text(format_date_fr($assignment["created_at"])); ?></td>
+                                        <td data-label="Action">
                                     <?php if($assignment_status == "en_attente" || $assignment_status == "en_cours"){ ?>
                                         <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
                                             <input type="hidden" name="action" value="deactivate_assignment">

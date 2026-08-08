@@ -431,7 +431,7 @@ if($result){
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -476,7 +476,7 @@ if($result){
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l3">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">category</i></div>
@@ -515,7 +515,7 @@ if($result){
             <div class="table-card">
                 <div class="table-title">Liste des categories</div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Icone</th>
@@ -536,19 +536,20 @@ if($result){
                             $created_at = isset($category["created_at"]) ? $category["created_at"] : "";
                             $request_total = isset($category["request_total"]) ? (int)$category["request_total"] : 0;
                             ?>
-                            <tr>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Icône">
                                     <?php if($icon != ""){ ?>
                                         <i class="material-icons"><?php echo safe_text($icon); ?></i>
                                     <?php }else{ ?>
                                         -
                                     <?php } ?>
                                 </td>
-                                <td><?php echo safe_text(display_value($name)); ?></td>
-                                <td><?php echo safe_text(display_value($description)); ?></td>
-                                <td><?php echo (int)$request_total; ?></td>
-                                <td><?php echo safe_text(format_date_fr($created_at)); ?></td>
-                                <td>
+                                <td data-label="Nom"><?php echo safe_text(display_value($name)); ?></td>
+                                <td data-label="Description"><?php echo safe_text(display_value($description)); ?></td>
+                                <td data-label="Demandes liées"><?php echo (int)$request_total; ?></td>
+                                <td data-label="Date de création"><?php echo safe_text(format_date_fr($created_at)); ?></td>
+                                <td data-label="Actions">
+                                    <div class="admin-actions">
                                     <a href="#viewCategory<?php echo $category_id; ?>"
                                        class="modal-trigger green-text"
                                        title="Voir">
@@ -574,6 +575,7 @@ if($result){
                                             <i class="material-icons">delete</i>
                                         </button>
                                     </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php } ?>

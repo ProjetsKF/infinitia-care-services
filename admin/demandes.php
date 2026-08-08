@@ -3,6 +3,7 @@
 session_start();
 
 require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/includes/admin-delete-security.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
@@ -10,6 +11,8 @@ if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["ro
     exit();
 
 }
+
+$admin_delete_csrf = admin_delete_csrf_token();
 
 function safe_text($value)
 {
@@ -584,7 +587,7 @@ if($stmt){
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -610,20 +613,26 @@ if($stmt){
         </div>
 
         <?php if(isset($_SESSION["success"])){ ?>
-            <div class="card-panel green white-text">
-                <?php echo safe_text($_SESSION["success"]); ?>
+            <div class="card-panel green white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["success"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["success"]); ?>
         <?php } ?>
 
         <?php if(isset($_SESSION["error"])){ ?>
-            <div class="card-panel red white-text">
-                <?php echo safe_text($_SESSION["error"]); ?>
+            <div class="card-panel red white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["error"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l2">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">assignment</i></div>
@@ -670,7 +679,7 @@ if($stmt){
             <div class="table-card">
                 <div class="table-title">Liste des demandes</div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Reference</th>
@@ -693,21 +702,21 @@ if($stmt){
                             $client_name = trim(display_value($request["first_name"]) . " " . display_value($request["last_name"]));
                             $badge_class = status_badge_class($status);
                             ?>
-                            <tr>
-                                <td><?php echo safe_text(request_reference($request_id)); ?></td>
-                                <td><?php echo safe_text(display_value($client_name)); ?></td>
-                                <td><?php echo safe_text(display_value($request["category_name"])); ?></td>
-                                <td><?php echo safe_text(display_value($request["title"])); ?></td>
-                                <td><?php echo safe_text(format_date_fr($request["service_date"], false)); ?></td>
-                                <td><?php echo safe_text(display_value($request["urgency_level"])); ?></td>
-                                <td><?php echo safe_text(number_format((float)$request["budget"], 2)); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Référence"><?php echo safe_text(request_reference($request_id)); ?></td>
+                                <td data-label="Client"><?php echo safe_text(display_value($client_name)); ?></td>
+                                <td data-label="Catégorie"><?php echo safe_text(display_value($request["category_name"])); ?></td>
+                                <td data-label="Service demandé"><?php echo safe_text(display_value($request["title"])); ?></td>
+                                <td data-label="Date prévue"><?php echo safe_text(format_date_fr($request["service_date"], false)); ?></td>
+                                <td data-label="Urgence"><?php echo safe_text(display_value($request["urgency_level"])); ?></td>
+                                <td data-label="Budget"><?php echo safe_text(number_format((float)$request["budget"], 2)); ?></td>
+                                <td data-label="Statut">
                                     <span class="new badge <?php echo safe_text($badge_class); ?>" data-badge-caption="">
                                         <?php echo safe_text(status_label($status)); ?>
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="request-actions">
+                                <td data-label="Actions">
+                                    <div class="request-actions admin-actions">
                                         <a href="#viewRequest<?php echo $request_id; ?>"
                                            class="btn-small green modal-trigger">
                                             Voir
@@ -742,6 +751,12 @@ if($stmt){
                                                 Deja affectee
                                             </span>
                                         <?php } ?>
+
+                                        <a href="#deleteRequest<?php echo $request_id; ?>"
+                                           class="btn-small red darken-2 modal-trigger admin-delete-trigger">
+                                            <i class="material-icons" aria-hidden="true">delete</i>
+                                            Supprimer
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -935,9 +950,48 @@ if($stmt){
             </div>
         </form>
     </div>
+
+    <div id="deleteRequest<?php echo $request_id; ?>" class="modal admin-delete-modal">
+        <div class="modal-content">
+            <h4>Confirmer la suppression</h4>
+            <?php if($mission_total > 0){ ?>
+                <p>
+                    La demande <strong><?php echo safe_text(request_reference($request_id)); ?></strong>
+                    possède déjà <?php echo $mission_total; ?> mission(s) liée(s).
+                </p>
+                <p class="red-text text-darken-2">
+                    Sa suppression définitive est bloquée afin de préserver l'historique métier.
+                </p>
+            <?php }else{ ?>
+                <p>
+                    Cette demande sera définitivement supprimée de la base de données.
+                </p>
+                <p class="red-text text-darken-2">
+                    Voulez-vous vraiment supprimer définitivement cette demande ? Cette action est irréversible.
+                </p>
+            <?php } ?>
+        </div>
+
+        <div class="modal-footer">
+            <a href="#!" class="modal-close btn-flat">Annuler</a>
+            <?php if($mission_total <= 0){ ?>
+                <form action="<?php echo app_url_html("admin/supprimer-demande.php"); ?>"
+                      method="POST"
+                      class="admin-delete-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo safe_text($admin_delete_csrf); ?>">
+                    <input type="hidden" name="request_id" value="<?php echo $request_id; ?>">
+                    <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                        <i class="material-icons left" aria-hidden="true">delete</i>
+                        Supprimer définitivement
+                    </button>
+                </form>
+            <?php } ?>
+        </div>
+    </div>
 <?php } ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="<?php echo app_url_html("assets/js/admin-delete-ui.js"); ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

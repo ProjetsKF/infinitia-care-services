@@ -1,4 +1,4 @@
-var CACHE_NAME = "infinitia-care-static-v1";
+var CACHE_NAME = "infinitia-care-static-v6";
 var CACHE_PREFIX = "infinitia-care-static-";
 var APP_SCOPE = self.registration.scope;
 var OFFLINE_URL = new URL("offline.php", APP_SCOPE).toString();

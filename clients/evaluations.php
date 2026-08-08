@@ -635,7 +635,7 @@ mysqli_stmt_close($stmt);
 
                     </div>
 
-                    <table class="highlight responsive-table">
+                    <table class="highlight responsive-table intervenant-table mobile-card-table client-responsive-table">
 
                         <thead>
 
@@ -648,6 +648,7 @@ mysqli_stmt_close($stmt);
                                 <th>Ponctualite</th>
                                 <th>Professionnalisme</th>
                                 <th>Qualite</th>
+                                <th>Commentaire</th>
                                 <th>Date</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
@@ -672,6 +673,7 @@ mysqli_stmt_close($stmt);
                                 $note_ponctualite_value = array_value($mission, "note_ponctualite");
                                 $note_professionnalisme_value = array_value($mission, "note_professionnalisme");
                                 $note_qualite_service_value = array_value($mission, "note_qualite_service");
+                                $commentaire_value = array_value($mission, "commentaire");
                                 $created_at_value = array_value($mission, "created_at");
 
                                 if($full_name_value == ""){
@@ -682,41 +684,45 @@ mysqli_stmt_close($stmt);
 
                                 ?>
 
-                                <tr>
+                                <tr class="mobile-card-row">
 
-                                    <td>
+                                    <td data-label="Mission">
                                         MIS-<?php echo str_pad($mission_id_value, 3, "0", STR_PAD_LEFT); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Service">
                                         <?php echo safe_text($title_value != "" ? $title_value : "Non renseigne"); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Intervenant">
                                         <?php echo safe_text($full_name_value); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Note générale">
                                         <?php echo safe_text(note_label($note_generale_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Ponctualité">
                                         <?php echo safe_text(note_label($note_ponctualite_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Professionnalisme">
                                         <?php echo safe_text(note_label($note_professionnalisme_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Qualité">
                                         <?php echo safe_text(note_label($note_qualite_service_value)); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Commentaire">
+                                        <?php echo safe_text($commentaire_value != "" ? $commentaire_value : "-"); ?>
+                                    </td>
+
+                                    <td data-label="Date">
                                         <?php echo safe_text(format_date_fr($created_at_value) != "" ? format_date_fr($created_at_value) : "-"); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Statut">
 
                                         <?php if($review_id_value > 0){ ?>
 
@@ -734,7 +740,9 @@ mysqli_stmt_close($stmt);
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Action">
+
+                                        <div class="client-actions intervenant-row-actions">
 
                                         <a href="#evaluation<?php echo $mission_id_value; ?>"
                                            class="<?php echo $review_id_value > 0 ? 'blue-text' : 'green-text'; ?> modal-trigger"
@@ -745,6 +753,8 @@ mysqli_stmt_close($stmt);
                                             </i>
 
                                         </a>
+
+                                        </div>
 
                                     </td>
 
@@ -829,7 +839,7 @@ mysqli_stmt_close($stmt);
                     ?>
 
                     <div id="evaluation<?php echo $mission_id_value; ?>"
-                         class="modal modal-fixed-footer">
+                         class="modal modal-fixed-footer client-modal">
 
                           <div style="
                                 background:linear-gradient(90deg,#1b2d8f,#e63b88);

@@ -429,7 +429,7 @@ mysqli_stmt_close($stmt);
 
             <!-- STATISTIQUES -->
 
-            <div class="row">
+            <div class="row intervenant-stat-grid client-stat-grid">
 
                 <div class="col s12 m6">
 
@@ -497,7 +497,7 @@ mysqli_stmt_close($stmt);
 
                     </div>
 
-                    <table class="highlight responsive-table">
+                    <table class="highlight responsive-table intervenant-table mobile-card-table client-responsive-table">
 
                         <thead>
 
@@ -507,6 +507,7 @@ mysqli_stmt_close($stmt);
                                 <th>Service demande</th>
                                 <th>Intervenant</th>
                                 <th>Date prevue</th>
+                                <th>Duree</th>
                                 <th>Lieu</th>
                                 <th>Statut</th>
                                 <th>Action</th>
@@ -527,6 +528,7 @@ mysqli_stmt_close($stmt);
                                 $last_name_value = array_value($mission, "last_name");
                                 $full_name_value = trim($first_name_value . " " . $last_name_value);
                                 $service_date_value = array_value($mission, "service_date");
+                                $duration_value = array_value($mission, "duration");
                                 $location_value = array_value($mission, "location");
                                 $mission_status_value = array_value($mission, "mission_status");
 
@@ -538,29 +540,33 @@ mysqli_stmt_close($stmt);
 
                                 ?>
 
-                                <tr>
+                                <tr class="mobile-card-row">
 
-                                    <td>
+                                    <td data-label="Référence">
                                         MIS-<?php echo str_pad($mission_id_value, 3, "0", STR_PAD_LEFT); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Mission">
                                         <?php echo safe_text($title_value != "" ? $title_value : "Non renseigne"); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Intervenant">
                                         <?php echo safe_text($full_name_value); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Date">
                                         <?php echo safe_text(format_date_fr($service_date_value) != "" ? format_date_fr($service_date_value) : "Non renseigne"); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Durée">
+                                        <?php echo safe_text($duration_value !== "" ? $duration_value . " h" : "Non renseigne"); ?>
+                                    </td>
+
+                                    <td data-label="Lieu">
                                         <?php echo safe_text($location_value != "" ? $location_value : "Non renseigne"); ?>
                                     </td>
 
-                                    <td>
+                                    <td data-label="Statut">
 
                                         <span class="status <?php echo mission_status_class($mission_status_value); ?>">
 
@@ -570,7 +576,7 @@ mysqli_stmt_close($stmt);
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Action">
 
                                         <a href="#mission<?php echo $mission_id_value; ?>"
                                            class="modal-trigger blue-text"
@@ -677,7 +683,7 @@ mysqli_stmt_close($stmt);
                     ?>
 
                     <div id="mission<?php echo $mission_id_value; ?>"
-                         class="modal">
+                         class="modal client-modal">
 
                           <div style="
                                 background:linear-gradient(90deg,#1b2d8f,#e63b88);

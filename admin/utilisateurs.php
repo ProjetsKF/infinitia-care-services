@@ -3,6 +3,7 @@
 session_start();
 
 require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/includes/admin-delete-security.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
@@ -10,6 +11,8 @@ if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["ro
     exit();
 
 }
+
+$admin_delete_csrf = admin_delete_csrf_token();
 
 function safe_text($value)
 {
@@ -514,7 +517,7 @@ mysqli_stmt_close($stmt);
 
 </head>
 
-<body>
+<body class="admin-module">
 
 <div class="dashboard">
 
@@ -538,20 +541,26 @@ mysqli_stmt_close($stmt);
         </div>
 
         <?php if(isset($_SESSION["success"])){ ?>
-            <div class="card-panel green white-text">
-                <?php echo safe_text($_SESSION["success"]); ?>
+            <div class="card-panel green white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["success"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["success"]); ?>
         <?php } ?>
 
         <?php if(isset($_SESSION["error"])){ ?>
-            <div class="card-panel red white-text">
-                <?php echo safe_text($_SESSION["error"]); ?>
+            <div class="card-panel red white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["error"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l3">
                 <div class="admin-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">groups</i></div>
@@ -620,7 +629,7 @@ mysqli_stmt_close($stmt);
                     </span>
                 </div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                     <thead>
                         <tr>
                             <th>Role</th>
@@ -639,21 +648,22 @@ mysqli_stmt_close($stmt);
                             $user_id = isset($user["id"]) ? (int)$user["id"] : 0;
                             $status = isset($user["status"]) ? $user["status"] : "";
                             $full_name = trim($user["first_name"] . " " . $user["last_name"]);
+                            $is_connected_user = $user_id === (int)$_SESSION["user_id"];
                             ?>
-                            <tr>
-                                <td><?php echo safe_text(display_value($user["role_name"])); ?></td>
-                                <td><?php echo safe_text(display_value($full_name)); ?></td>
-                                <td><?php echo safe_text(display_value($user["email"])); ?></td>
-                                <td><?php echo safe_text(display_value($user["phone"])); ?></td>
-                                <td>
+                            <tr class="mobile-card-row">
+                                <td data-label="Rôle"><?php echo safe_text(display_value($user["role_name"])); ?></td>
+                                <td data-label="Nom"><?php echo safe_text(display_value($full_name)); ?></td>
+                                <td data-label="Email"><?php echo safe_text(display_value($user["email"])); ?></td>
+                                <td data-label="Téléphone"><?php echo safe_text(display_value($user["phone"])); ?></td>
+                                <td data-label="Statut">
                                     <span class="new badge <?php echo safe_text(status_badge_class($status)); ?>" data-badge-caption="">
                                         <?php echo safe_text(display_value($status)); ?>
                                     </span>
                                 </td>
-                                <td><?php echo safe_text(format_date_fr($user["last_login"])); ?></td>
-                                <td><?php echo safe_text(format_date_fr($user["created_at"])); ?></td>
-                                <td>
-                                    <div class="actions-wrap">
+                                <td data-label="Dernière connexion"><?php echo safe_text(format_date_fr($user["last_login"])); ?></td>
+                                <td data-label="Date de création"><?php echo safe_text(format_date_fr($user["created_at"])); ?></td>
+                                <td data-label="Actions">
+                                    <div class="actions-wrap admin-actions">
                                         <a href="#viewUser<?php echo $user_id; ?>"
                                            class="btn-small green modal-trigger">
                                             Voir
@@ -681,6 +691,14 @@ mysqli_stmt_close($stmt);
                                                 <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
                                                 <button type="submit" class="btn-small red">Suspendre</button>
                                             </form>
+                                        <?php } ?>
+
+                                        <?php if(!$is_connected_user){ ?>
+                                            <a href="#deleteUser<?php echo $user_id; ?>"
+                                               class="btn-small red darken-2 modal-trigger admin-delete-trigger">
+                                                <i class="material-icons" aria-hidden="true">delete</i>
+                                                Supprimer
+                                            </a>
                                         <?php } ?>
                                     </div>
                                 </td>
@@ -799,9 +817,42 @@ mysqli_stmt_close($stmt);
             <a href="#!" class="modal-close btn-flat">Fermer</a>
         </div>
     </div>
+
+    <?php if($user_id !== (int)$_SESSION["user_id"]){ ?>
+        <div id="deleteUser<?php echo $user_id; ?>" class="modal admin-delete-modal">
+            <div class="modal-content">
+                <h4>Confirmer la suppression</h4>
+                <p>
+                    Vous demandez la suppression définitive du compte de
+                    <strong><?php echo safe_text(display_value($full_name)); ?></strong>.
+                </p>
+                <p>
+                    Cette action est irréversible. Les profils et données liées seront vérifiés avant toute suppression.
+                </p>
+                <p class="red-text text-darken-2">
+                    Si un historique de demandes, missions, paiements, formations ou évaluations existe, la suppression sera automatiquement refusée.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <a href="#!" class="modal-close btn-flat">Annuler</a>
+                <form action="<?php echo app_url_html("admin/supprimer-utilisateur.php"); ?>"
+                      method="POST"
+                      class="admin-delete-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo safe_text($admin_delete_csrf); ?>">
+                    <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
+                    <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                        <i class="material-icons left" aria-hidden="true">delete</i>
+                        Supprimer définitivement
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php } ?>
 <?php } ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="<?php echo app_url_html("assets/js/admin-delete-ui.js"); ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

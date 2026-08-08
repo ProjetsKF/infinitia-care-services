@@ -65,6 +65,7 @@ mysqli_stmt_bind_param($stmt, "i", $candidate_id);
 mysqli_stmt_execute($stmt);
 
 $competences = mysqli_stmt_get_result($stmt);
+$competence_count = mysqli_num_rows($competences);
 
 ?>
 
@@ -172,7 +173,7 @@ $competences = mysqli_stmt_get_result($stmt);
     <?php endif; ?>
 
 
-    <div class="row">
+    <div class="row intervenant-stat-grid">
 
         <div class="col s12 m6">
 
@@ -228,7 +229,7 @@ $competences = mysqli_stmt_get_result($stmt);
 
         <div style="margin-bottom:20px;">
 
-            <a href="#modalAddSkill" class="btn-large teal modal-trigger">
+            <a href="#modalAddSkill" class="btn-large teal modal-trigger intervenant-add-button">
 
                 <i class="material-icons left">
 
@@ -248,7 +249,7 @@ $competences = mysqli_stmt_get_result($stmt);
 
         </div>
 
-        <table class="highlight responsive-table">
+        <table class="highlight responsive-table intervenant-table mobile-card-table">
 
             <thead>
 
@@ -270,35 +271,39 @@ $competences = mysqli_stmt_get_result($stmt);
 
             <tbody>
 
+            <?php if($competence_count > 0): ?>
+
             <?php while($skill = mysqli_fetch_assoc($competences)): ?>
 
-                <tr>
+                <tr class="mobile-card-row">
 
-                    <td>
+                    <td data-label="Compétence">
 
                         <?php echo htmlspecialchars($skill['skill_name']); ?>
 
                     </td>
 
-                    <td>
+                    <td data-label="Niveau">
 
                         <?php echo htmlspecialchars($skill['level']); ?>
 
                     </td>
 
-                    <td>
+                    <td data-label="Expérience">
 
                         <?php echo (int)$skill['years_experience']; ?> ans
 
                     </td>
 
-                    <td>
+                    <td data-label="Description">
 
                         <?php echo htmlspecialchars($skill['description']); ?>
 
                     </td>
 
-                 <td>
+                 <td data-label="Actions">
+
+                    <div class="intervenant-row-actions">
 
                     <a
                         href="#modalEditSkill"
@@ -323,11 +328,24 @@ $competences = mysqli_stmt_get_result($stmt);
 
                     </a>
 
+                    </div>
+
                 </td>
 
                 </tr>
 
             <?php endwhile; ?>
+
+            <?php else: ?>
+
+                <tr class="intervenant-empty-row">
+                    <td colspan="5" class="center-align intervenant-empty-state-cell">
+                        <i class="material-icons" aria-hidden="true">psychology</i>
+                        <span>Aucune compétence enregistrée pour le moment.</span>
+                    </td>
+                </tr>
+
+            <?php endif; ?>
 
             </tbody>
 

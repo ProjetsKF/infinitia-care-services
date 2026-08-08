@@ -3142,6 +3142,913 @@ footer{
     text-transform:uppercase;
 }
 
+/* =========================================
+   ESPACE INTERVENANT - RESPONSIVE
+========================================= */
+#intervenant-sidebar ~ .main-content,
+#client-sidebar ~ .main-content,
+#admin-sidebar ~ .main-content{
+    min-width:0;
+}
+
+.intervenant-table{
+    table-layout:auto;
+    width:100%;
+}
+
+.intervenant-table td,
+.intervenant-detail-table td{
+    overflow-wrap:anywhere;
+    word-break:normal;
+}
+
+.intervenant-row-actions,
+.training-actions{
+    align-items:center;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.table-title-with-action{
+    align-items:center;
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    justify-content:space-between;
+}
+
+.intervenant-empty-state-cell{
+    color:#757575;
+    padding:32px 16px !important;
+}
+
+.intervenant-empty-state-cell .material-icons{
+    color:#081f78;
+    display:block;
+    font-size:38px;
+    margin:0 auto 8px;
+}
+
+.intervenant-empty-state-cell span{
+    display:block;
+}
+
+@media (max-width:768px){
+    #admin-sidebar ~ .main-content .topbar{
+        align-items:stretch;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    #admin-sidebar ~ .main-content .topbar > .btn{
+        align-items:center;
+        display:flex;
+        justify-content:center;
+        margin:0;
+        max-width:100%;
+        white-space:normal;
+    }
+
+    #intervenant-sidebar ~ .main-content,
+    #client-sidebar ~ .main-content,
+    #admin-sidebar ~ .main-content{
+        padding:16px !important;
+    }
+
+    #intervenant-sidebar ~ .main-content .topbar,
+    #client-sidebar ~ .main-content .topbar,
+    #admin-sidebar ~ .main-content .topbar{
+        margin-bottom:20px;
+    }
+
+    #intervenant-sidebar ~ .main-content .page-title,
+    #client-sidebar ~ .main-content .page-title,
+    #admin-sidebar ~ .main-content .page-title{
+        font-size:27px;
+        line-height:1.2;
+        overflow-wrap:anywhere;
+    }
+
+    #intervenant-sidebar ~ .main-content .table-card,
+    #client-sidebar ~ .main-content .table-card,
+    #admin-sidebar ~ .main-content .table-card{
+        border-radius:14px;
+        max-width:100%;
+        padding:16px;
+    }
+
+    #intervenant-sidebar ~ .main-content .table-title,
+    #client-sidebar ~ .main-content .table-title,
+    #admin-sidebar ~ .main-content .table-title{
+        font-size:21px;
+        line-height:1.25;
+        margin-bottom:16px;
+    }
+
+    .intervenant-stat-grid{
+        margin-bottom:8px;
+    }
+
+    .intervenant-stat-grid .card,
+    .intervenant-stat-grid .card-panel,
+    .intervenant-stat-grid .dashboard-card{
+        margin-bottom:12px;
+        min-height:0;
+    }
+
+    .intervenant-stat-grid .card-content,
+    .intervenant-stat-grid .card-panel,
+    .intervenant-stat-grid .dashboard-card{
+        padding:18px;
+    }
+
+    .intervenant-stat-grid .card-title,
+    .intervenant-stat-grid .dashboard-card h5{
+        font-size:17px !important;
+        line-height:1.3;
+    }
+
+    .intervenant-stat-grid h3,
+    .intervenant-stat-grid .dashboard-card h3{
+        font-size:30px;
+        margin:8px 0 0;
+    }
+
+    .mobile-card-table.responsive-table,
+    .mobile-card-table.responsive-table tbody{
+        display:block !important;
+        float:none !important;
+        max-width:100% !important;
+        overflow:visible !important;
+        white-space:normal !important;
+        width:100% !important;
+    }
+
+    .mobile-card-table.responsive-table thead{
+        display:none !important;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.mobile-card-row{
+        background:#ffffff;
+        border:1px solid rgba(8,31,120,0.12);
+        border-radius:12px;
+        box-shadow:0 4px 12px rgba(8,31,120,0.07);
+        display:block !important;
+        margin:0 0 14px;
+        padding:7px 14px;
+        width:100% !important;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.mobile-card-row td{
+        align-items:start;
+        border-bottom:1px solid #eeeeee;
+        display:grid !important;
+        float:none !important;
+        gap:12px;
+        grid-template-columns:minmax(104px,36%) minmax(0,1fr);
+        min-height:0;
+        padding:11px 0 !important;
+        text-align:left !important;
+        width:100% !important;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.mobile-card-row td:last-child{
+        border-bottom:0;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.mobile-card-row td::before{
+        color:#081f78;
+        content:attr(data-label);
+        font-size:12px;
+        font-weight:700;
+        letter-spacing:0.25px;
+        line-height:1.35;
+        text-transform:uppercase;
+    }
+
+    .mobile-card-table .new.badge,
+    .mobile-card-table .training-status-badge{
+        float:none;
+        justify-self:start;
+        margin:0;
+        max-width:100%;
+    }
+
+    .mobile-card-table .btn,
+    .mobile-card-table .btn-small,
+    .mobile-card-table button{
+        max-width:100%;
+        white-space:normal;
+    }
+
+    .mobile-card-table .training-actions,
+    .mobile-card-table .training-actions form,
+    .mobile-card-table .training-actions button{
+        width:100%;
+    }
+
+    .mobile-card-table .training-actions button{
+        height:auto;
+        line-height:1.3;
+        min-height:42px;
+        padding:9px 12px;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.intervenant-empty-row{
+        border:0;
+        display:block !important;
+        width:100% !important;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.intervenant-empty-row td.intervenant-empty-state-cell{
+        display:block !important;
+        text-align:center !important;
+        width:100% !important;
+    }
+
+    .mobile-card-table.responsive-table tbody tr.intervenant-empty-row td::before{
+        content:none;
+    }
+
+    .table-title-with-action{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .table-title-with-action .btn,
+    .intervenant-add-button{
+        align-items:center;
+        display:flex;
+        float:none !important;
+        justify-content:center;
+        margin:0;
+        max-width:100%;
+        width:100%;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-header-card{
+        padding:18px;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-header-content{
+        align-items:stretch;
+        flex-direction:column;
+        gap:20px;
+        min-width:0;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-photo-section{
+        margin:auto;
+        max-width:100%;
+        width:180px;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-info{
+        min-width:0;
+        text-align:center;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-info h2{
+        font-size:29px;
+        line-height:1.2;
+        overflow-wrap:anywhere;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-role{
+        font-size:17px;
+        line-height:1.4;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-details{
+        display:grid;
+        gap:10px;
+        grid-template-columns:1fr;
+        min-width:0;
+        text-align:left;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-details span{
+        align-items:flex-start;
+        display:flex;
+        gap:8px;
+        margin:0;
+        min-width:0;
+        overflow-wrap:anywhere;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-actions{
+        align-items:stretch;
+        display:grid;
+        gap:10px;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        margin:0;
+        min-width:0;
+        width:100%;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-actions .action-btn{
+        box-sizing:border-box;
+        font-size:14px;
+        height:auto !important;
+        line-height:1.25 !important;
+        margin:0;
+        min-height:54px;
+        min-width:0;
+        padding:9px 10px;
+        text-align:center;
+        white-space:normal;
+        width:100%;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-actions .material-icons{
+        flex:0 0 auto;
+        font-size:20px;
+        margin-right:6px !important;
+    }
+
+    .intervenant-detail-table,
+    .intervenant-detail-table tbody,
+    .intervenant-detail-table tr{
+        display:block;
+        width:100%;
+    }
+
+    .intervenant-detail-table tr{
+        border-bottom:1px solid #eeeeee;
+        padding:10px 0;
+    }
+
+    .intervenant-detail-table th,
+    .intervenant-detail-table td{
+        display:block;
+        padding:3px 0;
+        text-align:left;
+        width:100%;
+    }
+
+    .intervenant-detail-table th{
+        color:#081f78;
+        font-size:12px;
+        text-transform:uppercase;
+    }
+}
+
+@media (max-width:480px){
+    .mobile-card-table.responsive-table tbody tr.mobile-card-row td{
+        gap:9px;
+        grid-template-columns:minmax(92px,35%) minmax(0,1fr);
+    }
+
+    .intervenant-row-actions{
+        width:100%;
+    }
+
+    .intervenant-row-actions .btn-small{
+        flex:1 1 44px;
+    }
+}
+
+@media (max-width:360px){
+    #intervenant-sidebar ~ .main-content,
+    #client-sidebar ~ .main-content,
+    #admin-sidebar ~ .main-content{
+        padding:12px !important;
+    }
+
+    #intervenant-sidebar ~ .main-content .table-card,
+    #client-sidebar ~ .main-content .table-card,
+    #admin-sidebar ~ .main-content .table-card{
+        padding:13px;
+    }
+
+    #intervenant-sidebar ~ .main-content .profile-actions{
+        grid-template-columns:1fr;
+    }
+}
+
+/* =========================================
+   ESPACE CLIENT - RESPONSIVE
+========================================= */
+.client-actions{
+    align-items:center;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.client-card-grid{
+    display:flex;
+    flex-wrap:wrap;
+}
+
+.client-card-grid > .col{
+    display:flex;
+    float:none;
+}
+
+.client-intervenant-card{
+    min-width:0;
+    width:100%;
+}
+
+.client-intervenant-card .card-content,
+.client-intervenant-card .card-title,
+.client-intervenant-card p{
+    min-width:0;
+    overflow-wrap:anywhere;
+}
+
+@media (max-width:768px){
+    #client-sidebar ~ .main-content .welcome-text,
+    #client-sidebar ~ .main-content .card-panel,
+    #client-sidebar ~ .main-content .card-content{
+        overflow-wrap:anywhere;
+    }
+
+    #client-sidebar ~ .main-content .table-tools{
+        align-items:stretch !important;
+        flex-direction:column;
+        gap:8px !important;
+    }
+
+    #client-sidebar ~ .main-content .table-tools > div{
+        flex:1 1 auto !important;
+        min-width:0 !important;
+        width:100%;
+    }
+
+    .client-page-header{
+        align-items:stretch;
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .client-page-header .btn,
+    #client-sidebar ~ .main-content .new-request-btn{
+        align-items:center;
+        display:flex;
+        float:none !important;
+        justify-content:center;
+        margin:0;
+        max-width:100%;
+        white-space:normal;
+    }
+
+    .client-responsive-table .status,
+    .client-responsive-table .new.badge{
+        float:none;
+        justify-self:start;
+        margin:0;
+        max-width:100%;
+    }
+
+    .client-responsive-table .client-actions{
+        width:100%;
+    }
+
+    #client-sidebar ~ .main-content .pagination{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+    }
+
+    .client-card-grid > .col{
+        min-width:0;
+    }
+
+    .client-intervenant-heading{
+        align-items:flex-start !important;
+        min-width:0;
+    }
+
+    .client-intervenant-heading > div{
+        min-width:0;
+    }
+
+    .client-intervenant-heading .new.badge{
+        float:none;
+        margin:6px 0 0;
+    }
+
+    .client-intervenant-card .card-action{
+        align-items:stretch;
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+    }
+
+    .client-intervenant-card .card-action a{
+        margin:0 !important;
+        overflow-wrap:anywhere;
+    }
+
+    .client-profile-actions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+
+    .client-profile-actions .btn{
+        height:auto;
+        line-height:1.35;
+        margin:0;
+        max-width:100%;
+        min-height:42px;
+        padding:10px 14px;
+        white-space:normal;
+    }
+
+    .client-detail-table td{
+        overflow-wrap:anywhere;
+    }
+
+    .client-modal{
+        border-radius:12px;
+        max-height:90%;
+        width:95%;
+    }
+
+    .client-modal.modal-fixed-footer{
+        height:90%;
+    }
+
+    .client-modal .modal-content{
+        box-sizing:border-box;
+        overflow-wrap:anywhere;
+        padding:20px 16px;
+    }
+
+    .client-modal .edit-modal-header{
+        padding:18px 16px;
+    }
+
+    .client-modal .edit-modal-header h5{
+        font-size:21px;
+        line-height:1.3;
+        overflow-wrap:anywhere;
+    }
+
+    .client-modal .edit-section{
+        padding:16px;
+    }
+
+    .client-modal .modal-content .row{
+        margin-left:-0.75rem;
+        margin-right:-0.75rem;
+    }
+
+    .client-modal h4,
+    .client-modal .page-title{
+        font-size:24px !important;
+        line-height:1.25;
+        overflow-wrap:anywhere;
+    }
+
+    .client-modal .modal-footer{
+        align-items:center;
+        box-sizing:border-box;
+        display:flex;
+        gap:8px;
+        justify-content:flex-end;
+        padding:8px 12px;
+    }
+
+    .client-modal .modal-footer .btn,
+    .client-modal .modal-footer .btn-flat,
+    .client-modal .modal-footer button{
+        flex:0 1 auto;
+        height:auto;
+        line-height:1.3;
+        margin:0;
+        min-height:40px;
+        padding:8px 12px;
+        white-space:normal;
+    }
+
+    .client-modal .select-wrapper,
+    .client-modal .select-wrapper input.select-dropdown,
+    .client-modal input,
+    .client-modal textarea{
+        box-sizing:border-box;
+        max-width:100%;
+    }
+}
+
+@media (max-width:480px){
+    .client-page-header .btn,
+    #client-sidebar ~ .main-content .new-request-btn,
+    .client-profile-actions .btn{
+        width:100%;
+    }
+
+    .client-modal .modal-footer{
+        justify-content:stretch;
+    }
+
+    .client-modal .modal-footer .btn,
+    .client-modal .modal-footer .btn-flat,
+    .client-modal .modal-footer button{
+        flex:1 1 0;
+        min-width:0;
+    }
+}
+
+@media (max-width:360px){
+    .client-intervenant-heading{
+        flex-direction:column;
+    }
+
+    .client-modal .modal-content{
+        padding:18px 12px;
+    }
+}
+
+/* =========================================
+   ESPACE ADMINISTRATEUR - RESPONSIVE
+========================================= */
+.admin-actions,
+.admin-module .actions-wrap,
+.admin-module .request-actions{
+    align-items:center;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.admin-actions form,
+.admin-module .actions-wrap form,
+.admin-module .request-actions form{
+    margin:0;
+}
+
+@media (max-width:768px){
+    #admin-sidebar ~ .main-content .admin-summary-card,
+    #admin-sidebar ~ .main-content .dashboard-card,
+    #admin-sidebar ~ .main-content .map-summary-card{
+        margin-bottom:12px;
+        min-height:0;
+        overflow-wrap:anywhere;
+        padding:18px;
+    }
+
+    #admin-sidebar ~ .main-content .admin-summary-card h5,
+    #admin-sidebar ~ .main-content .dashboard-card h5,
+    #admin-sidebar ~ .main-content .map-summary-card h5{
+        font-size:16px;
+        line-height:1.3;
+    }
+
+    #admin-sidebar ~ .main-content .admin-summary-card h3,
+    #admin-sidebar ~ .main-content .dashboard-card h3,
+    #admin-sidebar ~ .main-content .map-summary-card h3{
+        font-size:29px;
+        overflow-wrap:anywhere;
+    }
+
+    .admin-responsive-table .new.badge,
+    .admin-responsive-table .status{
+        float:none;
+        justify-self:start;
+        margin:0;
+        max-width:100%;
+    }
+
+    .admin-responsive-table .candidate-avatar{
+        display:block;
+        height:58px;
+        width:58px;
+    }
+
+    .admin-responsive-table .score-bar{
+        max-width:100%;
+        width:100%;
+    }
+
+    .admin-responsive-table .admin-actions,
+    .admin-responsive-table .actions-wrap,
+    .admin-responsive-table .request-actions,
+    .admin-responsive-table .table-actions{
+        min-width:0;
+        width:100%;
+    }
+
+    .admin-responsive-table .admin-actions form,
+    .admin-responsive-table .actions-wrap form,
+    .admin-responsive-table .request-actions form{
+        flex:0 1 auto;
+    }
+
+    .admin-responsive-table .btn,
+    .admin-responsive-table .btn-small,
+    .admin-responsive-table button{
+        height:auto;
+        line-height:1.3;
+        max-width:100%;
+        min-height:36px;
+        white-space:normal;
+    }
+
+    #admin-sidebar ~ .main-content .search-card .row > .col,
+    #admin-sidebar ~ .main-content .filter-card .row > .col{
+        margin-left:auto;
+        width:100%;
+    }
+
+    #admin-sidebar ~ .main-content .search-card .btn,
+    #admin-sidebar ~ .main-content .search-card .btn-flat,
+    #admin-sidebar ~ .main-content .filter-actions .btn,
+    #admin-sidebar ~ .main-content .filter-actions .btn-flat{
+        box-sizing:border-box;
+        margin:4px 0;
+        max-width:100%;
+        text-align:center;
+    }
+
+    #admin-sidebar ~ .main-content .intervenants-search,
+    #admin-sidebar ~ .main-content .training-search-form{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    #admin-sidebar ~ .main-content .intervenants-search .input-field,
+    #admin-sidebar ~ .main-content .training-search-form .input-field,
+    #admin-sidebar ~ .main-content .intervenants-search .btn,
+    #admin-sidebar ~ .main-content .intervenants-search .btn-flat,
+    #admin-sidebar ~ .main-content .training-search-form .btn,
+    #admin-sidebar ~ .main-content .training-search-form .btn-flat{
+        box-sizing:border-box;
+        margin:4px 0;
+        max-width:100%;
+        width:100%;
+    }
+
+    .admin-module .modal,
+    .admin-module .modal-wide,
+    .admin-module .admin-delete-modal{
+        border-radius:12px;
+        max-height:90%;
+        max-width:95%;
+        width:95%;
+    }
+
+    .admin-module .modal.modal-fixed-footer{
+        height:90%;
+    }
+
+    .admin-module .modal .modal-content{
+        box-sizing:border-box;
+        overflow-wrap:anywhere;
+        padding:20px 16px;
+    }
+
+    .admin-module .modal h4,
+    .admin-module .modal h5{
+        font-size:23px !important;
+        line-height:1.3;
+        overflow-wrap:anywhere;
+    }
+
+    .admin-module .modal .modal-footer{
+        align-items:center;
+        box-sizing:border-box;
+        display:flex;
+        gap:8px;
+        justify-content:flex-end;
+        padding:8px 12px;
+    }
+
+    .admin-module .modal .modal-footer .btn,
+    .admin-module .modal .modal-footer .btn-flat,
+    .admin-module .modal .modal-footer button{
+        flex:0 1 auto;
+        height:auto;
+        line-height:1.3;
+        margin:0;
+        min-height:40px;
+        padding:8px 12px;
+        white-space:normal;
+    }
+
+    .admin-module .modal input,
+    .admin-module .modal textarea,
+    .admin-module .modal .select-wrapper,
+    .admin-module .modal .select-wrapper input.select-dropdown{
+        box-sizing:border-box;
+        max-width:100%;
+    }
+
+    #admin-sidebar ~ .main-content .table-responsive{
+        overflow-x:visible;
+    }
+
+    #admin-sidebar ~ .main-content #clients-map{
+        height:480px;
+        max-width:100%;
+        width:100%;
+    }
+
+    #admin-sidebar ~ .main-content .admin-chart-card{
+        box-sizing:border-box;
+        min-height:330px;
+        overflow:hidden;
+        padding:16px;
+        width:100%;
+    }
+
+    #admin-sidebar ~ .main-content .admin-chart-card canvas{
+        max-width:100% !important;
+    }
+
+    #admin-sidebar ~ .main-content .recommendation-card,
+    #admin-sidebar ~ .main-content .recommendation-card .card-content{
+        min-width:0;
+        overflow-wrap:anywhere;
+    }
+
+    #admin-sidebar ~ .main-content .recommendation-card .card-content > div:first-child{
+        min-width:0;
+    }
+
+    #admin-sidebar ~ .main-content .recommendation-card .card-action .btn{
+        height:auto;
+        line-height:1.3;
+        max-width:100%;
+        min-height:42px;
+        white-space:normal;
+    }
+
+    #admin-sidebar ~ .main-content .pagination,
+    #admin-sidebar ~ .main-content .pagination-wrap,
+    #admin-sidebar ~ .main-content .table-pagination{
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+    }
+}
+
+@media (max-width:480px){
+    #admin-sidebar ~ .main-content .topbar > .btn,
+    #admin-sidebar ~ .main-content .recommendation-card .card-action .btn{
+        width:100%;
+    }
+
+    #admin-sidebar ~ .main-content .search-card .btn,
+    #admin-sidebar ~ .main-content .search-card .btn-flat,
+    #admin-sidebar ~ .main-content .filter-actions .btn,
+    #admin-sidebar ~ .main-content .filter-actions .btn-flat{
+        width:100%;
+    }
+
+    .admin-module .modal .modal-footer{
+        justify-content:stretch;
+    }
+
+    .admin-module .modal .modal-footer .btn,
+    .admin-module .modal .modal-footer .btn-flat,
+    .admin-module .modal .modal-footer button{
+        flex:1 1 0;
+        min-width:0;
+    }
+}
+
+@media (max-width:360px){
+    #admin-sidebar ~ .main-content .recommendation-card .card-content > div:first-child{
+        align-items:flex-start !important;
+        flex-direction:column;
+    }
+
+    .admin-responsive-table .admin-actions,
+    .admin-responsive-table .actions-wrap,
+    .admin-responsive-table .request-actions,
+    .admin-responsive-table .table-actions{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .admin-responsive-table .admin-actions form,
+    .admin-responsive-table .admin-actions .btn,
+    .admin-responsive-table .admin-actions .btn-small,
+    .admin-responsive-table .admin-actions button,
+    .admin-responsive-table .actions-wrap form,
+    .admin-responsive-table .actions-wrap .btn-small,
+    .admin-responsive-table .actions-wrap button,
+    .admin-responsive-table .request-actions form,
+    .admin-responsive-table .request-actions .btn-small,
+    .admin-responsive-table .request-actions button,
+    .admin-responsive-table .table-actions .btn-small{
+        box-sizing:border-box;
+        margin:0;
+        text-align:center;
+        width:100%;
+    }
+
+    #admin-sidebar ~ .main-content #clients-map{
+        height:360px;
+    }
+}
+
 .sidebar{
     height:100vh;
     left:0;
@@ -3195,34 +4102,175 @@ footer{
     }
 }
 
-/* Bouton d'installation PWA, affiché uniquement par assets/js/pwa.js. */
+/* Installation PWA : le JavaScript n'affiche que l'action adaptée au navigateur. */
 .install-pwa-button{
-    background:#D84B8A;
-    border:0;
-    border-radius:24px;
+    align-items:center;
+    appearance:none;
+    -webkit-appearance:none;
+    background:linear-gradient(110deg,#081f78 0%,#4b2d91 48%,#e83e8c 100%);
+    background-size:140% 100%;
+    border:1px solid rgba(255,255,255,0.28);
+    border-radius:12px;
+    box-shadow:0 5px 14px rgba(8,31,120,0.24);
+    box-sizing:border-box;
     color:#ffffff;
     cursor:pointer;
-    display:block;
+    display:flex;
     font:inherit;
     font-weight:600;
-    margin:18px auto;
-    min-height:44px;
-    padding:10px 18px;
-    width:calc(100% - 30px);
+    gap:10px;
+    justify-content:center;
+    line-height:1.25;
+    margin:16px auto 8px;
+    max-width:100%;
+    min-height:46px;
+    padding:10px 14px;
+    text-align:center;
+    text-transform:none;
+    transition:background-position 0.25s ease,box-shadow 0.25s ease,transform 0.25s ease;
+    width:calc(100% - 24px);
 }
 
 .install-pwa-button[hidden]{
     display:none !important;
 }
 
-.install-pwa-button:focus,
 .install-pwa-button:hover{
-    background:#bd356f;
+    background-position:100% 0;
+    box-shadow:0 7px 18px rgba(8,31,120,0.32);
+    transform:translateY(-1px);
+}
+
+.install-pwa-button:focus{
     outline:2px solid rgba(255,255,255,0.85);
     outline-offset:2px;
 }
 
+.install-pwa-button:disabled{
+    cursor:wait;
+    opacity:0.72;
+    transform:none;
+}
+
+.install-pwa-button__icon{
+    flex:0 0 auto;
+    font-size:21px !important;
+    line-height:1;
+}
+
+.install-pwa-help{
+    background:rgba(255,255,255,0.12);
+    border-left:3px solid #ffffff;
+    border-radius:6px;
+    color:#ffffff;
+    font-size:12px;
+    line-height:1.45;
+    margin:4px 12px 14px;
+    padding:9px 10px;
+}
+
+.install-pwa-help[hidden]{
+    display:none !important;
+}
+
+/* Suppressions administrateur : actions compactes, confirmations et messages. */
+.admin-delete-trigger{
+    align-items:center;
+    display:inline-flex;
+    gap:5px;
+    white-space:nowrap;
+}
+
+.admin-delete-trigger .material-icons{
+    font-size:17px;
+    line-height:1;
+    margin:0;
+}
+
+.admin-delete-modal{
+    border-radius:12px;
+    max-width:620px;
+}
+
+.admin-delete-modal .modal-content h4{
+    color:#081f78;
+    font-size:1.75rem;
+    font-weight:700;
+}
+
+.admin-delete-modal .modal-footer{
+    align-items:center;
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    padding:6px 18px;
+}
+
+.admin-delete-modal > .admin-delete-form{
+    display:block;
+    margin:0;
+}
+
+.admin-dependency-list{
+    margin-left:22px;
+}
+
+.admin-flash-message{
+    align-items:center;
+    display:flex;
+    gap:16px;
+    justify-content:space-between;
+}
+
+.admin-flash-close{
+    align-items:center;
+    appearance:none;
+    -webkit-appearance:none;
+    background:transparent;
+    border:0;
+    color:#ffffff;
+    cursor:pointer;
+    display:flex;
+    flex:0 0 auto;
+    height:32px;
+    justify-content:center;
+    padding:0;
+    width:32px;
+}
+
+.admin-flash-close:focus{
+    outline:2px solid #ffffff;
+    outline-offset:2px;
+}
+
 @media (max-width:767px){
+    .admin-delete-modal{
+        max-height:88%;
+        width:92%;
+    }
+
+    .admin-delete-modal .modal-footer{
+        height:auto;
+        min-height:64px;
+        flex-wrap:wrap;
+    }
+
+    .admin-delete-modal .modal-footer .btn{
+        font-size:12px;
+        padding:0 12px;
+    }
+
+    .install-pwa-button{
+        min-width:0;
+        width:calc(100% - 16px);
+    }
+
+    .install-pwa-help{
+        margin-left:8px;
+        margin-right:8px;
+        overflow-wrap:break-word;
+    }
+
     body.dashboard-menu-open{
         overflow:hidden;
     }

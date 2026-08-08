@@ -489,7 +489,7 @@ if($map_json === false){
     </style>
 </head>
 
-<body>
+<body class="admin-module">
 <div class="dashboard">
     <?php
     $current_page = "carte-clients";
@@ -557,7 +557,7 @@ if($map_json === false){
             </form>
         </div>
 
-        <div class="row">
+        <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m4">
                 <div class="map-summary-card">
                     <div class="card-icon blue-gradient"><i class="material-icons">groups</i></div>
@@ -608,7 +608,7 @@ if($map_json === false){
                 </p>
 
                 <div class="table-responsive">
-                    <table class="highlight">
+                    <table class="highlight responsive-table intervenant-table mobile-card-table admin-responsive-table">
                         <thead>
                             <tr>
                                 <th>Client</th>
@@ -622,16 +622,16 @@ if($map_json === false){
                         <tbody>
                             <?php foreach($paginated_clients as $local_index => $client){ ?>
                                 <?php $global_index = $offset + $local_index; ?>
-                                <tr>
-                                    <td><?php echo map_safe_text($client["name"]); ?></td>
-                                    <td><?php echo map_safe_text($client["type"]); ?></td>
-                                    <td><?php echo map_safe_text($client["city"]); ?></td>
-                                    <td><?php echo map_safe_text($client["address"]); ?></td>
-                                    <td>
+                                <tr class="mobile-card-row">
+                                    <td data-label="Client"><?php echo map_safe_text($client["name"]); ?></td>
+                                    <td data-label="Type"><?php echo map_safe_text($client["type"]); ?></td>
+                                    <td data-label="Ville"><?php echo map_safe_text($client["city"]); ?></td>
+                                    <td data-label="Adresse"><?php echo map_safe_text($client["address"]); ?></td>
+                                    <td data-label="Coordonnées">
                                         <?php echo map_safe_text($client["latitude"] . ", " . $client["longitude"]); ?>
                                     </td>
-                                    <td>
-                                        <div class="table-actions">
+                                    <td data-label="Actions">
+                                        <div class="table-actions admin-actions">
                                             <button type="button" class="btn-small waves-effect waves-light map-action"
                                                     data-marker-index="<?php echo (int)$global_index; ?>">
                                                 Voir sur la carte

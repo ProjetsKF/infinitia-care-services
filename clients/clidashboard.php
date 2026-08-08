@@ -365,7 +365,7 @@ if($stmt){
 
             <!-- STATS -->
 
-            <div class="row">
+            <div class="row intervenant-stat-grid client-stat-grid">
 
                 <!-- CARD 1 -->
 
@@ -507,7 +507,7 @@ if($stmt){
 
                 </div>
 
-                <table class="highlight responsive-table">
+                <table class="highlight responsive-table intervenant-table mobile-card-table client-responsive-table">
 
                     <thead>
 
@@ -588,27 +588,27 @@ if($stmt){
 
                                 ?>
 
-                                <tr>
+                                <tr class="mobile-card-row">
 
-                                    <td>
+                                    <td data-label="Référence">
 
                                         #<?php echo str_pad((int)$demande["id"], 3, "0", STR_PAD_LEFT); ?>
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Service demandé">
 
                                         <?php echo htmlspecialchars($title_value, ENT_QUOTES, 'UTF-8'); ?>
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Date de création">
 
                                         <?php echo htmlspecialchars($created_at_label, ENT_QUOTES, 'UTF-8'); ?>
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Statut">
 
                                         <span class="status <?php echo $status_class; ?>">
 
@@ -618,7 +618,7 @@ if($stmt){
 
                                     </td>
 
-                                    <td>
+                                    <td data-label="Action">
 
                                         <a href="<?php echo app_url_html("client/demandes"); ?>"
                                            class="green-text"
@@ -640,11 +640,11 @@ if($stmt){
 
                         <?php }else{ ?>
 
-                            <tr>
+                            <tr class="intervenant-empty-row client-empty-row">
 
-                                <td colspan="5" class="center-align">
-
-                                    Aucune demande n'a encore &eacute;t&eacute; cr&eacute;&eacute;e.
+                                <td colspan="5" class="center-align intervenant-empty-state-cell client-empty-state">
+                                    <i class="material-icons" aria-hidden="true">assignment</i>
+                                    <span>Aucune demande de service pour le moment.</span>
 
                                 </td>
 

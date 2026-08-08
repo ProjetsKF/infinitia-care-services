@@ -11,11 +11,12 @@ $manifest = array(
     "description" => "Plateforme professionnelle de gestion des services d'assistance à domicile, des clients et des intervenantes.",
     "lang" => "fr",
     "dir" => "ltr",
+    "id" => app_url(""),
     "start_url" => app_url(""),
     "scope" => app_url(""),
     "display" => "standalone",
     "orientation" => "portrait-primary",
-    "theme_color" => "#D84B8A",
+    "theme_color" => "#e83e8c",
     "background_color" => "#FFFFFF",
     "icons" => array(
         array("src" => app_url("assets/images/pwa/icon-192.png"), "sizes" => "192x192", "type" => "image/png", "purpose" => "any"),
