@@ -4,6 +4,15 @@ session_start();
 
 require_once("../config/database.php");
 
+function e($value, $empty_text = "")
+{
+    if ($value === NULL || $value === "") {
+        $value = $empty_text;
+    }
+
+    return htmlspecialchars((string) $value, ENT_QUOTES, "UTF-8");
+}
+
 $user_id = $_SESSION['user_id'];
 
 $sql = "
@@ -138,7 +147,7 @@ $intervenant = $result->fetch_assoc();
 
                 <i class="material-icons tiny">workspace_premium</i>
 
-                <?php echo (int)$intervenant['experience_years']; ?> ans d'expérience
+                <?php echo ($intervenant['experience_years'] === NULL || $intervenant['experience_years'] === "") ? "Non renseigné" : e($intervenant['experience_years']) . " ans d'expérience"; ?>
 
             </div>
 
@@ -151,9 +160,9 @@ $intervenant = $result->fetch_assoc();
             <h2>
 
                 <?php
-                echo htmlspecialchars(
-                    $intervenant['first_name'].' '.
-                    $intervenant['last_name']
+                echo e(
+                    trim((string) $intervenant['first_name'].' '.(string) $intervenant['last_name']),
+                    "Non renseigné"
                 );
                 ?>
 
@@ -171,7 +180,7 @@ $intervenant = $result->fetch_assoc();
 
                     <i class="material-icons tiny">location_on</i>
 
-                    <?php echo htmlspecialchars($intervenant['city']); ?>
+                    <?php echo e($intervenant['city'], "Non renseigné"); ?>
 
                 </span>
 
@@ -179,7 +188,7 @@ $intervenant = $result->fetch_assoc();
 
                     <i class="material-icons tiny">phone</i>
 
-                    <?php echo htmlspecialchars($intervenant['phone']); ?>
+                    <?php echo e($intervenant['phone'], "Non renseigné"); ?>
 
                 </span>
 
@@ -187,7 +196,7 @@ $intervenant = $result->fetch_assoc();
 
                     <i class="material-icons tiny">email</i>
 
-                    <?php echo htmlspecialchars($intervenant['email']); ?>
+                    <?php echo e($intervenant['email'], "Non renseigné"); ?>
 
                 </span>
 
@@ -260,37 +269,37 @@ $intervenant = $result->fetch_assoc();
 
         <tr>
             <th>Date de naissance</th>
-            <td><?php echo htmlspecialchars($intervenant['birth_date']); ?></td>
+            <td><?php echo e($intervenant['birth_date'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Sexe</th>
-            <td><?php echo htmlspecialchars($intervenant['gender']); ?></td>
+            <td><?php echo e($intervenant['gender'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Adresse</th>
-            <td><?php echo htmlspecialchars($intervenant['address']); ?></td>
+            <td><?php echo e($intervenant['address'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Ville</th>
-            <td><?php echo htmlspecialchars($intervenant['city']); ?></td>
+            <td><?php echo e($intervenant['city'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Nationalité</th>
-            <td><?php echo htmlspecialchars($intervenant['nationality']); ?></td>
+            <td><?php echo e($intervenant['nationality'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Etat civil</th>
-            <td><?php echo htmlspecialchars($intervenant['marital_status']); ?></td>
+            <td><?php echo e($intervenant['marital_status'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Contact d'urgence</th>
-            <td><?php echo htmlspecialchars($intervenant['emergency_contact']); ?></td>
+            <td><?php echo e($intervenant['emergency_contact'], "Non renseigné"); ?></td>
         </tr>
 
     </table>
@@ -311,27 +320,27 @@ $intervenant = $result->fetch_assoc();
 
         <tr>
             <th>Niveau d'étude</th>
-            <td><?php echo htmlspecialchars($intervenant['education_level']); ?></td>
+            <td><?php echo e($intervenant['education_level'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Expérience</th>
-            <td><?php echo htmlspecialchars($intervenant['experience_years']); ?> ans</td>
+            <td><?php echo ($intervenant['experience_years'] === NULL || $intervenant['experience_years'] === "") ? "Non renseigné" : e($intervenant['experience_years']) . " ans"; ?></td>
         </tr>
 
         <tr>
             <th>Disponibilité</th>
-            <td><?php echo htmlspecialchars($intervenant['availability_status']); ?></td>
+            <td><?php echo e($intervenant['availability_status'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Vérification</th>
-            <td><?php echo htmlspecialchars($intervenant['verification_status']); ?></td>
+            <td><?php echo e($intervenant['verification_status'], "Non renseigné"); ?></td>
         </tr>
 
         <tr>
             <th>Statut</th>
-            <td><?php echo htmlspecialchars($intervenant['status']); ?></td>
+            <td><?php echo e($intervenant['status'], "Non renseigné"); ?></td>
         </tr>
 
     </table>
@@ -350,7 +359,7 @@ $intervenant = $result->fetch_assoc();
 
     <p style="padding:20px;">
 
-        <?php echo nl2br(htmlspecialchars($intervenant['bio'])); ?>
+        <?php echo nl2br(e($intervenant['bio'], "Non renseigné")); ?>
 
     </p>
 
@@ -390,21 +399,21 @@ $intervenant = $result->fetch_assoc();
             <div class="input-field">
                 <input type="text"
                        name="first_name"
-                       value="<?php echo htmlspecialchars($intervenant['first_name']); ?>">
+                       value="<?php echo e($intervenant['first_name']); ?>">
                 <label class="active">Prénom</label>
             </div>
 
             <div class="input-field">
                 <input type="text"
                        name="last_name"
-                       value="<?php echo htmlspecialchars($intervenant['last_name']); ?>">
+                       value="<?php echo e($intervenant['last_name']); ?>">
                 <label class="active">Nom</label>
             </div>
 
             <div class="input-field">
                 <input type="tel"
                        name="phone"
-                       value="<?php echo htmlspecialchars($intervenant['phone']); ?>">
+                       value="<?php echo e($intervenant['phone']); ?>">
                 <label class="active">Téléphone</label>
             </div>
             <div class="input-field">
@@ -412,7 +421,7 @@ $intervenant = $result->fetch_assoc();
             <input
                 type="date"
                 name="birth_date"
-                value="<?php echo htmlspecialchars($intervenant['birth_date']); ?>">
+                value="<?php echo e($intervenant['birth_date']); ?>">
 
             <label class="active">
                 Date de naissance
@@ -445,14 +454,14 @@ $intervenant = $result->fetch_assoc();
             <div class="input-field">
                 <input type="text"
                        name="city"
-                       value="<?php echo htmlspecialchars($intervenant['city']); ?>">
+                       value="<?php echo e($intervenant['city']); ?>">
                 <label class="active">Ville</label>
             </div>
 
             <div class="input-field">
                 <textarea
                 name="address"
-                class="materialize-textarea"><?php echo htmlspecialchars($intervenant['address']); ?></textarea>
+                class="materialize-textarea"><?php echo e($intervenant['address']); ?></textarea>
 
                 <label class="active">Adresse</label>
             </div>
@@ -527,7 +536,7 @@ $intervenant = $result->fetch_assoc();
                 <input
                 type="text"
                 name="nationality"
-                value="<?php echo htmlspecialchars($intervenant['nationality']); ?>">
+                value="<?php echo e($intervenant['nationality']); ?>">
 
                 <label class="active">
                     Nationalité
@@ -540,7 +549,7 @@ $intervenant = $result->fetch_assoc();
                 <input
                 type="text"
                 name="education_level"
-                value="<?php echo htmlspecialchars($intervenant['education_level']); ?>">
+                value="<?php echo e($intervenant['education_level']); ?>">
 
                 <label class="active">
                     Niveau d'étude
@@ -554,7 +563,7 @@ $intervenant = $result->fetch_assoc();
                 type="number"
                 min="0"
                 name="experience_years"
-                value="<?php echo htmlspecialchars($intervenant['experience_years']); ?>">
+                value="<?php echo e($intervenant['experience_years']); ?>">
 
                 <label class="active">
                     Années d'expérience
@@ -593,7 +602,7 @@ $intervenant = $result->fetch_assoc();
 
                 <textarea
                 name="bio"
-                class="materialize-textarea"><?php echo htmlspecialchars($intervenant['bio']); ?></textarea>
+                class="materialize-textarea"><?php echo e($intervenant['bio']); ?></textarea>
 
                 <label class="active">
                     Présentation professionnelle
