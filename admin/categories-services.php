@@ -312,6 +312,13 @@ if($stats["unused_categories"] < 0){
 }
 
 $categories = array();
+$search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
+$search_like = "%" . $search . "%";
+$where_sql = "";
+
+if($search != ""){
+    $where_sql = "WHERE sc.name LIKE ? OR sc.description LIKE ? OR sc.icon LIKE ?";
+}
 
 $sql = "
 SELECT
@@ -324,6 +331,7 @@ SELECT
 FROM service_categories sc
 LEFT JOIN service_requests sr
 ON sr.category_id = sc.id
+" . $where_sql . "
 GROUP BY
     sc.id,
     sc.name,
@@ -333,17 +341,34 @@ GROUP BY
 ORDER BY sc.created_at DESC
 ";
 
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare($conn, $sql);
 
-if($result){
+if($stmt){
 
-    while($row = mysqli_fetch_assoc($result)){
+    if($search != ""){
+        mysqli_stmt_bind_param($stmt, "sss", $search_like, $search_like, $search_like);
+    }
 
-        $categories[] = $row;
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if($result){
+
+        while($row = mysqli_fetch_assoc($result)){
+
+            $categories[] = $row;
+
+        }
+
+        mysqli_free_result($result);
 
     }
 
-    mysqli_free_result($result);
+    mysqli_stmt_close($stmt);
+
+}else{
+
+    error_log("Erreur préparation recherche catégories : " . mysqli_error($conn));
 
 }
 
@@ -507,6 +532,34 @@ if($result){
                     <h5>Demandes de services</h5>
                     <h3><?php echo (int)$stats["total_requests"]; ?></h3>
                 </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-content">
+                <form action="<?php echo app_url_html("admin/categories"); ?>" method="GET">
+                    <div class="row" style="margin-bottom:0;">
+                        <div class="input-field col s12 m8 l9" style="margin-bottom:0;">
+                            <i class="material-icons prefix">search</i>
+                            <input type="search"
+                                   id="category_search"
+                                   name="search"
+                                   value="<?php echo safe_text($search); ?>">
+                            <label for="category_search" class="<?php if($search != ""){ echo "active"; } ?>">
+                                Rechercher une catégorie
+                            </label>
+                        </div>
+                        <div class="col s12 m4 l3" style="padding-top:18px;">
+                            <button type="submit" class="btn waves-effect waves-light">
+                                <i class="material-icons left">search</i>
+                                Rechercher
+                            </button>
+                            <?php if($search != ""){ ?>
+                                <a href="<?php echo app_url_html("admin/categories"); ?>" class="btn-flat">Effacer</a>
+                            <?php } ?>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 

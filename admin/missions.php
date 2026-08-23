@@ -3,6 +3,7 @@
 session_start();
 
 require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/includes/admin-delete-security.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
@@ -10,6 +11,8 @@ if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["ro
     exit();
 
 }
+
+$admin_delete_csrf = admin_delete_csrf_token();
 
 function safe_text($value)
 {
@@ -650,6 +653,22 @@ $payments_by_mission = array();
 $reviews_by_mission = array();
 $limit = 50;
 $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
+$search = isset($_GET["search"]) ? trim($_GET["search"]) : "";
+$search_like = "%" . $search . "%";
+$where_sql = "";
+
+if($search != ""){
+    $where_sql = "
+    WHERE
+        CAST(m.id AS CHAR) LIKE ?
+        OR sr.title LIKE ?
+        OR sr.location LIKE ?
+        OR sc.name LIKE ?
+        OR CONCAT(cu.first_name, ' ', cu.last_name) LIKE ?
+        OR CONCAT(iu.first_name, ' ', iu.last_name) LIKE ?
+        OR m.mission_status LIKE ?
+    ";
+}
 
 if($page < 1){
 
@@ -657,7 +676,51 @@ if($page < 1){
 
 }
 
-$total_missions = count_query($conn, "SELECT COUNT(*) AS total FROM missions");
+$total_missions = 0;
+$count_sql = "
+SELECT COUNT(DISTINCT m.id) AS total
+FROM missions m
+INNER JOIN service_requests sr ON sr.id = m.service_request_id
+INNER JOIN clients cl ON cl.id = sr.client_id
+INNER JOIN users cu ON cu.id = cl.user_id
+INNER JOIN candidates c ON c.id = m.candidate_id
+INNER JOIN users iu ON iu.id = c.user_id
+LEFT JOIN service_categories sc ON sc.id = sr.category_id
+" . $where_sql;
+$count_stmt = mysqli_prepare($conn, $count_sql);
+
+if($count_stmt){
+
+    if($search != ""){
+        mysqli_stmt_bind_param(
+            $count_stmt,
+            "sssssss",
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like
+        );
+    }
+
+    if(mysqli_stmt_execute($count_stmt)){
+        mysqli_stmt_bind_result($count_stmt, $total_missions);
+        mysqli_stmt_fetch($count_stmt);
+    }else{
+        error_log("Erreur comptage recherche missions : " . mysqli_stmt_error($count_stmt));
+    }
+
+    mysqli_stmt_close($count_stmt);
+
+}else{
+
+    error_log("Erreur préparation comptage recherche missions : " . mysqli_error($conn));
+
+}
+
+$total_missions = (int)$total_missions;
 $total_pages = (int)ceil($total_missions / $limit);
 
 if($total_pages > 0 && $page > $total_pages){
@@ -731,6 +794,7 @@ ON p.id = (
 )
 LEFT JOIN service_reviews rv
 ON rv.mission_id = m.id
+" . $where_sql . "
 GROUP BY
     m.id,
     m.service_request_id,
@@ -773,7 +837,24 @@ $stmt = mysqli_prepare($conn, $sql);
 
 if($stmt){
 
-    mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    if($search != ""){
+        mysqli_stmt_bind_param(
+            $stmt,
+            "sssssssii",
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $search_like,
+            $limit,
+            $offset
+        );
+    }else{
+        mysqli_stmt_bind_param($stmt, "ii", $limit, $offset);
+    }
+
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
@@ -980,15 +1061,21 @@ if(count($missions) > 0){
         </div>
 
         <?php if(isset($_SESSION["success"])){ ?>
-            <div class="card-panel green white-text">
-                <?php echo safe_text($_SESSION["success"]); ?>
+            <div class="card-panel green white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["success"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["success"]); ?>
         <?php } ?>
 
         <?php if(isset($_SESSION["error"])){ ?>
-            <div class="card-panel red white-text">
-                <?php echo safe_text($_SESSION["error"]); ?>
+            <div class="card-panel red white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["error"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
             </div>
             <?php unset($_SESSION["error"]); ?>
         <?php } ?>
@@ -1035,6 +1122,34 @@ if(count($missions) > 0){
                     <h5>Paiements attente</h5>
                     <h3><?php echo (int)$stats["pending_payment"]; ?></h3>
                 </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:20px;">
+            <div class="card-content">
+                <form action="<?php echo app_url_html("admin/missions"); ?>" method="GET">
+                    <div class="row" style="margin-bottom:0;">
+                        <div class="input-field col s12 m8 l9" style="margin-bottom:0;">
+                            <i class="material-icons prefix">search</i>
+                            <input type="search"
+                                   id="mission_search"
+                                   name="search"
+                                   value="<?php echo safe_text($search); ?>">
+                            <label for="mission_search" class="<?php if($search != ""){ echo "active"; } ?>">
+                                Rechercher une mission, un client ou un intervenant
+                            </label>
+                        </div>
+                        <div class="col s12 m4 l3" style="padding-top:18px;">
+                            <button type="submit" class="btn waves-effect waves-light">
+                                <i class="material-icons left">search</i>
+                                Rechercher
+                            </button>
+                            <?php if($search != ""){ ?>
+                                <a href="<?php echo app_url_html("admin/missions"); ?>" class="btn-flat">Effacer</a>
+                            <?php } ?>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1102,10 +1217,16 @@ if(count($missions) > 0){
                                            class="btn-small green modal-trigger">
                                             Voir
                                         </a>
-                                        <a href="#editMission<?php echo $mission_id; ?>"
-                                           class="btn-small blue modal-trigger">
-                                            Modifier
-                                        </a>
+                                         <a href="#editMission<?php echo $mission_id; ?>"
+                                            class="btn-small blue modal-trigger">
+                                             Modifier
+                                         </a>
+
+                                         <a href="#deleteMission<?php echo $mission_id; ?>"
+                                            class="btn-small red darken-2 modal-trigger admin-delete-trigger">
+                                             <i class="material-icons" aria-hidden="true">delete</i>
+                                             Supprimer
+                                         </a>
 
                                         <?php if($mission_status == "affectee"){ ?>
                                             <form action="<?php echo app_url_html("admin/missions"); ?>" method="POST">
@@ -1387,9 +1508,37 @@ if(count($missions) > 0){
             </div>
         </form>
     </div>
+
+    <div id="deleteMission<?php echo $mission_id; ?>" class="modal admin-delete-modal">
+        <form action="<?php echo app_url_html("admin/supprimer-mission.php"); ?>"
+              method="POST"
+              class="admin-delete-form">
+            <div class="modal-content">
+                <h4>Confirmer la suppression</h4>
+                <p>
+                    Voulez-vous vraiment supprimer définitivement cette mission ? Cette action est irréversible.
+                </p>
+                <p class="grey-text">
+                    Mission <strong><?php echo safe_text(mission_reference($mission_id)); ?></strong>.
+                    La suppression sera refusée si un paiement ou une évaluation y est lié.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <a href="#!" class="modal-close btn-flat">Annuler</a>
+                <input type="hidden" name="csrf_token" value="<?php echo safe_text($admin_delete_csrf); ?>">
+                <input type="hidden" name="mission_id" value="<?php echo $mission_id; ?>">
+                <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                    <i class="material-icons left" aria-hidden="true">delete</i>
+                    Supprimer définitivement
+                </button>
+            </div>
+        </form>
+    </div>
 <?php } ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="<?php echo app_url_html("assets/js/admin-delete-ui.js"); ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

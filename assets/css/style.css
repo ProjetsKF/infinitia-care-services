@@ -4189,7 +4189,9 @@ footer{
 
 .admin-delete-modal{
     border-radius:12px;
+    max-height:90vh;
     max-width:620px;
+    overflow:hidden;
 }
 
 .admin-delete-modal .modal-content h4{
@@ -4201,14 +4203,21 @@ footer{
 .admin-delete-modal .modal-footer{
     align-items:center;
     display:flex;
+    flex:0 0 auto;
     gap:10px;
     justify-content:flex-end;
     padding:6px 18px;
 }
 
 .admin-delete-modal > .admin-delete-form{
-    display:block;
+    display:flex;
+    flex-direction:column;
     margin:0;
+    max-height:90vh;
+}
+
+.admin-delete-modal .modal-content{
+    overflow-y:auto;
 }
 
 .admin-dependency-list{
@@ -4245,8 +4254,12 @@ footer{
 
 @media (max-width:767px){
     .admin-delete-modal{
-        max-height:88%;
+        max-height:88vh;
         width:92%;
+    }
+
+    .admin-delete-modal > .admin-delete-form{
+        max-height:88vh;
     }
 
     .admin-delete-modal .modal-footer{

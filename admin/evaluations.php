@@ -3,6 +3,7 @@
 session_start();
 
 require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/includes/admin-delete-security.php");
 
 if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 1){
 
@@ -10,6 +11,8 @@ if(!isset($_SESSION["user_id"]) || !isset($_SESSION["role_id"]) || $_SESSION["ro
     exit();
 
 }
+
+$admin_delete_csrf = admin_delete_csrf_token();
 
 function safe_text($value)
 {
@@ -574,6 +577,26 @@ mysqli_stmt_close($stmt);
             </div>
         </div>
 
+        <?php if(isset($_SESSION["success"])){ ?>
+            <div class="card-panel green white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["success"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
+            </div>
+            <?php unset($_SESSION["success"]); ?>
+        <?php } ?>
+
+        <?php if(isset($_SESSION["error"])){ ?>
+            <div class="card-panel red white-text admin-flash-message">
+                <span><?php echo safe_text($_SESSION["error"]); ?></span>
+                <button type="button" class="admin-flash-close" aria-label="Fermer le message">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
+            </div>
+            <?php unset($_SESSION["error"]); ?>
+        <?php } ?>
+
         <div class="row intervenant-stat-grid admin-stat-grid">
             <div class="col s12 m6 l4">
                 <div class="admin-summary-card">
@@ -694,7 +717,14 @@ mysqli_stmt_close($stmt);
                                 <td data-label="Commentaire"><?php echo safe_text(display_value($review["commentaire"])); ?></td>
                                 <td data-label="Date"><?php echo safe_text(format_date_fr($review["created_at"])); ?></td>
                                 <td data-label="Actions">
-                                    <a href="#viewReview<?php echo $review_id; ?>" class="btn-small green modal-trigger">Voir</a>
+                                    <div class="actions-wrap admin-actions">
+                                        <a href="#viewReview<?php echo $review_id; ?>" class="btn-small green modal-trigger">Voir</a>
+                                        <a href="#deleteReview<?php echo $review_id; ?>"
+                                           class="btn-small red darken-2 modal-trigger admin-delete-trigger">
+                                            <i class="material-icons" aria-hidden="true">delete</i>
+                                            Supprimer
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         <?php } ?>
@@ -795,9 +825,36 @@ mysqli_stmt_close($stmt);
             <a href="#!" class="modal-close btn-flat">Fermer</a>
         </div>
     </div>
+
+    <div id="deleteReview<?php echo $review_id; ?>" class="modal admin-delete-modal">
+        <form action="<?php echo app_url_html("admin/supprimer-evaluation.php"); ?>"
+              method="POST"
+              class="admin-delete-form">
+            <div class="modal-content">
+                <h4>Confirmer la suppression</h4>
+                <p>
+                    Voulez-vous vraiment supprimer cette évaluation ? La note et le commentaire associés seront définitivement supprimés.
+                </p>
+                <p class="grey-text">
+                    Évaluation <strong><?php echo safe_text(review_reference($review_id)); ?></strong>.
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <a href="#!" class="modal-close btn-flat">Annuler</a>
+                <input type="hidden" name="csrf_token" value="<?php echo safe_text($admin_delete_csrf); ?>">
+                <input type="hidden" name="evaluation_id" value="<?php echo $review_id; ?>">
+                <button type="submit" class="btn red darken-2 waves-effect waves-light">
+                    <i class="material-icons left" aria-hidden="true">delete</i>
+                    Supprimer définitivement
+                </button>
+            </div>
+        </form>
+    </div>
 <?php } ?>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="<?php echo app_url_html("assets/js/admin-delete-ui.js"); ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
