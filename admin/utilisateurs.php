@@ -258,7 +258,15 @@ if($search != ""){
         OR u.last_name LIKE ?
         OR u.email LIKE ?
         OR u.phone LIKE ?
-        OR r.name LIKE ?
+        OR COALESCE(
+            NULLIF(TRIM(r.name), ''),
+            CASE u.role_id
+                WHEN 1 THEN 'Administrateur'
+                WHEN 2 THEN 'Client'
+                WHEN 3 THEN 'Intervenant'
+                ELSE NULL
+            END
+        ) LIKE ?
         OR u.status LIKE ?
     )";
 
@@ -336,7 +344,15 @@ SELECT
     u.status,
     u.last_login,
     u.created_at,
-    r.name AS role_name,
+    COALESCE(
+        NULLIF(TRIM(r.name), ''),
+        CASE u.role_id
+            WHEN 1 THEN 'Administrateur'
+            WHEN 2 THEN 'Client'
+            WHEN 3 THEN 'Intervenant'
+            ELSE NULL
+        END
+    ) AS role_name,
     r.description AS role_description
 FROM users u
 LEFT JOIN roles r
