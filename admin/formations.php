@@ -561,6 +561,63 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     }
 
+    if($action == "remove_assignment"){
+
+        $candidate_training_id = isset($_POST["candidate_training_id"])
+            ? (int)$_POST["candidate_training_id"]
+            : 0;
+
+        if($candidate_training_id <= 0){
+
+            $_SESSION["error"] = "Attribution de formation invalide.";
+            redirect_formations();
+
+        }
+
+        $sql = "
+        DELETE FROM candidate_trainings
+        WHERE id = ?
+        AND status IN ('en_attente', 'en_cours', 'inactive')
+        ";
+
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if(!$stmt){
+
+            error_log("Unable to prepare candidate training removal: " . mysqli_error($conn));
+            $_SESSION["error"] = "Erreur lors du retrait de l'attribution.";
+            redirect_formations();
+
+        }
+
+        mysqli_stmt_bind_param($stmt, "i", $candidate_training_id);
+
+        if(!mysqli_stmt_execute($stmt)){
+
+            error_log("Unable to remove candidate training assignment: " . mysqli_stmt_error($stmt));
+            mysqli_stmt_close($stmt);
+            $_SESSION["error"] = "Erreur lors du retrait de l'attribution.";
+            redirect_formations();
+
+        }
+
+        $affected_rows = mysqli_stmt_affected_rows($stmt);
+        mysqli_stmt_close($stmt);
+
+        if($affected_rows == 1){
+
+            $_SESSION["success"] = "L'attribution de la formation a ete retiree avec succes.";
+
+        }else{
+
+            $_SESSION["error"] = "L'attribution est introuvable ou une formation terminee ne peut pas etre retiree.";
+
+        }
+
+        redirect_formations();
+
+    }
+
     if($action == "assign_training"){
 
         $training_id = isset($_POST["training_id"])
@@ -1550,21 +1607,36 @@ if($result){
                                 </td>
                                         <td data-label="Date d'attribution"><?php echo safe_text(format_date_fr($assignment["created_at"])); ?></td>
                                         <td data-label="Action">
-                                    <?php if($assignment_status == "en_attente" || $assignment_status == "en_cours"){ ?>
-                                        <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
-                                            <input type="hidden" name="action" value="deactivate_assignment">
-                                            <input type="hidden" name="candidate_training_id" value="<?php echo (int)$assignment["id"]; ?>">
-                                            <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
-                                            <button type="submit"
-                                                    class="btn-small grey"
-                                                    onclick="return confirm('Desactiver cette attribution ?');">
-                                                Desactiver
-                                            </button>
-                                        </form>
-                                    <?php }else{ ?>
-                                        -
-                                    <?php } ?>
-                                </td>
+                                            <div class="admin-actions">
+                                                <?php if($assignment_status == "en_attente" || $assignment_status == "en_cours"){ ?>
+                                                    <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
+                                                        <input type="hidden" name="action" value="deactivate_assignment">
+                                                        <input type="hidden" name="candidate_training_id" value="<?php echo (int)$assignment["id"]; ?>">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
+                                                        <button type="submit"
+                                                                class="btn-small grey"
+                                                                onclick="return confirm('Desactiver cette attribution ?');">
+                                                            Desactiver
+                                                        </button>
+                                                    </form>
+                                                <?php } ?>
+
+                                                <?php if(in_array($assignment_status, array("en_attente", "en_cours", "inactive"), true)){ ?>
+                                                    <form action="<?php echo app_url_html("admin/formations"); ?>" method="POST">
+                                                        <input type="hidden" name="action" value="remove_assignment">
+                                                        <input type="hidden" name="candidate_training_id" value="<?php echo (int)$assignment["id"]; ?>">
+                                                        <input type="hidden" name="csrf_token" value="<?php echo safe_text($csrf_token); ?>">
+                                                        <button type="submit"
+                                                                class="btn-small red"
+                                                                onclick="return confirm('Retirer cette attribution ? La formation restera dans le catalogue.');">
+                                                            Retirer l'attribution
+                                                        </button>
+                                                    </form>
+                                                <?php }else{ ?>
+                                                    -
+                                                <?php } ?>
+                                            </div>
+                                        </td>
                             </tr>
                         <?php } ?>
                     </tbody>

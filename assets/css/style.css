@@ -3142,6 +3142,35 @@ footer{
     text-transform:uppercase;
 }
 
+.sidebar-menu .sidebar-logout-form{
+    margin:0;
+}
+
+.sidebar-menu .sidebar-logout-button{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    width:100%;
+    padding:15px 18px;
+    border:0;
+    border-radius:12px;
+    margin:0 0 12px;
+    background:transparent;
+    color:#ffffff;
+    font:inherit;
+    font-weight:500;
+    text-align:left;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.sidebar-menu .sidebar-logout-button:hover,
+.sidebar-menu .sidebar-logout-button:focus{
+    background:rgba(255,255,255,0.15);
+    transform:translateX(5px);
+    outline:none;
+}
+
 /* =========================================
    ESPACE INTERVENANT - RESPONSIVE
 ========================================= */
@@ -4173,6 +4202,161 @@ footer{
     display:none !important;
 }
 
+/* Installation PWA publique dans le hero. */
+.hero-action-group{
+    max-width:100%;
+    width:500px;
+}
+
+.hero-action-group .hero-buttons{
+    display:flex;
+    gap:12px;
+    width:100%;
+}
+
+.hero-action-group .hero-buttons .btn-large{
+    align-items:center;
+    display:flex;
+    flex:1 1 0;
+    justify-content:center;
+    margin-right:0;
+    min-width:0;
+    padding-left:16px;
+    padding-right:16px;
+    white-space:nowrap;
+}
+
+.hero-action-group .hero-buttons .btn-large .material-icons{
+    flex:0 0 auto;
+}
+
+.hero-action-group .hero-buttons .btn-primary{
+    flex-grow:0.9;
+}
+
+.hero-action-group .hero-buttons .btn-secondary{
+    flex-grow:1.1;
+}
+
+.hero-pwa-card{
+    align-items:center;
+    background:rgba(255,255,255,0.96);
+    border:1px solid rgba(255,255,255,0.7);
+    border-radius:12px;
+    box-shadow:0 7px 20px rgba(5,19,77,0.2);
+    box-sizing:border-box;
+    display:grid;
+    gap:8px 12px;
+    grid-template-columns:38px minmax(0,1fr) auto;
+    margin-top:12px;
+    padding:12px;
+    text-align:left;
+    width:100%;
+}
+
+.hero-pwa-card[hidden]{
+    display:none !important;
+}
+
+.hero-pwa-icon{
+    align-items:center;
+    border-right:1px solid rgba(8,31,120,0.18);
+    color:var(--primary-blue);
+    display:flex;
+    height:42px;
+    justify-content:flex-start;
+}
+
+.hero-pwa-icon .material-icons{
+    font-size:27px;
+}
+
+.hero-pwa-copy{
+    min-width:0;
+}
+
+.hero-pwa-copy h2{
+    color:var(--primary-blue);
+    font-size:13px;
+    font-weight:700;
+    line-height:1.3;
+    margin:0 0 2px;
+}
+
+.hero-pwa-copy p{
+    color:#34405f;
+    font-size:11px;
+    line-height:1.35;
+    margin:0;
+}
+
+.hero-pwa-card .install-pwa-button{
+    background:var(--primary-blue);
+    border:0;
+    border-radius:9px;
+    box-shadow:0 4px 10px rgba(8,31,120,0.2);
+    font-size:12px;
+    margin:0;
+    min-height:42px;
+    padding:9px 13px;
+    width:auto;
+}
+
+.hero-pwa-card .install-pwa-button:hover{
+    background:#0b2b9f;
+    box-shadow:0 6px 14px rgba(8,31,120,0.27);
+}
+
+.hero-pwa-card .install-pwa-button:focus{
+    outline:2px solid var(--secondary-pink);
+    outline-offset:2px;
+}
+
+.hero-pwa-card .install-pwa-help{
+    background:#eef2ff;
+    border-left:3px solid var(--primary-blue);
+    color:#25345f;
+    grid-column:1 / -1;
+    margin:2px 0 0;
+    overflow-wrap:break-word;
+}
+
+@media(max-width:600px){
+    .hero{
+        height:auto;
+        min-height:100vh;
+        padding-bottom:32px;
+        padding-top:90px;
+    }
+
+    .hero-action-group{
+        width:100%;
+    }
+
+    .hero-action-group .hero-buttons{
+        flex-direction:column;
+        gap:0;
+    }
+
+    .hero-action-group .hero-buttons .btn-large{
+        flex:none;
+        margin-bottom:12px;
+        width:100%;
+    }
+
+    .hero-pwa-card{
+        grid-template-columns:38px minmax(0,1fr);
+        margin-top:0;
+        padding:12px;
+    }
+
+    .hero-pwa-card .install-pwa-button{
+        grid-column:1 / -1;
+        margin-top:4px;
+        width:100%;
+    }
+}
+
 /* Suppressions administrateur : actions compactes, confirmations et messages. */
 .admin-delete-trigger{
     align-items:center;
@@ -4375,5 +4559,141 @@ footer{
         max-width:100%;
         min-width:0;
         width:100% !important;
+    }
+}
+.google-auth-block {
+    margin: 0 0 24px;
+}
+
+.google-auth-form {
+    margin: 0;
+}
+
+.google-auth-button {
+    align-items: center;
+    background: #fff;
+    border: 1px solid #747775;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, .16);
+    color: #1f1f1f;
+    cursor: pointer;
+    display: flex;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    justify-content: center;
+    line-height: 20px;
+    min-height: 44px;
+    padding: 10px 12px;
+    text-transform: none;
+    transition: background-color .2s ease, box-shadow .2s ease;
+    width: 100%;
+}
+
+.google-auth-button:hover,
+.google-auth-button:focus {
+    background: #f8faff;
+    box-shadow: 0 2px 5px rgba(60, 64, 67, .22);
+    outline: none;
+}
+
+.google-auth-button img {
+    flex: 0 0 18px;
+    height: 18px;
+    margin-right: 10px;
+    width: 18px;
+}
+
+.google-auth-separator {
+    align-items: center;
+    color: #777;
+    display: flex;
+    font-size: 13px;
+    margin: 18px 0 4px;
+    text-transform: lowercase;
+}
+
+.google-auth-separator::before,
+.google-auth-separator::after {
+    background: #dfe3eb;
+    content: "";
+    flex: 1;
+    height: 1px;
+}
+
+.google-auth-separator span {
+    padding: 0 12px;
+}
+
+.google-onboarding-notice {
+    background: #eef3ff;
+    border-left: 4px solid #081f78;
+    border-radius: 8px;
+    color: #24304f;
+    margin: 0 0 24px;
+    padding: 14px 16px;
+}
+
+.google-onboarding-notice strong {
+    color: #081f78;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.google-choice-page {
+    background: #f4f6fb;
+    min-height: 100vh;
+}
+
+.google-choice-container {
+    max-width: 720px;
+    padding-top: 7vh;
+}
+
+.google-choice-card {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.google-choice-card .card-content {
+    padding: 34px;
+}
+
+.google-choice-icon {
+    color: #081f78;
+    font-size: 64px;
+}
+
+.google-choice-actions {
+    display: grid;
+    gap: 12px;
+    margin-top: 26px;
+}
+
+.google-choice-actions form,
+.google-choice-actions button {
+    margin: 0;
+    width: 100%;
+}
+
+@media only screen and (max-width: 600px) {
+    .google-auth-button {
+        min-height: 46px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .google-choice-container {
+        padding-top: 18px;
+        width: 94%;
+    }
+
+    .google-choice-card .card-content {
+        padding: 24px 18px;
+    }
+
+    .google-choice-actions .btn-large {
+        font-size: 13px;
+        padding: 0 12px;
     }
 }

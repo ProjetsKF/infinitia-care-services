@@ -197,24 +197,100 @@ $allowed_mime_types = array(
     'docx' => array('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
 );
 
-if(!function_exists('finfo_open') || !is_uploaded_file($tmp_name)){
+if(!is_uploaded_file($tmp_name)){
 
-    $_SESSION['error'] = "Le fichier téléversé n’a pas pu être vérifié.";
+    error_log("Candidate document was not recognized as an HTTP upload after PHP reported no upload error.");
+    $_SESSION['error'] = "Le fichier n’a pas été reçu correctement. Veuillez le sélectionner de nouveau.";
     header("Location: " . app_url("intervenant/documents"));
     exit();
 
 }
 
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime_type = $finfo ? finfo_file($finfo, $tmp_name) : false;
+$content_is_valid = false;
 
-if($finfo){
-    finfo_close($finfo);
+if(function_exists('finfo_open')){
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = $finfo ? finfo_file($finfo, $tmp_name) : false;
+
+    if($finfo){
+        finfo_close($finfo);
+    }
+
+    if($mime_type !== false
+        && isset($allowed_mime_types[$extension])
+        && in_array($mime_type, $allowed_mime_types[$extension], true)){
+        $content_is_valid = true;
+    }
+
+}else{
+
+    error_log("Candidate document MIME validation is using the content fallback: finfo extension missing.");
+
+    if($extension === 'jpg' || $extension === 'jpeg' || $extension === 'png'){
+
+        $image_info = @getimagesize($tmp_name);
+
+        if(is_array($image_info) && isset($image_info[2])){
+            if(($extension === 'jpg' || $extension === 'jpeg')
+                && $image_info[2] === IMAGETYPE_JPEG){
+                $content_is_valid = true;
+            }elseif($extension === 'png' && $image_info[2] === IMAGETYPE_PNG){
+                $content_is_valid = true;
+            }
+        }
+
+    }elseif($extension === 'pdf'){
+
+        $file_handle = fopen($tmp_name, 'rb');
+
+        if($file_handle){
+            $file_signature = fread($file_handle, 5);
+            fclose($file_handle);
+
+            if($file_signature === '%PDF-'){
+                $content_is_valid = true;
+            }
+        }
+
+    }elseif($extension === 'doc'){
+
+        $file_handle = fopen($tmp_name, 'rb');
+
+        if($file_handle){
+            $file_signature = fread($file_handle, 8);
+            fclose($file_handle);
+
+            if($file_signature === "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"){
+                $content_is_valid = true;
+            }
+        }
+
+    }elseif($extension === 'docx'){
+
+        if(class_exists('ZipArchive')){
+            $docx_archive = new ZipArchive();
+            $docx_open_result = $docx_archive->open($tmp_name);
+
+            if($docx_open_result === true){
+                $has_content_types = $docx_archive->locateName('[Content_Types].xml') !== false;
+                $has_word_document = $docx_archive->locateName('word/document.xml') !== false;
+
+                if($has_content_types && $has_word_document){
+                    $content_is_valid = true;
+                }
+
+                $docx_archive->close();
+            }
+        }else{
+            error_log("Candidate DOCX validation is unavailable: ZipArchive extension missing.");
+        }
+
+    }
+
 }
 
-if($mime_type === false
-    || !isset($allowed_mime_types[$extension])
-    || !in_array($mime_type, $allowed_mime_types[$extension], true)){
+if(!$content_is_valid){
 
     $_SESSION['error'] = "Le contenu du fichier ne correspond pas au format autorisé.";
     header("Location: " . app_url("intervenant/documents"));

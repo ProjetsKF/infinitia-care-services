@@ -1,9 +1,8 @@
 <?php
 
-session_start();
-
-require_once("config/database.php");
 require_once("config/auth.php");
+infinitia_session_start();
+require_once("config/database.php");
 
 infinitia_delete_expired_password_reset_tokens($conn);
 
@@ -16,7 +15,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $csrf_token = isset($_POST["csrf_token"]) ? $_POST["csrf_token"] : "";
     $email = isset($_POST["email"]) ? trim($_POST["email"]) : "";
 
-    if(!infinitia_verify_csrf_token("forgot_password_csrf", $csrf_token)){
+    if(!infinitia_consume_csrf_token("forgot_password_csrf", $csrf_token)){
 
         $_SESSION["error"] = "La demande a expire. Veuillez reessayer.";
 
@@ -40,6 +39,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             status
         FROM users
         WHERE email = ?
+        AND password IS NOT NULL
         LIMIT 1
         ";
 
@@ -93,7 +93,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 }
 
-                $sent = infinitia_send_password_reset_email($user["email"], $full_name, $reset_link);
+                $sent = false;
+
+                if($reset_link != ""){
+                    $sent = infinitia_send_password_reset_email($user["email"], $full_name, $reset_link);
+                }
 
                 if(!$sent && infinitia_is_development()){
 

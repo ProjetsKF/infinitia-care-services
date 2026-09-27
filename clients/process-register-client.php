@@ -1,339 +1,289 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-session_start();
-// ========================================
-// CONNEXION BASE DE DONNEES
-// ========================================
-
+require_once("../config/auth.php");
+infinitia_session_start();
 require_once("../config/database.php");
+require_once("../config/google-oauth.php");
 
-// ========================================
-// VERIFIER SI LE FORMULAIRE EST ENVOYE
-// ========================================
+function client_registration_redirect_error($message)
+{
+    $_SESSION["error"] = $message;
+    header("Location: " . app_url("inscription/client"));
+    exit();
+}
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
+if($_SERVER["REQUEST_METHOD"] != "POST"){
+    client_registration_redirect_error("Acces refuse.");
+}
 
-    // ========================================
-    // RECUPERATION DES DONNEES
-    // ========================================
+$csrf_token = isset($_POST["csrf_token"]) ? $_POST["csrf_token"] : "";
 
-    $first_name = trim($_POST['first_name']);
-    $last_name = trim($_POST['last_name']);
-    $email = trim($_POST['email']);
-    $phone = trim($_POST['phone']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
+if(!infinitia_consume_csrf_token("register_client_csrf", $csrf_token)){
+    client_registration_redirect_error("La demande a expire. Veuillez reessayer.");
+}
 
-    $client_type = $_POST['client_type'];
-    $company_name = trim($_POST['company_name']);
-    $address = trim($_POST['address']);
-    $city = trim($_POST['city']);
-    $gps_location = trim($_POST['gps_location']);
+$google_onboarding_token = isset($_POST["google_onboarding_token"])
+    ? trim($_POST["google_onboarding_token"])
+    : "";
+$google_pending = false;
+$google_identity = array();
+$is_google_registration = false;
 
-    // ROLE CLIENT = 2
+if($google_onboarding_token != ""){
+    $google_pending = infinitia_google_pending_registration(
+        "register_client",
+        $google_onboarding_token
+    );
 
-    $role_id = 2;
+    if($google_pending === false || !isset($google_pending["identity"])){
+        client_registration_redirect_error("La validation Google a expire. Veuillez recommencer.");
+    }
 
-    // STATUS PAR DEFAUT
+    $google_identity = $google_pending["identity"];
+    $is_google_registration = true;
+}
 
-    $status = "active";
+$first_name = isset($_POST["first_name"]) ? trim($_POST["first_name"]) : "";
+$last_name = isset($_POST["last_name"]) ? trim($_POST["last_name"]) : "";
+$email = $is_google_registration
+    ? $google_identity["email"]
+    : (isset($_POST["email"]) ? trim($_POST["email"]) : "");
+$phone = isset($_POST["phone"]) ? trim($_POST["phone"]) : "";
+$password = isset($_POST["password"]) ? $_POST["password"] : "";
+$confirm_password = isset($_POST["confirm_password"]) ? $_POST["confirm_password"] : "";
+$client_type = isset($_POST["client_type"]) ? trim($_POST["client_type"]) : "";
+$company_name = isset($_POST["company_name"]) ? trim($_POST["company_name"]) : "";
+$address = isset($_POST["address"]) ? trim($_POST["address"]) : "";
+$city = isset($_POST["city"]) ? trim($_POST["city"]) : "";
+$gps_location = isset($_POST["gps_location"]) ? trim($_POST["gps_location"]) : "";
 
-    // ========================================
-    // VALIDATION MOT DE PASSE
-    // ========================================
+if($first_name == "" || $last_name == "" || $email == "" || $phone == "" ||
+   (!$is_google_registration && ($password == "" || $confirm_password == "")) ||
+   $client_type == "" ||
+   $address == "" || $city == ""){
+    client_registration_redirect_error("Tous les champs obligatoires doivent etre remplis.");
+}
 
+if(strlen($email) > 150 || !filter_var($email, FILTER_VALIDATE_EMAIL)){
+    client_registration_redirect_error("Adresse email invalide.");
+}
+
+if(!in_array($client_type, array("individual", "company", "expatriate"), true)){
+    client_registration_redirect_error("Type de client invalide.");
+}
+
+if(!$is_google_registration){
     if($password !== $confirm_password){
-
-        $_SESSION['error'] =
-                "Les mots de passe ne correspondent pas.";
-
-                header(
-                    "Location: " . app_url("inscription/client")
-                );
-
-                exit();
-
+        client_registration_redirect_error("Les mots de passe ne correspondent pas.");
     }
 
-    // ========================================
-    // VERIFIER SI EMAIL EXISTE
-    // ========================================
+    $password_error = infinitia_validate_password_strength($password);
 
-    $check_email = $conn->prepare(
-        "SELECT id FROM users WHERE email = ?"
+    if($password_error != ""){
+        client_registration_redirect_error($password_error);
+    }
+}
+
+$sql = "SELECT id FROM users WHERE email = ? LIMIT 1";
+$stmt = mysqli_prepare($conn, $sql);
+
+if(!$stmt){
+    error_log("Client registration email lookup prepare error: " . mysqli_error($conn));
+    client_registration_redirect_error("Une erreur est survenue. Veuillez reessayer.");
+}
+
+mysqli_stmt_bind_param($stmt, "s", $email);
+
+if(!mysqli_stmt_execute($stmt)){
+    error_log("Client registration email lookup execute error: " . mysqli_stmt_error($stmt));
+    mysqli_stmt_close($stmt);
+    client_registration_redirect_error("Une erreur est survenue. Veuillez reessayer.");
+}
+
+mysqli_stmt_store_result($stmt);
+$email_exists = mysqli_stmt_num_rows($stmt) > 0;
+mysqli_stmt_close($stmt);
+
+if($email_exists){
+    client_registration_redirect_error("Cette adresse email existe deja.");
+}
+
+$profile_photo = "";
+$uploaded_file_path = "";
+
+if(isset($_FILES["profile_photo"]) && (int)$_FILES["profile_photo"]["error"] !== UPLOAD_ERR_NO_FILE){
+    $validation = infinitia_validate_profile_image_upload(
+        $_FILES["profile_photo"],
+        array("image/jpeg", "image/png"),
+        5 * 1024 * 1024
     );
 
-    $check_email->bind_param(
-        "s",
-        $email
-    );
-
-    $check_email->execute();
-
-    $result = $check_email->get_result();
-
-    if($result->num_rows > 0){
-
-        $_SESSION['error'] =
-            "Cette adresse email existe déjà.";
-
-            header(
-                "Location: " . app_url("inscription/client")
-            );
-
-            exit();
-
+    if(!$validation["valid"]){
+        client_registration_redirect_error($validation["error"]);
     }
 
-    // ========================================
-    // HASH PASSWORD
-    // ========================================
+    $upload_dir = "../uploads/profiles/";
 
-    $hashed_password = password_hash(
-        $password,
-        PASSWORD_DEFAULT
-    );
-
-    // ========================================
-    // GESTION PHOTO
-    // ========================================
-
-    $profile_photo = "";
-
-    if(isset($_FILES['profile_photo']) &&
-       $_FILES['profile_photo']['error'] == 0){
-
-        $allowed_types = [
-
-            "image/jpeg",
-            "image/png",
-            "image/jpg"
-
-        ];
-
-        $max_size = 5 * 1024 * 1024;
-
-        $file_type =
-        $_FILES['profile_photo']['type'];
-
-        $file_size =
-        $_FILES['profile_photo']['size'];
-
-        // VERIFIER TYPE
-
-        if(!in_array($file_type, $allowed_types)){
-
-            die("Format image non autorisé.");
-
-        }
-
-        // VERIFIER TAILLE
-
-        if($file_size > $max_size){
-
-            die("Image supérieure à 5 MB.");
-
-        }
-
-        // DOSSIER UPLOAD
-
-        $upload_dir =
-        "../uploads/profiles/";
-
-        // CREER DOSSIER SI N'EXISTE PAS
-
-        if(!is_dir($upload_dir)){
-
-            mkdir(
-                $upload_dir,
-                0777,
-                true
-            );
-
-        }
-
-        // GENERER NOM UNIQUE
-
-        $file_name =
-        time() . "_" .
-        basename(
-            $_FILES['profile_photo']['name']
-        );
-
-        $target_file =
-        $upload_dir . $file_name;
-
-        // UPLOAD IMAGE
-
-        if(move_uploaded_file(
-
-            $_FILES['profile_photo']['tmp_name'],
-            $target_file
-
-        )){
-
-            $profile_photo = $file_name;
-
-        }
-
+    if(!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)){
+        error_log("Client registration profile upload directory creation failed.");
+        client_registration_redirect_error("Impossible de televerser la photo.");
     }
 
-   // ========================================
-// INSERTION USERS
-// ========================================
+    $random_name = infinitia_secure_random_hex(16);
 
-$insert_user = $conn->prepare(
-
-    "INSERT INTO users(
-
-        role_id,
-        first_name,
-        last_name,
-        email,
-        phone,
-        password,
-        profile_photo,
-        status
-
-    )
-
-    VALUES(
-
-        ?, ?, ?, ?, ?, ?, ?, ?
-
-    )"
-
-);
-
-$insert_user->bind_param(
-
-    "isssssss",
-
-    $role_id,
-    $first_name,
-    $last_name,
-    $email,
-    $phone,
-    $hashed_password,
-    $profile_photo,
-    $status
-
-);
-
-// ========================================
-// EXECUTION USER
-// ========================================
-
-if($insert_user->execute()){
-
-    // ========================================
-    // RECUPERATION ID USER
-    // ========================================
-
-    $user_id = $conn->insert_id;
-
-    // ========================================
-    // SI CE N'EST PAS UNE ENTREPRISE
-    // ========================================
-
-    if($client_type != "company"){
-
-        $company_name = NULL;
-
+    if($random_name === false){
+        client_registration_redirect_error("Impossible de televerser la photo.");
     }
 
-    // ========================================
-    // INSERTION CLIENT
-    // ========================================
+    $profile_photo = $random_name . "." . $validation["extension"];
+    $uploaded_file_path = $upload_dir . $profile_photo;
 
-    $insert_client = $conn->prepare(
+    if(!move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $uploaded_file_path)){
+        error_log("Client registration profile photo move failed.");
+        client_registration_redirect_error("Impossible de televerser la photo.");
+    }
+}
 
-        "INSERT INTO clients(
+$password_hash = NULL;
 
-            user_id,
-            client_type,
-            company_name,
-            address,
-            city,
-            gps_location
+if(!$is_google_registration){
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        )
+    if($password_hash === false){
+        if($uploaded_file_path != "" && is_file($uploaded_file_path)){
+            unlink($uploaded_file_path);
+        }
 
-        VALUES(
+        error_log("Client registration password hashing failed.");
+        client_registration_redirect_error("Une erreur est survenue. Veuillez reessayer.");
+    }
+}
 
-            ?, ?, ?, ?, ?, ?
+$role_id = 2;
+$status = "active";
+$user_id = 0;
+$transaction_ok = true;
+$stmt_user = false;
+$stmt_client = false;
 
-        )"
+mysqli_autocommit($conn, false);
 
+$sql = "
+INSERT INTO users(role_id, first_name, last_name, email, phone, password, profile_photo, status)
+VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+";
+$stmt_user = mysqli_prepare($conn, $sql);
+
+if(!$stmt_user){
+    error_log("Client registration user insert prepare error: " . mysqli_error($conn));
+    $transaction_ok = false;
+}
+
+if($transaction_ok){
+    mysqli_stmt_bind_param(
+        $stmt_user,
+        "isssssss",
+        $role_id,
+        $first_name,
+        $last_name,
+        $email,
+        $phone,
+        $password_hash,
+        $profile_photo,
+        $status
     );
 
-    $insert_client->bind_param(
+    if(!mysqli_stmt_execute($stmt_user)){
+        error_log("Client registration user insert execute error: " . mysqli_stmt_error($stmt_user));
+        $transaction_ok = false;
+    }else{
+        $user_id = mysqli_insert_id($conn);
+    }
+}
 
+if($stmt_user){
+    mysqli_stmt_close($stmt_user);
+}
+
+if($transaction_ok && $user_id <= 0){
+    error_log("Client registration user insert returned an invalid identifier.");
+    $transaction_ok = false;
+}
+
+if($client_type != "company"){
+    $company_name = NULL;
+}
+
+if($transaction_ok){
+    $sql = "
+    INSERT INTO clients(user_id, client_type, company_name, address, city, gps_location)
+    VALUES(?, ?, ?, ?, ?, ?)
+    ";
+    $stmt_client = mysqli_prepare($conn, $sql);
+
+    if(!$stmt_client){
+        error_log("Client registration profile insert prepare error: " . mysqli_error($conn));
+        $transaction_ok = false;
+    }
+}
+
+if($transaction_ok){
+    mysqli_stmt_bind_param(
+        $stmt_client,
         "isssss",
-
         $user_id,
         $client_type,
         $company_name,
         $address,
         $city,
         $gps_location
-
     );
 
-    // ========================================
-    // EXECUTION CLIENT
-    // ========================================
+    if(!mysqli_stmt_execute($stmt_client)){
+        error_log("Client registration profile insert execute error: " . mysqli_stmt_error($stmt_client));
+        $transaction_ok = false;
+    }
+}
 
-    if($insert_client->execute()){
+if($stmt_client){
+    mysqli_stmt_close($stmt_client);
+}
 
-        $_SESSION['success'] =
-        "Compte créé avec succès. Vous pouvez maintenant vous connecter.";
+if($transaction_ok && $is_google_registration){
+    if(!infinitia_google_insert_provider($conn, $user_id, $google_identity)){
+        $transaction_ok = false;
+    }
+}
 
-        header(
-            "Location: " . app_url("login")
-        );
+if($transaction_ok){
+    mysqli_commit($conn);
+    mysqli_autocommit($conn, true);
 
+    if($is_google_registration){
+        infinitia_google_clear_pending_identity();
+        infinitia_apply_user_session(array(
+            "id" => $user_id,
+            "role_id" => $role_id,
+            "first_name" => $first_name,
+            "last_name" => $last_name,
+            "email" => $email
+        ));
+        header("Location: " . app_url("client/tableau-de-bord"));
         exit();
-
-    }else{
-
-        $_SESSION['error'] =
-        "Erreur lors de l'enregistrement du profil client : " .
-        $insert_client->error;
-
-        header(
-            "Location: " . app_url("inscription/client")
-        );
-
-        exit();
-
     }
 
-}else{
-
-    $_SESSION['error'] =
-    "Erreur lors de la création du compte utilisateur : " .
-    $insert_user->error;
-
-    header(
-        "Location: " . app_url("inscription/client")
-    );
-
+    $_SESSION["success"] = "Compte cree avec succes. Vous pouvez maintenant vous connecter.";
+    header("Location: " . app_url("login"));
     exit();
-
 }
 
-}else{
+mysqli_rollback($conn);
+mysqli_autocommit($conn, true);
 
-    header(
-        "Location: " . app_url("inscription/client")
-    );
-
-    exit();
-
+if($uploaded_file_path != "" && is_file($uploaded_file_path)){
+    unlink($uploaded_file_path);
 }
+
+client_registration_redirect_error("Une erreur est survenue pendant la creation du compte. Veuillez reessayer.");
 
 ?>

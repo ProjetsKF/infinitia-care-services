@@ -6,6 +6,7 @@
     var installButton;
     var installLabel;
     var installHelp;
+    var installContainer;
     var installMode = "hidden";
 
     function getInstallButton() {
@@ -21,6 +22,9 @@
         if (button && !installLabel) {
             installLabel = document.getElementById("install-pwa-label");
             installHelp = document.getElementById("install-pwa-help");
+            installContainer = button.closest
+                ? button.closest("[data-pwa-install-container]")
+                : null;
         }
 
         return button;
@@ -80,6 +84,9 @@
         if (installHelp) {
             installHelp.hidden = true;
         }
+        if (installContainer) {
+            installContainer.hidden = true;
+        }
         installMode = "hidden";
     }
 
@@ -102,6 +109,9 @@
         if (installHelp) {
             installHelp.hidden = true;
         }
+        if (installContainer) {
+            installContainer.hidden = false;
+        }
         button.hidden = false;
     }
 
@@ -123,6 +133,9 @@
         installLabel.textContent = guide.label;
         installHelp.textContent = guide.help;
         installHelp.hidden = true;
+        if (installContainer) {
+            installContainer.hidden = false;
+        }
         button.hidden = false;
     }
 

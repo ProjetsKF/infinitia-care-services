@@ -1,7 +1,7 @@
 <?php
 
-session_start();
-
+require_once("../config/auth.php");
+infinitia_session_start();
 require_once("../config/database.php");
 
 function e($value, $empty_text = "")
@@ -14,6 +14,7 @@ function e($value, $empty_text = "")
 }
 
 $user_id = $_SESSION['user_id'];
+$candidate_password_csrf = infinitia_csrf_token("candidate_password_csrf");
 
 $sql = "
 
@@ -636,6 +637,10 @@ $intervenant = $result->fetch_assoc();
         action="<?php echo app_url_html("intervenant/mot-de-passe/modifier"); ?>"
         method="POST">
 
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?php echo e($candidate_password_csrf); ?>">
+
             <div class="input-field">
 
                 <input
@@ -658,6 +663,8 @@ $intervenant = $result->fetch_assoc();
                 type="password"
                 id="new_password"
                 name="new_password"
+                minlength="8"
+                maxlength="128"
                 required>
 
                 <label for="new_password">
@@ -674,6 +681,8 @@ $intervenant = $result->fetch_assoc();
                 type="password"
                 id="confirm_password"
                 name="confirm_password"
+                minlength="8"
+                maxlength="128"
                 required>
 
                 <label for="confirm_password">

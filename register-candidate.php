@@ -1,8 +1,19 @@
 <?php
 
 
-session_start();
-require_once("config/app.php");
+require_once("config/auth.php");
+require_once("config/google-oauth.php");
+infinitia_session_start();
+$register_candidate_csrf = infinitia_csrf_token("register_candidate_csrf");
+$google_start_csrf = infinitia_csrf_token("google_oauth_start_csrf");
+$google_pending = infinitia_google_pending_identity();
+
+if($google_pending === false || $google_pending["intent"] !== "register_candidate"){
+    $google_pending = false;
+}
+
+$google_identity = $google_pending === false ? array() : $google_pending["identity"];
+$google_onboarding_token = $google_pending === false ? "" : $google_pending["token"];
 
 ?>
 
@@ -125,10 +136,42 @@ require_once("config/app.php");
 
                             <?php endif; ?>
 
+<?php if($google_pending === false): ?>
+<div class="google-auth-block">
+    <form class="google-auth-form"
+          action="<?php echo app_url_html("auth/google/start.php"); ?>"
+          method="POST">
+        <input type="hidden" name="csrf_token"
+               value="<?php echo htmlspecialchars($google_start_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+        <input type="hidden" name="intent" value="register_candidate">
+        <button type="submit" class="google-auth-button">
+            <img src="<?php echo app_url_html("assets/images/google-g-logo.svg"); ?>" alt="">
+            <span>S’inscrire avec Google</span>
+        </button>
+    </form>
+    <div class="google-auth-separator"><span>ou</span></div>
+</div>
+<?php else: ?>
+<div class="google-onboarding-notice">
+    <strong>Identité Google vérifiée</strong>
+    Complétez votre dossier professionnel. Votre profil restera soumis à la validation INFINITIA.
+</div>
+<?php endif; ?>
+
 <form
 action="<?php echo app_url_html("inscription/intervenant/traiter"); ?>"
 method="POST"
 enctype="multipart/form-data">
+
+    <input type="hidden"
+           name="csrf_token"
+           value="<?php echo htmlspecialchars($register_candidate_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+
+    <?php if($google_pending !== false): ?>
+    <input type="hidden"
+           name="google_onboarding_token"
+           value="<?php echo htmlspecialchars($google_onboarding_token, ENT_QUOTES, 'UTF-8'); ?>">
+    <?php endif; ?>
 
     <!-- =========================
          INFORMATIONS COMPTE
@@ -141,6 +184,7 @@ enctype="multipart/form-data">
             <input
             type="text"
             name="first_name"
+            value="<?php echo htmlspecialchars(isset($google_identity["first_name"]) ? $google_identity["first_name"] : "", ENT_QUOTES, 'UTF-8'); ?>"
             required>
 
             <label>Prénom</label>
@@ -152,6 +196,7 @@ enctype="multipart/form-data">
             <input
             type="text"
             name="last_name"
+            value="<?php echo htmlspecialchars(isset($google_identity["last_name"]) ? $google_identity["last_name"] : "", ENT_QUOTES, 'UTF-8'); ?>"
             required>
 
             <label>Nom</label>
@@ -167,6 +212,8 @@ enctype="multipart/form-data">
             <input
             type="email"
             name="email"
+            value="<?php echo htmlspecialchars(isset($google_identity["email"]) ? $google_identity["email"] : "", ENT_QUOTES, 'UTF-8'); ?>"
+            <?php echo $google_pending !== false ? 'readonly' : ''; ?>
             required>
 
             <label>Adresse e-mail</label>
@@ -190,6 +237,7 @@ enctype="multipart/form-data">
 
     </div>
 
+    <?php if($google_pending === false): ?>
     <div class="row">
 
         <div class="input-field col s12 m6">
@@ -198,6 +246,8 @@ enctype="multipart/form-data">
             type="password"
             name="password"
             id="password"
+            minlength="8"
+            maxlength="128"
             required>
 
             <label for="password">
@@ -212,6 +262,8 @@ enctype="multipart/form-data">
             type="password"
             name="confirm_password"
             id="confirm_password"
+            minlength="8"
+            maxlength="128"
             required>
 
             <label for="confirm_password">
@@ -221,6 +273,7 @@ enctype="multipart/form-data">
         </div>
 
     </div>
+    <?php endif; ?>
 
     <!-- =========================
          PHOTO
@@ -235,7 +288,7 @@ enctype="multipart/form-data">
             <input
             type="file"
             name="profile_photo"
-            accept="image/*">
+            accept="image/jpeg,image/png,image/gif">
 
         </div>
 

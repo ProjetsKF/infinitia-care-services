@@ -3,6 +3,9 @@
 session_start();
 
 require_once("../config/database.php");
+require_once(dirname(__DIR__) . "/includes/auth.php");
+
+infinitia_require_authenticated_role($conn, array(3));
 
 /* =========================================
    VERIFICATION CONNEXION

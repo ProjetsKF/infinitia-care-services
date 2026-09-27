@@ -1,12 +1,9 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-session_start();
-
-require_once("config/database.php");
 require_once("config/auth.php");
+require_once("config/google-oauth.php");
+infinitia_session_start();
+require_once("config/database.php");
 
 infinitia_delete_expired_tokens($conn);
 
@@ -24,6 +21,8 @@ if(isset($_SESSION["user_id"]) && isset($_SESSION["role_id"])){
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
+    $csrf_token = isset($_POST["csrf_token"]) ? $_POST["csrf_token"] : "";
+
     $email = isset($_POST["email"])
         ? trim($_POST["email"])
         : "";
@@ -36,12 +35,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         ? 1
         : 0;
 
-    if(empty($email) || empty($password)){
+    if(!infinitia_consume_csrf_token("login_csrf", $csrf_token)){
+
+        $_SESSION["error"] = "La demande a expire. Veuillez reessayer.";
+
+    }elseif(empty($email) || empty($password)){
 
         $_SESSION["error"] =
         "Veuillez remplir tous les champs.";
 
     }else{
+
+        $rate_limit = infinitia_login_rate_limit_status($conn, $email);
+
+        if($rate_limit["limited"]){
+
+            $_SESSION["error"] = "Trop de tentatives de connexion. Veuillez reessayer dans quelques minutes.";
+            error_log("Login rate limit reached for hashed identifiers.");
+
+        }else{
 
         $stmt = mysqli_prepare(
             $conn,
@@ -61,8 +73,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            $_SESSION["error"] =
-            "Erreur de connexion à la base de données.";
+            error_log("Login user lookup prepare error: " . mysqli_error($conn));
+            $_SESSION["error"] = "Une erreur est survenue. Veuillez reessayer.";
 
         }else{
 
@@ -72,7 +84,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 $email
             );
 
-            mysqli_stmt_execute($stmt);
+            if(!mysqli_stmt_execute($stmt)){
+                error_log("Login user lookup execute error: " . mysqli_stmt_error($stmt));
+                $_SESSION["error"] = "Une erreur est survenue. Veuillez reessayer.";
+                mysqli_stmt_close($stmt);
+                $stmt = false;
+            }
+
+            if($stmt){
             mysqli_stmt_store_result($stmt);
             mysqli_stmt_bind_result(
                 $stmt,
@@ -97,10 +116,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     "status" => $db_status
                 );
 
-                if(password_verify(
-                    $password,
-                    $user["password"]
-                )){
+                $has_local_password = $user["password"] !== NULL && $user["password"] !== "";
+                $password_hash_to_verify = $has_local_password
+                    ? $user["password"]
+                    : '$2y$10$CBe6j3vSmTOfq7Q3ZqAxcOc9Cv2Av6HO.NShhEec2Uhpor4E1gSmm';
+                $local_password_valid = password_verify($password, $password_hash_to_verify);
+
+                if($has_local_password && $local_password_valid){
 
                     /* =====================================
                        VERIFICATION STATUT DU COMPTE
@@ -130,6 +152,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                            CREATION SESSION
                         ====================================== */
 
+                        infinitia_clear_successful_login_attempts($conn, $email);
                         infinitia_apply_user_session($user);
 
                         /* =====================================
@@ -193,25 +216,36 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 }else{
 
-                    $_SESSION["error"] =
-                    "Mot de passe incorrect.";
+                    infinitia_record_failed_login($conn, $email);
+                    $_SESSION["error"] = "Adresse email ou mot de passe incorrect.";
 
                 }
 
             }else{
 
-                $_SESSION["error"] =
-                "Adresse email introuvable.";
+                password_verify(
+                    $password,
+                    '$2y$10$CBe6j3vSmTOfq7Q3ZqAxcOc9Cv2Av6HO.NShhEec2Uhpor4E1gSmm'
+                );
+                infinitia_record_failed_login($conn, $email);
+                $_SESSION["error"] = "Adresse email ou mot de passe incorrect.";
 
             }
 
             mysqli_stmt_close($stmt);
+
+            }
+
+        }
 
         }
 
     }
 
 }
+
+$login_csrf_token = infinitia_csrf_token("login_csrf");
+$google_start_csrf = infinitia_csrf_token("google_oauth_start_csrf");
 
 ?>
 <!DOCTYPE html>
@@ -248,8 +282,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-     <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
-
     <!-- CSS -->
 
     <link rel="stylesheet"
@@ -295,7 +327,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <i class="material-icons tiny">error_outline</i>
 
         <?php
-        echo $_SESSION['error'];
+        echo htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8');
         unset($_SESSION['error']);
         ?>
 
@@ -348,9 +380,28 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                         <br>
 
+                        <div class="google-auth-block">
+                            <form class="google-auth-form"
+                                  action="<?php echo app_url_html("auth/google/start.php"); ?>"
+                                  method="POST">
+                                <input type="hidden" name="csrf_token"
+                                       value="<?php echo htmlspecialchars($google_start_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+                                <input type="hidden" name="intent" value="login">
+                                <button type="submit" class="google-auth-button">
+                                    <img src="<?php echo app_url_html("assets/images/google-g-logo.svg"); ?>" alt="">
+                                    <span>Continuer avec Google</span>
+                                </button>
+                            </form>
+                            <div class="google-auth-separator"><span>ou</span></div>
+                        </div>
+
                         <!-- FORM -->
 
                         <form action="" method="POST">
+
+                            <input type="hidden"
+                                   name="csrf_token"
+                                   value="<?php echo htmlspecialchars($login_csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
 
                             <!-- EMAIL -->
 

@@ -1,7 +1,7 @@
 <?php
 
-session_start();
-
+require_once("../config/auth.php");
+infinitia_session_start();
 require_once("../config/database.php");
 
 if(!isset($_SESSION["user_id"])){
@@ -19,6 +19,7 @@ if(!isset($_SESSION["role_id"]) || $_SESSION["role_id"] != 2){
 }
 
 $user_id = (int)$_SESSION["user_id"];
+$client_settings_csrf = infinitia_csrf_token("client_settings_csrf");
 
 function safe_text($value)
 {
@@ -85,6 +86,13 @@ function redirect_settings()
 }
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
+
+    $submitted_csrf = isset($_POST["csrf_token"]) ? $_POST["csrf_token"] : "";
+
+    if(!infinitia_consume_csrf_token("client_settings_csrf", $submitted_csrf)){
+        $_SESSION["error"] = "La session du formulaire a expire. Veuillez reessayer.";
+        redirect_settings();
+    }
 
     $action = isset($_POST["action"])
         ? $_POST["action"]
@@ -382,9 +390,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         }
 
-        if(strlen($new_password) < 6){
+        $password_error = infinitia_validate_password_strength($new_password);
 
-            $_SESSION["error"] = "Le nouveau mot de passe doit contenir au moins 6 caracteres.";
+        if($password_error != ""){
+
+            $_SESSION["error"] = $password_error;
             redirect_settings();
 
         }
@@ -402,7 +412,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            error_log("Client password lookup prepare error: " . mysqli_error($conn));
+            $_SESSION["error"] = "Une erreur est survenue. Veuillez reessayer.";
+            redirect_settings();
 
         }
 
@@ -412,7 +424,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
 
-        if(!password_verify($current_password, $password_hash_current)){
+        if($password_hash_current === NULL
+            || $password_hash_current === ""
+            || !password_verify($current_password, $password_hash_current)){
 
             $_SESSION["error"] = "Le mot de passe actuel est incorrect.";
             redirect_settings();
@@ -431,7 +445,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         if(!$stmt){
 
-            die("Erreur SQL : " . mysqli_error($conn));
+            error_log("Client password update prepare error: " . mysqli_error($conn));
+            $_SESSION["error"] = "Une erreur est survenue. Veuillez reessayer.";
+            redirect_settings();
 
         }
 
@@ -776,6 +792,10 @@ $photo_path = profile_photo_path($user["profile_photo"]);
           enctype="multipart/form-data">
 
         <input type="hidden"
+               name="csrf_token"
+               value="<?php echo safe_text($client_settings_csrf); ?>">
+
+        <input type="hidden"
                name="action"
                value="update_profile">
 
@@ -885,6 +905,10 @@ $photo_path = profile_photo_path($user["profile_photo"]);
           method="POST">
 
         <input type="hidden"
+               name="csrf_token"
+               value="<?php echo safe_text($client_settings_csrf); ?>">
+
+        <input type="hidden"
                name="action"
                value="update_password">
 
@@ -910,6 +934,8 @@ $photo_path = profile_photo_path($user["profile_photo"]);
                 <input type="password"
                        name="new_password"
                        id="new_password"
+                       minlength="8"
+                       maxlength="128"
                        required>
 
                 <label for="new_password">
@@ -923,6 +949,8 @@ $photo_path = profile_photo_path($user["profile_photo"]);
                 <input type="password"
                        name="confirm_password"
                        id="confirm_password"
+                       minlength="8"
+                       maxlength="128"
                        required>
 
                 <label for="confirm_password">

@@ -1,8 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 /* =========================================
    PAGE ACTIVE
 ========================================= */
@@ -17,18 +14,15 @@ if(!isset($current_page)){
    SESSION
 ========================================= */
 
-if(session_status() === PHP_SESSION_NONE){
-
-    session_start();
-
-}
+require_once(dirname(__DIR__) . "/config/auth.php");
+infinitia_session_start();
 
 /* =========================================
    CONNEXION BDD
 ========================================= */
 
-require_once(dirname(__DIR__) . "/config/app.php");
 require_once(dirname(__DIR__) . "/config/database.php");
+$logout_csrf = infinitia_csrf_token("logout_csrf");
 
 /* =========================================
    VERIFICATION CONNEXION
@@ -260,15 +254,17 @@ if(!$userMenu){
 
         <!-- DECONNEXION -->
 
-        <a href="<?php echo app_url_html("deconnexion"); ?>">
-
-            <i class="material-icons">
-                logout
-            </i>
-
-            Déconnexion
-
-        </a>
+        <form action="<?php echo app_url_html("deconnexion"); ?>"
+              method="POST"
+              class="sidebar-logout-form">
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?php echo htmlspecialchars($logout_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+            <button type="submit" class="sidebar-logout-button">
+                <i class="material-icons">logout</i>
+                <span>Déconnexion</span>
+            </button>
+        </form>
 
         <?php include(dirname(__DIR__) . "/includes/pwa-install-button.php"); ?>
     </div>

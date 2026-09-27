@@ -64,6 +64,8 @@ require_once("config/app.php");
 
                     </p>
 
+                    <div class="hero-action-group">
+
                     <div class="hero-buttons">
 
                         <!-- CLIENT -->
@@ -95,6 +97,24 @@ require_once("config/app.php");
                                 </i>
 
                             </a>
+
+                    </div>
+
+                    <div class="hero-pwa-card"
+                         data-pwa-install-container
+                         aria-labelledby="hero-pwa-title"
+                         hidden>
+                        <div class="hero-pwa-icon" aria-hidden="true">
+                            <i class="material-icons">download</i>
+                        </div>
+
+                        <div class="hero-pwa-copy">
+                            <h2 id="hero-pwa-title">Installez INFINITIA Care Services</h2>
+                            <p>Accédez plus rapidement à la plateforme depuis votre appareil.</p>
+                        </div>
+
+                        <?php include(__DIR__ . "/includes/pwa-install-button.php"); ?>
+                    </div>
 
                     </div>
 

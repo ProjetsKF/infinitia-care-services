@@ -1,6 +1,17 @@
 <?php
-session_start();
-require_once("config/app.php");
+require_once("config/auth.php");
+require_once("config/google-oauth.php");
+infinitia_session_start();
+$register_client_csrf = infinitia_csrf_token("register_client_csrf");
+$google_start_csrf = infinitia_csrf_token("google_oauth_start_csrf");
+$google_pending = infinitia_google_pending_identity();
+
+if($google_pending === false || $google_pending["intent"] !== "register_client"){
+    $google_pending = false;
+}
+
+$google_identity = $google_pending === false ? array() : $google_pending["identity"];
+$google_onboarding_token = $google_pending === false ? "" : $google_pending["token"];
 
 ?>
 
@@ -45,6 +56,8 @@ require_once("config/app.php");
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
+
+    <link rel="stylesheet" href="<?php echo app_url_html("assets/css/style.css"); ?>">
 
     <style>
 
@@ -340,7 +353,7 @@ require_once("config/app.php");
                             <i class="material-icons left">error_outline</i>
 
                             <?php
-                                echo $_SESSION['error'];
+                                echo htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8');
                                 unset($_SESSION['error']);
                             ?>
 
@@ -358,10 +371,42 @@ require_once("config/app.php");
 
 <div class="card-content">
 
+    <?php if($google_pending === false): ?>
+    <div class="google-auth-block">
+        <form class="google-auth-form"
+              action="<?php echo app_url_html("auth/google/start.php"); ?>"
+              method="POST">
+            <input type="hidden" name="csrf_token"
+                   value="<?php echo htmlspecialchars($google_start_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+            <input type="hidden" name="intent" value="register_client">
+            <button type="submit" class="google-auth-button">
+                <img src="<?php echo app_url_html("assets/images/google-g-logo.svg"); ?>" alt="">
+                <span>S’inscrire avec Google</span>
+            </button>
+        </form>
+        <div class="google-auth-separator"><span>ou</span></div>
+    </div>
+    <?php else: ?>
+    <div class="google-onboarding-notice">
+        <strong>Identité Google vérifiée</strong>
+        Complétez les informations Client obligatoires. Aucun mot de passe INFINITIA ne sera créé.
+    </div>
+    <?php endif; ?>
+
     <form
 action="<?php echo app_url_html("inscription/client/traiter"); ?>"
 method="POST"
 enctype="multipart/form-data">
+
+        <input type="hidden"
+               name="csrf_token"
+               value="<?php echo htmlspecialchars($register_client_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+
+        <?php if($google_pending !== false): ?>
+        <input type="hidden"
+               name="google_onboarding_token"
+               value="<?php echo htmlspecialchars($google_onboarding_token, ENT_QUOTES, 'UTF-8'); ?>">
+        <?php endif; ?>
 
         <!-- ROLE -->
 
@@ -386,6 +431,7 @@ enctype="multipart/form-data">
                 type="text"
                 name="first_name"
                 id="first_name"
+                value="<?php echo htmlspecialchars(isset($google_identity["first_name"]) ? $google_identity["first_name"] : "", ENT_QUOTES, 'UTF-8'); ?>"
                 required>
 
                 <label for="first_name">
@@ -404,6 +450,7 @@ enctype="multipart/form-data">
                 type="text"
                 name="last_name"
                 id="last_name"
+                value="<?php echo htmlspecialchars(isset($google_identity["last_name"]) ? $google_identity["last_name"] : "", ENT_QUOTES, 'UTF-8'); ?>"
                 required>
 
                 <label for="last_name">
@@ -428,6 +475,8 @@ enctype="multipart/form-data">
                 type="email"
                 name="email"
                 id="email"
+                value="<?php echo htmlspecialchars(isset($google_identity["email"]) ? $google_identity["email"] : "", ENT_QUOTES, 'UTF-8'); ?>"
+                <?php echo $google_pending !== false ? 'readonly' : ''; ?>
                 required>
 
                 <label for="email">
@@ -458,6 +507,7 @@ enctype="multipart/form-data">
 
         </div>
 
+        <?php if($google_pending === false): ?>
         <div class="row">
 
     <!-- MOT DE PASSE -->
@@ -472,6 +522,8 @@ enctype="multipart/form-data">
         type="password"
         name="password"
         id="password"
+        minlength="8"
+        maxlength="128"
         required>
 
         <label for="password">
@@ -499,6 +551,8 @@ enctype="multipart/form-data">
         type="password"
         name="confirm_password"
         id="confirm_password"
+        minlength="8"
+        maxlength="128"
         required>
 
         <label for="confirm_password">
@@ -515,6 +569,7 @@ enctype="multipart/form-data">
     </div>
 
 </div>
+        <?php endif; ?>
 
         <!-- TYPE CLIENT -->
 
@@ -724,7 +779,7 @@ enctype="multipart/form-data">
             <input
             type="file"
             name="profile_photo"
-            accept="image/*">
+            accept="image/jpeg,image/png">
 
         </div>
 

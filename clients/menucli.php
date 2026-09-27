@@ -10,12 +10,10 @@ if(!isset($current_page)){
 
 <?php
 
-if(session_status() === PHP_SESSION_NONE){
-    session_start();
-}
-
-require_once(dirname(__DIR__) . "/config/app.php");
+require_once(dirname(__DIR__) . "/config/auth.php");
+infinitia_session_start();
 require_once(dirname(__DIR__) . "/config/database.php");
+$logout_csrf = infinitia_csrf_token("logout_csrf");
 
 $user_id = $_SESSION["user_id"];
 
@@ -206,17 +204,17 @@ $client = $resultUser->fetch_assoc();
 
         <!-- DECONNEXION -->
 
-        <a href="<?php echo app_url_html("deconnexion"); ?>">
-
-            <i class="material-icons">
-
-                logout
-
-            </i>
-
-            Déconnexion
-
-        </a>
+        <form action="<?php echo app_url_html("deconnexion"); ?>"
+              method="POST"
+              class="sidebar-logout-form">
+            <input type="hidden"
+                   name="csrf_token"
+                   value="<?php echo htmlspecialchars($logout_csrf, ENT_QUOTES, 'UTF-8'); ?>">
+            <button type="submit" class="sidebar-logout-button">
+                <i class="material-icons">logout</i>
+                <span>Déconnexion</span>
+            </button>
+        </form>
 
         <?php include(dirname(__DIR__) . "/includes/pwa-install-button.php"); ?>
     </div>

@@ -1,9 +1,8 @@
 <?php
 
-session_start();
-
-require_once("config/database.php");
 require_once("config/auth.php");
+infinitia_session_start();
+require_once("config/database.php");
 
 infinitia_delete_expired_password_reset_tokens($conn);
 
@@ -36,6 +35,7 @@ function infinitia_load_reset_token($conn, $selector, $validator)
     INNER JOIN users u
     ON u.id = prt.user_id
     WHERE prt.selector = ?
+    AND u.password IS NOT NULL
     LIMIT 1
     ";
 
@@ -106,7 +106,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && $link_error == ""){
     $password = isset($_POST["password"]) ? $_POST["password"] : "";
     $password_confirmation = isset($_POST["password_confirmation"]) ? $_POST["password_confirmation"] : "";
 
-    if(!infinitia_verify_csrf_token("reset_password_csrf", $csrf_token)){
+    if(!infinitia_consume_csrf_token("reset_password_csrf", $csrf_token)){
 
         $form_error = "La demande a expire. Veuillez reessayer.";
 

@@ -1,8 +1,9 @@
 <?php
 
-session_start();
-
+require_once("../config/auth.php");
+infinitia_session_start();
 require_once("../config/database.php");
+require_once("../config/google-oauth.php");
 
 function redirect_with_error($message)
 {
@@ -14,6 +15,39 @@ function redirect_with_error($message)
 if($_SERVER["REQUEST_METHOD"] != "POST"){
 
     redirect_with_error("Acces refuse.");
+
+}
+
+$csrf_token = isset($_POST["csrf_token"]) ? $_POST["csrf_token"] : "";
+
+if(!infinitia_consume_csrf_token("register_candidate_csrf", $csrf_token)){
+
+    redirect_with_error("La demande a expire. Veuillez reessayer.");
+
+}
+
+$google_onboarding_token = isset($_POST["google_onboarding_token"])
+    ? trim($_POST["google_onboarding_token"])
+    : "";
+$google_pending = false;
+$google_identity = array();
+$is_google_registration = false;
+
+if($google_onboarding_token != ""){
+
+    $google_pending = infinitia_google_pending_registration(
+        "register_candidate",
+        $google_onboarding_token
+    );
+
+    if($google_pending === false || !isset($google_pending["identity"])){
+
+        redirect_with_error("La validation Google a expire. Veuillez recommencer.");
+
+    }
+
+    $google_identity = $google_pending["identity"];
+    $is_google_registration = true;
 
 }
 
@@ -45,7 +79,9 @@ $photo_consent_date = $photo_consent === 1
 
 $first_name = isset($_POST["first_name"]) ? trim($_POST["first_name"]) : "";
 $last_name = isset($_POST["last_name"]) ? trim($_POST["last_name"]) : "";
-$email = isset($_POST["email"]) ? trim($_POST["email"]) : "";
+$email = $is_google_registration
+    ? $google_identity["email"]
+    : (isset($_POST["email"]) ? trim($_POST["email"]) : "");
 $phone = isset($_POST["phone"]) ? trim($_POST["phone"]) : "";
 $password = isset($_POST["password"]) ? $_POST["password"] : "";
 $confirm_password = isset($_POST["confirm_password"]) ? $_POST["confirm_password"] : "";
@@ -65,8 +101,7 @@ if(
     $last_name == "" ||
     $email == "" ||
     $phone == "" ||
-    $password == "" ||
-    $confirm_password == "" ||
+    (!$is_google_registration && ($password == "" || $confirm_password == "")) ||
     $birth_date == "" ||
     $gender == "" ||
     $address == "" ||
@@ -93,9 +128,19 @@ if($gender != "Homme" && $gender != "Femme"){
 
 }
 
-if($password != $confirm_password){
+if(!$is_google_registration && $password != $confirm_password){
 
     redirect_with_error("Les mots de passe ne correspondent pas.");
+
+}
+
+$password_error = $is_google_registration
+    ? ""
+    : infinitia_validate_password_strength($password);
+
+if($password_error != ""){
+
+    redirect_with_error($password_error);
 
 }
 
@@ -118,12 +163,21 @@ $stmt = mysqli_prepare($conn, $sql);
 
 if(!$stmt){
 
+    error_log("Candidate registration email lookup prepare error: " . mysqli_error($conn));
     redirect_with_error("Une erreur est survenue pendant la verification de l'email.");
 
 }
 
 mysqli_stmt_bind_param($stmt, "s", $email);
-mysqli_stmt_execute($stmt);
+
+if(!mysqli_stmt_execute($stmt)){
+
+    error_log("Candidate registration email lookup execute error: " . mysqli_stmt_error($stmt));
+    mysqli_stmt_close($stmt);
+    redirect_with_error("Une erreur est survenue pendant la verification de l'email.");
+
+}
+
 mysqli_stmt_store_result($stmt);
 
 if(mysqli_stmt_num_rows($stmt) > 0){
@@ -140,26 +194,25 @@ $uploaded_file_path = "";
 
 if(isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] != UPLOAD_ERR_NO_FILE){
 
-    if($_FILES["profile_photo"]["error"] != UPLOAD_ERR_OK){
+    $validation = infinitia_validate_profile_image_upload(
+        $_FILES["profile_photo"],
+        array("image/jpeg", "image/png", "image/gif"),
+        5 * 1024 * 1024
+    );
 
-        redirect_with_error("Le telechargement de la photo a echoue.");
+    if(!$validation["valid"]){
 
-    }
-
-    $allowed_extensions = array("jpg", "jpeg", "png", "gif");
-    $extension = strtolower(pathinfo($_FILES["profile_photo"]["name"], PATHINFO_EXTENSION));
-
-    if(!in_array($extension, $allowed_extensions)){
-
-        redirect_with_error("Le format de la photo n'est pas autorise.");
+        redirect_with_error($validation["error"]);
 
     }
+
+    $extension = $validation["extension"];
 
     $upload_dir = "../uploads/profiles/";
 
     if(!is_dir($upload_dir)){
 
-        if(!mkdir($upload_dir, 0777, true)){
+        if(!mkdir($upload_dir, 0755, true)){
 
             redirect_with_error("Impossible de preparer le dossier de telechargement.");
 
@@ -167,7 +220,15 @@ if(isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] != UPLOA
 
     }
 
-    $file_name = time() . "_" . uniqid() . "." . $extension;
+    $random_name = infinitia_secure_random_hex(16);
+
+    if($random_name === false){
+
+        redirect_with_error("Impossible de preparer le telechargement de la photo.");
+
+    }
+
+    $file_name = $random_name . "." . $extension;
     $destination = $upload_dir . $file_name;
 
     if(!move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $destination)){
@@ -181,7 +242,24 @@ if(isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] != UPLOA
 
 }
 
-$password_hash = password_hash($password, PASSWORD_DEFAULT);
+$password_hash = NULL;
+
+if(!$is_google_registration){
+
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+}
+
+if(!$is_google_registration && $password_hash === false){
+
+    if($uploaded_file_path != "" && is_file($uploaded_file_path)){
+        unlink($uploaded_file_path);
+    }
+
+    error_log("Candidate registration password hashing failed.");
+    redirect_with_error("Une erreur est survenue pendant la creation du compte.");
+
+}
 $role_id = 3;
 $availability_status = "hors_ligne";
 $verification_status = "en_attente";
@@ -220,6 +298,7 @@ $stmtUser = mysqli_prepare($conn, $sql);
 
 if(!$stmtUser){
 
+    error_log("Candidate registration user insert prepare error: " . mysqli_error($conn));
     $transaction_ok = false;
     $error_message = "Une erreur est survenue pendant la creation du compte.";
 
@@ -241,6 +320,7 @@ if($transaction_ok){
 
     if(!mysqli_stmt_execute($stmtUser)){
 
+        error_log("Candidate registration user insert execute error: " . mysqli_stmt_error($stmtUser));
         $transaction_ok = false;
         $error_message = "Une erreur est survenue pendant la creation du compte.";
 
@@ -308,6 +388,7 @@ if($transaction_ok){
 
     if(!$stmtCandidate){
 
+        error_log("Candidate registration profile insert prepare error: " . mysqli_error($conn));
         $transaction_ok = false;
         $error_message = "Une erreur est survenue pendant la creation du profil intervenant.";
 
@@ -337,6 +418,7 @@ if($transaction_ok){
 
         if(!mysqli_stmt_execute($stmtCandidate)){
 
+            error_log("Candidate registration profile insert execute error: " . mysqli_stmt_error($stmtCandidate));
             $transaction_ok = false;
             $error_message = "Une erreur est survenue pendant la creation du profil intervenant.";
 
@@ -352,10 +434,31 @@ if($transaction_ok){
 
 }
 
+if($transaction_ok && $is_google_registration){
+
+    if(!infinitia_google_insert_provider($conn, $user_id, $google_identity)){
+
+        $transaction_ok = false;
+        $error_message = "Une erreur est survenue pendant la creation du compte.";
+
+    }
+
+}
+
 if($transaction_ok){
 
     mysqli_commit($conn);
 mysqli_autocommit($conn, true);
+
+if($is_google_registration){
+
+    infinitia_google_clear_pending_identity();
+    $_SESSION["success"] =
+        "Votre compte a ete cree. Il doit etre verifie par un administrateur avant la connexion.";
+    header("Location: " . app_url("login"));
+    exit();
+
+}
 
 $_SESSION["success"] =
     "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.";

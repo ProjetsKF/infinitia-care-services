@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . "/app.php");
+require_once(__DIR__ . "/session.php");
 
 /**
  * Generate a cryptographically secure hexadecimal token.
@@ -111,6 +112,29 @@ function infinitia_verify_csrf_token($key, $token)
     }
 
     return infinitia_hash_equals($_SESSION[$key], $token);
+}
+
+function infinitia_invalidate_csrf_token($key)
+{
+    if(isset($_SESSION[$key])){
+        unset($_SESSION[$key]);
+    }
+}
+
+function infinitia_rotate_csrf_token($key)
+{
+    infinitia_invalidate_csrf_token($key);
+    return infinitia_csrf_token($key);
+}
+
+function infinitia_consume_csrf_token($key, $token)
+{
+    if(!infinitia_verify_csrf_token($key, $token)){
+        return false;
+    }
+
+    infinitia_invalidate_csrf_token($key);
+    return true;
 }
 
 function infinitia_delete_expired_password_reset_tokens($conn)
@@ -306,16 +330,14 @@ function infinitia_create_password_reset_token($conn, $user_id)
 
 function infinitia_build_reset_url($selector, $validator)
 {
-    $https = isset($_SERVER["HTTPS"])
-        && $_SERVER["HTTPS"] !== ""
-        && $_SERVER["HTTPS"] !== "off";
-    $scheme = $https ? "https" : "http";
-    $host = isset($_SERVER["HTTP_HOST"])
-        ? $_SERVER["HTTP_HOST"]
-        : "localhost";
+    $url = app_absolute_url("reinitialiser-mot-de-passe");
 
-    return $scheme . "://" . $host . app_url_with_query(
-        "reinitialiser-mot-de-passe",
+    if($url === ""){
+        error_log("Password reset URL creation failed: application origin is not configured.");
+        return "";
+    }
+
+    return $url . "?" . http_build_query(
         array(
             "selector" => $selector,
             "validator" => $validator
@@ -327,7 +349,7 @@ function infinitia_send_password_reset_email($email, $name, $reset_link)
 {
     if(!file_exists(dirname(__DIR__) . "/vendor/phpmailer/phpmailer/src/PHPMailer.php")){
 
-        error_log("Password reset email skipped: PHPMailer is not available. Link: " . $reset_link);
+        error_log("Password reset email skipped: PHPMailer is not available.");
         return false;
 
     }
@@ -340,7 +362,7 @@ function infinitia_send_password_reset_email($email, $name, $reset_link)
 
     if(!file_exists($mail_config_file)){
 
-        error_log("Password reset email skipped: mail config missing. Link: " . $reset_link);
+        error_log("Password reset email skipped: mail config missing.");
         return false;
 
     }
@@ -384,7 +406,7 @@ function infinitia_send_password_reset_email($email, $name, $reset_link)
 
     }catch(Exception $e){
 
-        error_log("Password reset email send error: " . $mail->ErrorInfo . " Link: " . $reset_link);
+        error_log("Password reset email send error: " . $mail->ErrorInfo);
         return false;
 
     }
@@ -395,6 +417,12 @@ function infinitia_validate_password_strength($password)
     if(strlen($password) < 8){
 
         return "Le mot de passe doit contenir au moins 8 caracteres.";
+
+    }
+
+    if(strlen($password) > 128){
+
+        return "Le mot de passe ne doit pas depasser 128 caracteres.";
 
     }
 
@@ -421,16 +449,31 @@ function infinitia_validate_password_strength($password)
 
 function infinitia_cookie_secure()
 {
-    return isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "" && $_SERVER["HTTPS"] !== "off";
+    return infinitia_is_https_request();
 }
 
 function infinitia_set_remember_cookie($selector, $validator, $expires)
 {
+    if(PHP_VERSION_ID >= 70300){
+        return setcookie(
+            "infinitia_remember",
+            $selector . ":" . $validator,
+            array(
+                "expires" => $expires,
+                "path" => infinitia_cookie_path(),
+                "domain" => "",
+                "secure" => infinitia_cookie_secure(),
+                "httponly" => true,
+                "samesite" => "Lax"
+            )
+        );
+    }
+
     return setcookie(
         "infinitia_remember",
         $selector . ":" . $validator,
         $expires,
-        "/",
+        infinitia_legacy_samesite_cookie_path(),
         "",
         infinitia_cookie_secure(),
         true
@@ -439,14 +482,213 @@ function infinitia_set_remember_cookie($selector, $validator, $expires)
 
 function infinitia_delete_remember_cookie()
 {
+    if(PHP_VERSION_ID >= 70300){
+        return setcookie(
+            "infinitia_remember",
+            "",
+            array(
+                "expires" => time() - 3600,
+                "path" => infinitia_cookie_path(),
+                "domain" => "",
+                "secure" => infinitia_cookie_secure(),
+                "httponly" => true,
+                "samesite" => "Lax"
+            )
+        );
+    }
+
     return setcookie(
         "infinitia_remember",
         "",
         time() - 3600,
-        "/",
+        infinitia_legacy_samesite_cookie_path(),
         "",
         infinitia_cookie_secure(),
         true
+    );
+}
+
+function infinitia_login_identifier_hash($value)
+{
+    return hash("sha256", strtolower(trim((string)$value)));
+}
+
+function infinitia_login_ip_hash()
+{
+    $ip = isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : "unknown";
+    return hash("sha256", $ip);
+}
+
+function infinitia_cleanup_login_attempts($conn)
+{
+    $sql = "DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 24 HOUR)";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+        error_log("Login attempt cleanup prepare error: " . mysqli_error($conn));
+        return false;
+    }
+
+    $ok = mysqli_stmt_execute($stmt);
+
+    if(!$ok){
+        error_log("Login attempt cleanup execute error: " . mysqli_stmt_error($stmt));
+    }
+
+    mysqli_stmt_close($stmt);
+    return $ok;
+}
+
+function infinitia_login_rate_limit_status($conn, $email)
+{
+    infinitia_cleanup_login_attempts($conn);
+
+    $email_hash = infinitia_login_identifier_hash($email);
+    $ip_hash = infinitia_login_ip_hash();
+    $pair_count = 0;
+    $ip_count = 0;
+    $sql = "
+    SELECT
+        SUM(CASE WHEN email_hash = ? AND ip_hash = ? THEN 1 ELSE 0 END),
+        SUM(CASE WHEN ip_hash = ? THEN 1 ELSE 0 END)
+    FROM login_attempts
+    WHERE attempted_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+    AND ip_hash = ?
+    ";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+        error_log("Login rate limit prepare error: " . mysqli_error($conn));
+        return array("limited" => false, "pair_count" => 0, "ip_count" => 0);
+    }
+
+    mysqli_stmt_bind_param($stmt, "ssss", $email_hash, $ip_hash, $ip_hash, $ip_hash);
+
+    if(!mysqli_stmt_execute($stmt)){
+        error_log("Login rate limit execute error: " . mysqli_stmt_error($stmt));
+        mysqli_stmt_close($stmt);
+        return array("limited" => false, "pair_count" => 0, "ip_count" => 0);
+    }
+
+    mysqli_stmt_bind_result($stmt, $pair_count, $ip_count);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
+
+    $pair_count = (int)$pair_count;
+    $ip_count = (int)$ip_count;
+
+    return array(
+        "limited" => $pair_count >= 5 || $ip_count >= 30,
+        "pair_count" => $pair_count,
+        "ip_count" => $ip_count
+    );
+}
+
+function infinitia_record_failed_login($conn, $email)
+{
+    $email_hash = infinitia_login_identifier_hash($email);
+    $ip_hash = infinitia_login_ip_hash();
+    $sql = "INSERT INTO login_attempts(email_hash, ip_hash, attempted_at) VALUES(?, ?, NOW())";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+        error_log("Login attempt insert prepare error: " . mysqli_error($conn));
+        return false;
+    }
+
+    mysqli_stmt_bind_param($stmt, "ss", $email_hash, $ip_hash);
+    $ok = mysqli_stmt_execute($stmt);
+
+    if(!$ok){
+        error_log("Login attempt insert execute error: " . mysqli_stmt_error($stmt));
+    }
+
+    mysqli_stmt_close($stmt);
+    return $ok;
+}
+
+function infinitia_clear_successful_login_attempts($conn, $email)
+{
+    $email_hash = infinitia_login_identifier_hash($email);
+    $ip_hash = infinitia_login_ip_hash();
+    $sql = "DELETE FROM login_attempts WHERE email_hash = ? AND ip_hash = ?";
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if(!$stmt){
+        error_log("Login attempt delete prepare error: " . mysqli_error($conn));
+        return false;
+    }
+
+    mysqli_stmt_bind_param($stmt, "ss", $email_hash, $ip_hash);
+    $ok = mysqli_stmt_execute($stmt);
+
+    if(!$ok){
+        error_log("Login attempt delete execute error: " . mysqli_stmt_error($stmt));
+    }
+
+    mysqli_stmt_close($stmt);
+    return $ok;
+}
+
+function infinitia_validate_profile_image_upload($file, $allowed_mime_types, $max_size)
+{
+    if(!is_array($file) || !isset($file["error"]) || (int)$file["error"] !== UPLOAD_ERR_OK){
+        return array("valid" => false, "error" => "Le televersement de la photo a echoue.");
+    }
+
+    $temporary_path = isset($file["tmp_name"]) ? $file["tmp_name"] : "";
+    $file_size = isset($file["size"]) ? (int)$file["size"] : 0;
+
+    if($temporary_path === "" || !is_file($temporary_path)){
+        return array("valid" => false, "error" => "Le fichier photo est invalide.");
+    }
+
+    if($file_size <= 0 || $file_size > (int)$max_size){
+        return array("valid" => false, "error" => "La photo ne doit pas depasser 5 Mo.");
+    }
+
+    $image_info = @getimagesize($temporary_path);
+
+    if($image_info === false || !isset($image_info[0]) || !isset($image_info[1]) ||
+       (int)$image_info[0] <= 0 || (int)$image_info[1] <= 0 ||
+       ((int)$image_info[0] * (int)$image_info[1]) > 25000000){
+        return array("valid" => false, "error" => "Le contenu de la photo est invalide.");
+    }
+
+    $image_mime = isset($image_info["mime"]) ? strtolower($image_info["mime"]) : "";
+    $detected_mime = $image_mime;
+
+    if(function_exists("finfo_open")){
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+        if($finfo){
+            $finfo_mime = strtolower((string)finfo_file($finfo, $temporary_path));
+            finfo_close($finfo);
+
+            if($finfo_mime !== ""){
+                if($image_mime !== "" && $finfo_mime !== $image_mime){
+                    return array("valid" => false, "error" => "Le contenu de la photo est invalide.");
+                }
+
+                $detected_mime = $finfo_mime;
+            }
+        }
+    }
+
+    $mime_extensions = array(
+        "image/jpeg" => "jpg",
+        "image/png" => "png",
+        "image/gif" => "gif"
+    );
+
+    if(!in_array($detected_mime, $allowed_mime_types, true) || !isset($mime_extensions[$detected_mime])){
+        return array("valid" => false, "error" => "Le format de la photo n'est pas autorise.");
+    }
+
+    return array(
+        "valid" => true,
+        "mime" => $detected_mime,
+        "extension" => $mime_extensions[$detected_mime]
     );
 }
 
